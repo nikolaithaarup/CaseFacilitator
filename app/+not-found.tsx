@@ -1,17 +1,15 @@
-import { Link, Stack } from 'expo-router';
-import { StyleSheet } from 'react-native';
-
-import { Text, View } from '@/components/Themed';
+// app/+not-found.tsx
+import { Link, Stack } from "expo-router";
+import { StyleSheet, Text, View } from "react-native";
 
 export default function NotFoundScreen() {
   return (
     <>
-      <Stack.Screen options={{ title: 'Oops!' }} />
+      <Stack.Screen options={{ title: "Oops!" }} />
       <View style={styles.container}>
-        <Text style={styles.title}>This screen doesn't exist.</Text>
-
+        <Text style={styles.title}>Denne side findes ikke.</Text>
         <Link href="/" style={styles.link}>
-          <Text style={styles.linkText}>Go to home screen!</Text>
+          <Text style={styles.linkText}>Tilbage til forsiden</Text>
         </Link>
       </View>
     </>
@@ -21,20 +19,27 @@ export default function NotFoundScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 16,
+    backgroundColor: "#020617",
   },
   title: {
     fontSize: 20,
-    fontWeight: 'bold',
+    fontWeight: "600",
+    color: "#e5e7eb",
+    marginBottom: 16,
+    textAlign: "center",
   },
   link: {
-    marginTop: 15,
-    paddingVertical: 15,
+    paddingHorizontal: 16,
+    paddingVertical: 8,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#38bdf8",
   },
   linkText: {
-    fontSize: 14,
-    color: '#2e78b7',
+    color: "#38bdf8",
+    fontWeight: "500",
   },
 });

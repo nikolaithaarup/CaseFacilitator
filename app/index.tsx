@@ -1,124 +1,37 @@
+// app/index.tsx
 import * as Clipboard from "expo-clipboard";
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { styles } from "../src/styles/indexStyles";
+
 import {
   Alert,
   FlatList,
-  SafeAreaView,
   ScrollView,
-  StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from "react-native";
 
-// ---------- Types ----------
+import { SafeAreaView } from "react-native-safe-area-context";
 
-type SchoolPeriod = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
-type Acuity = "AKUT" | "SUBAKUT";
+// If you want to actually use the shared header later:
+// import Header from "../components/Header";
 
-type AbcdeLetter = "A" | "B" | "C" | "D" | "E";
-type SamplerLetter = "S" | "A" | "M" | "P" | "L" | "E" | "R";
-type OpqrstLetter = "O" | "P" | "Q" | "R" | "S" | "T";
-
-type ActionImportance = "CRITICAL" | "IMPORTANT" | "OPTIONAL" | "FORBIDDEN";
-
-interface PatientState {
-  id: string;
-  vitals: {
-    hr: number;
-    rr: number;
-    btSys: number;
-    btDia: number;
-    spo2: number;
-    temp?: number;
-    gcs?: number;
-    painNrs?: number;
-  };
-  abcde: {
-    A: string;
-    B: string;
-    C: string;
-    D: string;
-    E: string;
-  };
-  extraInfo?: string;
-}
-
-interface Transition {
-  id: string;
-  fromStateId: string;
-  toStateId: string;
-  actionId: string;
-  feedbackToFacilitator: string;
-}
-
-interface ExpectedAction {
-  actionId: string;
-  importance: ActionImportance;
-  recommendedBeforeSec?: number;
-  mustBeforeSec?: number;
-}
-
-interface CaseScenario {
-  id: string;
-  title: string; // "skp 1 – AKS – M 58 sygdom"
-  subtitle: string; // "(mand 58 år, ...)"
-  dispatchText: string;
-  schoolPeriods: SchoolPeriod[];
-  acuity: Acuity;
-  difficulty: 1 | 2 | 3;
-  diagnosis: string;
-  actionDiagnoses: string[];
-  caseType: string; // "AKS", "Hypoglykæmi", "SVT", ...
-  patientInfo: {
-    age: number;
-    sex: "M" | "K";
-    chiefComplaint: string;
-    history: string;
-    meds: string[];
-  };
-  initialStateId: string;
-  states: PatientState[];
-  transitions: Transition[];
-  expectedActions: ExpectedAction[];
-}
-
-interface AbcdeAction {
-  id: string;
-  letter: AbcdeLetter;
-  label: string;
-}
-
-interface ActionLogEntry {
-  id: string;
-  timeMs: number;
-  actionId: string;
-  description: string;
-  resultingStateId: string;
-}
-
-interface EvaluatedAction {
-  expected: ExpectedAction;
-  logEntry?: ActionLogEntry;
-  status: "GREEN" | "YELLOW" | "RED";
-  comment: string;
-}
-
-type MedicationType = "drug" | "oxygen";
-
-interface Medication {
-  id: string;
-  name: string;
-  type: MedicationType;
-  normalDose?: number; // placeholder, set to real dose in your own code
-  unit?: string; // "mg", "µg", "ml", "mg/kg", etc.
-  note?: string;
-  oxygenFlows?: number[]; // for medicinsk ilt
-}
-
-type DoseStrength = "HALF" | "NORMAL" | "DOUBLE";
-
-type Screen = "home" | "caseList" | "caseDetail" | "summary";
+import { getCasesByPeriod } from "../src/domain/cases/localRepository";
+import type {
+  AbcdeAction,
+  AbcdeLetter,
+  ActionLogEntry,
+  CaseScenario,
+  DoseStrength,
+  EvaluatedAction,
+  Medication,
+  OpqrstLetter,
+  PatientState,
+  SamplerLetter,
+  SchoolPeriod,
+  Screen
+} from "../src/domain/cases/types";
 
 // ---------- ABCDE actions including interventions ----------
 
@@ -166,39 +79,141 @@ const ABCDE_ACTIONS: AbcdeAction[] = [
 // from your official Region H / Akutberedskab guidelines.
 
 const MEDICATIONS: Medication[] = [
-  { id: "acetylsalicylsyre", name: "Acetylsalicylsyre", type: "drug", normalDose: 0, unit: "mg", note: "Sæt korrekt dosis i koden" },
-  { id: "medicinsk_ilt", name: "Medicinsk ilt", type: "oxygen", oxygenFlows: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15] },
+  {
+    id: "acetylsalicylsyre",
+    name: "Acetylsalicylsyre",
+    type: "drug",
+    normalDose: 0,
+    unit: "mg",
+    note: "Sæt korrekt dosis i koden",
+  },
+  {
+    id: "medicinsk_ilt",
+    name: "Medicinsk ilt",
+    type: "oxygen",
+    oxygenFlows: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15],
+  },
   { id: "oxytocin", name: "Oxytocin", type: "drug", normalDose: 0, unit: "IE" },
   { id: "adrenalin", name: "Adrenalin", type: "drug", normalDose: 0, unit: "mg" },
   { id: "berodual", name: "Berodual", type: "drug", normalDose: 0, unit: "ml" },
   { id: "fentanyl", name: "Fentanyl", type: "drug", normalDose: 0, unit: "µg" },
   { id: "glukagon", name: "Glukagon", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "glukose_50", name: "Glukose 50%", type: "drug", normalDose: 0, unit: "ml" },
-  { id: "glycerylnitrat", name: "Glycerylnitrat", type: "drug", normalDose: 0, unit: "mg" },
+  {
+    id: "glukose_50",
+    name: "Glukose 50%",
+    type: "drug",
+    normalDose: 0,
+    unit: "ml",
+  },
+  {
+    id: "glycerylnitrat",
+    name: "Glycerylnitrat",
+    type: "drug",
+    normalDose: 0,
+    unit: "mg",
+  },
   { id: "heparin", name: "Heparin", type: "drug", normalDose: 0, unit: "IE" },
   { id: "hypo_fit", name: "Hypo-Fit", type: "drug", normalDose: 0, unit: "g" },
   { id: "ibuprofen", name: "Ibuprofen", type: "drug", normalDose: 0, unit: "mg" },
   { id: "midazolam", name: "Midazolam", type: "drug", normalDose: 0, unit: "mg" },
   { id: "naloxon", name: "Naloxon", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "nacl_iso", name: "Natrium-klorid (NaCl iso)", type: "drug", normalDose: 0, unit: "ml" },
-  { id: "ondansetron", name: "Ondansetron", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "paracetamol", name: "Paracetamol", type: "drug", normalDose: 0, unit: "mg" },
+  {
+    id: "nacl_iso",
+    name: "Natrium-klorid (NaCl iso)",
+    type: "drug",
+    normalDose: 0,
+    unit: "ml",
+  },
+  {
+    id: "ondansetron",
+    name: "Ondansetron",
+    type: "drug",
+    normalDose: 0,
+    unit: "mg",
+  },
+  {
+    id: "paracetamol",
+    name: "Paracetamol",
+    type: "drug",
+    normalDose: 0,
+    unit: "mg",
+  },
   { id: "salbutamol", name: "Salbutamol", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "solu_cortef", name: "Solu-cortef", type: "drug", normalDose: 0, unit: "mg" },
+  {
+    id: "solu_cortef",
+    name: "Solu-cortef",
+    type: "drug",
+    normalDose: 0,
+    unit: "mg",
+  },
   { id: "thiamin", name: "Thiamin", type: "drug", normalDose: 0, unit: "mg" },
   { id: "amiodaron", name: "Amiodaron", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "glukose_insulin_kalium", name: "Glukose-Insulin(-Kalium)", type: "drug", normalDose: 0, unit: "ml" },
-  { id: "isoprenalin", name: "Isoprenalin", type: "drug", normalDose: 0, unit: "µg" },
+  {
+    id: "glukose_insulin_kalium",
+    name: "Glukose-Insulin(-Kalium)",
+    type: "drug",
+    normalDose: 0,
+    unit: "ml",
+  },
+  {
+    id: "isoprenalin",
+    name: "Isoprenalin",
+    type: "drug",
+    normalDose: 0,
+    unit: "µg",
+  },
   { id: "labetalol", name: "Labetalol", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "n_acetylcystein", name: "N-Acetylcystein", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "s_ketamin", name: "S-ketamin", type: "drug", normalDose: 0, unit: "mg" },
+  {
+    id: "n_acetylcystein",
+    name: "N-Acetylcystein",
+    type: "drug",
+    normalDose: 0,
+    unit: "mg",
+  },
+  {
+    id: "s_ketamin",
+    name: "S-ketamin",
+    type: "drug",
+    normalDose: 0,
+    unit: "mg",
+  },
   { id: "atropin", name: "Atropin", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "clemastin", name: "Clemastin", type: "drug", normalDose: 0, unit: "mg" },
+  {
+    id: "clemastin",
+    name: "Clemastin",
+    type: "drug",
+    normalDose: 0,
+    unit: "mg",
+  },
   { id: "diazepam", name: "Diazepam", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "furosemid", name: "Furosemid", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "ketorolac", name: "Ketorolac", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "solu_medrol", name: "Solu-medrol", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "tranexamsyre", name: "Tranexamsyre", type: "drug", normalDose: 0, unit: "mg" },
+  {
+    id: "furosemid",
+    name: "Furosemid",
+    type: "drug",
+    normalDose: 0,
+    unit: "mg",
+  },
+  {
+    id: "ketorolac",
+    name: "Ketorolac",
+    type: "drug",
+    normalDose: 0,
+    unit: "mg",
+  },
+  {
+    id: "solu_medrol",
+    name: "Solu-medrol",
+    type: "drug",
+    normalDose: 0,
+    unit: "mg",
+  },
+  {
+    id: "tranexamsyre",
+    name: "Tranexamsyre",
+    type: "drug",
+    normalDose: 0,
+    unit: "mg",
+  },
 ];
 
 const DOSE_OPTIONS: { id: DoseStrength; label: string; factor: number }[] = [
@@ -206,217 +221,6 @@ const DOSE_OPTIONS: { id: DoseStrength; label: string; factor: number }[] = [
   { id: "NORMAL", label: "Normal dosis", factor: 1 },
   { id: "DOUBLE", label: "Dobbelt dosis", factor: 2 },
 ];
-
-// ---------- Case templates for auto-generation ----------
-
-const CASE_TEMPLATES = [
-  {
-    code: "AKS",
-    diagnosis: "Mistanke om akut koronart syndrom.",
-    chiefComplaint: "brystsmerter og åndenød",
-    subtitleExtra: "brystsmerter og let åndenød gennem 2 dage",
-    actionDiagnoses: ["I21 Akut myokardieinfarkt", "I20 Angina pectoris"],
-    acuity: "AKUT" as Acuity,
-  },
-  {
-    code: "Nyopstået AFLI",
-    diagnosis: "Nyopstået atrieflimren med hurtig ventrikelrespons.",
-    chiefComplaint: "hjertebanken og svimmelhed",
-    subtitleExtra: "hjertebanken og uro i brystet siden i går",
-    actionDiagnoses: ["I48 Atrieflimren", "R42 Svimmelhed"],
-    acuity: "SUBAKUT" as Acuity,
-  },
-  {
-    code: "SVT",
-    diagnosis: "Supraventrikulær takykardi.",
-    chiefComplaint: "pludseligt indsættende hjertebanken",
-    subtitleExtra: "pludseligt opstået hjertebanken og ubehag",
-    actionDiagnoses: ["I47 Supraventrikulær takykardi"],
-    acuity: "AKUT" as Acuity,
-  },
-  {
-    code: "Anafylaksi",
-    diagnosis: "Mistanke om anafylaktisk reaktion.",
-    chiefComplaint: "hævelse, kløe og vejrtrækningsbesvær",
-    subtitleExtra: "pludselig kløe, udslæt og åndenød efter eksposition",
-    actionDiagnoses: ["T78 Anafylaktisk chok", "L50 Urticaria"],
-    acuity: "AKUT" as Acuity,
-  },
-  {
-    code: "Astma-exacerbation",
-    diagnosis: "Akut forværring af astma.",
-    chiefComplaint: "hvæsende vejrtrækning og åndenød",
-    subtitleExtra: "tiltagende hvæsende vejrtrækning gennem 1 dag",
-    actionDiagnoses: ["J45 Astma"],
-    acuity: "AKUT" as Acuity,
-  },
-  {
-    code: "KOL-exacerbation",
-    diagnosis: "Akut forværring af KOL.",
-    chiefComplaint: "tiltagende åndenød og hoste",
-    subtitleExtra: "tiltagende åndenød og hoste gennem 3 dage",
-    actionDiagnoses: ["J44 KOL"],
-    acuity: "AKUT" as Acuity,
-  },
-  {
-    code: "Hypoglykæmi",
-    diagnosis: "Symptomgivende hypoglykæmi.",
-    chiefComplaint: "konfusion og svedtendens",
-    subtitleExtra: "tiltagende konfusion, svedtendens og uro",
-    actionDiagnoses: ["E16 Hypoglykæmi"],
-    acuity: "AKUT" as Acuity,
-  },
-  {
-    code: "Sepsis",
-    diagnosis: "Mistanke om sepsis.",
-    chiefComplaint: "feber, kulderystelser og påvirket almentilstand",
-    subtitleExtra: "høj feber og almen påvirket tilstand gennem 1 dag",
-    actionDiagnoses: ["A41 Sepsis"],
-    acuity: "AKUT" as Acuity,
-  },
-  {
-    code: "Hovedtraume",
-    diagnosis: "Let til moderat hovedtraume.",
-    chiefComplaint: "hovedpine efter fald/traume",
-    subtitleExtra: "hovedpine og kortvarig bevidsthedspåvirkning efter fald",
-    actionDiagnoses: ["S06 Hjernerystelse"],
-    acuity: "AKUT" as Acuity,
-  },
-  {
-    code: "Mavesmerter",
-    diagnosis: "Akutte mavesmerter – uklar årsag.",
-    chiefComplaint: "mavesmerter",
-    subtitleExtra: "kolikagtige mavesmerter gennem nogle timer",
-    actionDiagnoses: ["R10 Mavesmerter"],
-    acuity: "SUBAKUT" as Acuity,
-  },
-];
-
-// ---------- Generate 30 cases per skoleperiode ----------
-
-function generateCaseForPeriod(
-  period: SchoolPeriod,
-  index: number,
-): CaseScenario {
-  const template = CASE_TEMPLATES[(period * 31 + index) % CASE_TEMPLATES.length];
-
-  const age = 20 + period * 3 + index;
-  const sex: "M" | "K" = index % 2 === 0 ? "M" : "K";
-  const sexWord = sex === "M" ? "Mand" : "Kvinde";
-  const typeWord =
-    template.code === "Hovedtraume" ? "tilskadekomst" : "sygdom";
-
-  const title = `skp ${period} – ${template.code} – ${sex} ${age} ${typeWord}`;
-  const subtitle = `(${sexWord.toLowerCase()} ${age} år, ${template.subtitleExtra})`;
-
-  const dispatchText = `Kørsel B til ${typeWord}. ${sexWord.toLowerCase()} ${age} med ${template.chiefComplaint}.`;
-
-  const history =
-    `SAMPLER: S – ${template.chiefComplaint}. A – ingen kendte allergier oplyst. M – relevant fast medicin jf. egen læge. P – evt. tidligere kendt sygdom svarende til aktionsdiagnosen (${template.code}). L – symptomer gennem timer til få dage. E – ingen nylig rejse eller større ændring udover aktuelle symptomer. R – kontaktet 1-1-2 pga. tiltagende gener.\n` +
-    "OPQRST: O – debut inden for de sidste timer til dage. P – kan påvirkes af aktivitet eller hvile afhængigt af case. Q – karakter af smerte/ubehag afhænger af aktionsdiagnosen. R – lokalisation afhænger af case. S – moderat til svær gene. T – gradvist eller pludseligt indsættende.";
-
-  const baseVitals: PatientState["vitals"] = {
-    hr: template.code === "Hypoglykæmi" ? 110 : 100,
-    rr:
-      template.code === "Astma-exacerbation" ||
-      template.code === "KOL-exacerbation" ||
-      template.code === "Anafylaksi" ||
-      template.code === "Sepsis"
-        ? 26
-        : 20,
-    btSys: 125,
-    btDia: 78,
-    spo2:
-      template.code === "Astma-exacerbation" ||
-      template.code === "KOL-exacerbation" ||
-      template.code === "Anafylaksi"
-        ? 92
-        : 96,
-    temp: template.code === "Sepsis" ? 39.0 : 37.2,
-    painNrs:
-      template.code === "Hovedtraume" || template.code === "Mavesmerter"
-        ? 7
-        : 4,
-  };
-
-  const abcde: PatientState["abcde"] = {
-    A:
-      template.code === "Anafylaksi"
-        ? "Hæs stemme, let hævelse af læber/tunge, kan stadig tale."
-        : "Fri luftvej, kan tale hele sætninger eller korte fraser.",
-    B:
-      template.code === "Astma-exacerbation" ||
-      template.code === "KOL-exacerbation"
-        ? "Forlænget ekspirium, hvæsende vejrtrækning, øget RF."
-        : template.code === "Anafylaksi"
-        ? "Inspiratorisk stridor tendens, øget RF."
-        : template.code === "Sepsis"
-        ? "Let øget RF, ellers rimelig luftskifte."
-        : "RF let forhøjet eller normal, ingen udtalte bilaterale bilyde.",
-    C:
-      template.code === "Hypoglykæmi"
-        ? "Tachykardi, BT let forhøjet, kapillærrespons < 3 sek."
-        : template.code === "Sepsis"
-        ? "HR tachykard, BT kan være let lavt, kapillærrespons > 3 sek."
-        : "HR let forhøjet, BT normal, kapillærrespons < 3 sek.",
-    D:
-      template.code === "Hovedtraume"
-        ? "GCS 15, hovedpine, evt. kortvarig amnesi. Pupiller isokore."
-        : template.code === "Hypoglykæmi"
-        ? "GCS 14, konfus, svedende."
-        : "GCS 15, klar og orienteret, evt. påvirket af smerte/ubehag.",
-    E:
-      template.code === "Hovedtraume"
-        ? "Lokal ømhed på caput, ingen tydelige frakturer."
-        : template.code === "Sepsis"
-        ? "Varm, rødlig hud, evt. petekkier afhængigt af fokus."
-        : "Ingen oplagte traumer, hudfarve passende eller let bleg.",
-  };
-
-  const stateId = `${template.code.toLowerCase()}_${period}_${index}`;
-
-  return {
-    id: stateId,
-    title,
-    subtitle,
-    dispatchText,
-    schoolPeriods: [period],
-    acuity: template.acuity,
-    difficulty: (period <= 2 ? 1 : period <= 5 ? 2 : 3) as 1 | 2 | 3,
-    diagnosis: template.diagnosis,
-    actionDiagnoses: template.actionDiagnoses,
-    caseType: template.code,
-    patientInfo: {
-      age,
-      sex,
-      chiefComplaint: template.chiefComplaint,
-      history,
-      meds: ["Fast medicin jf. egen læge"],
-    },
-    initialStateId: stateId,
-    states: [
-      {
-        id: stateId,
-        vitals: baseVitals,
-        abcde,
-        extraInfo:
-          "Case er generisk og kan bruges til både ABCDE, farmakologi og sygdomslære alt efter fokus.",
-      },
-    ],
-    transitions: [],
-    expectedActions: [],
-  };
-}
-
-const ALL_CASES: CaseScenario[] = (() => {
-  const arr: CaseScenario[] = [];
-  for (let p = 1 as SchoolPeriod; p <= 8; p = (p + 1) as SchoolPeriod) {
-    for (let i = 1; i <= 30; i++) {
-      arr.push(generateCaseForPeriod(p, i));
-    }
-  }
-  return arr;
-})();
 
 // ---------- Helpers ----------
 
@@ -450,8 +254,10 @@ function getActionEffectText(
 
   switch (action.id) {
     case "D_BS":
-      if (type === "Hypoglykæmi") return "Blodsukker: 2,1 mmol/L (markant lavt).";
-      if (type === "AKS") return "Blodsukker: 6,0 mmol/L (inden for normalområdet).";
+      if (type === "Hypoglykæmi")
+        return "Blodsukker: 2,1 mmol/L (markant lavt).";
+      if (type === "AKS")
+        return "Blodsukker: 6,0 mmol/L (inden for normalområdet).";
       return "Blodsukker: 5,5 mmol/L (normal).";
 
     case "D_GCS":
@@ -638,8 +444,7 @@ export default function Index() {
 
   const [selectedMedication, setSelectedMedication] =
     useState<Medication | null>(null);
-  const [selectedDose, setSelectedDose] =
-    useState<DoseStrength | null>(null);
+  const [selectedDose, setSelectedDose] = useState<DoseStrength | null>(null);
   const [selectedOxygenFlow, setSelectedOxygenFlow] = useState<number | null>(
     null,
   );
@@ -657,7 +462,7 @@ export default function Index() {
 
   const filteredCases = useMemo(() => {
     if (!selectedPeriod) return [];
-    return ALL_CASES.filter((c) => c.schoolPeriods.includes(selectedPeriod));
+    return getCasesByPeriod(selectedPeriod);
   }, [selectedPeriod]);
 
   const evaluation = useMemo(() => {
@@ -693,8 +498,7 @@ export default function Index() {
       (t) => t.fromStateId === currentState.id && t.actionId === action.id,
     );
     const newState =
-      transition &&
-      scenario.states.find((s) => s.id === transition.toStateId);
+      transition && scenario.states.find((s) => s.id === transition.toStateId);
     const resultingState = newState || currentState;
 
     if (newState) {
@@ -779,9 +583,7 @@ export default function Index() {
       log.length === 0
         ? "Ingen handlinger registreret."
         : log
-            .map(
-              (e) => `${formatTime(e.timeMs)} – ${e.description}`,
-            )
+            .map((e) => `${formatTime(e.timeMs)} – ${e.description}`)
             .join("\n");
 
     const samplerText =
@@ -1060,23 +862,8 @@ ${actionsText}${evalText}
     (a) => a.letter === selectedLetter,
   );
 
-  const samplerLetters: SamplerLetter[] = [
-    "S",
-    "A",
-    "M",
-    "P",
-    "L",
-    "E",
-    "R",
-  ];
-  const opqrstLetters: OpqrstLetter[] = [
-    "O",
-    "P",
-    "Q",
-    "R",
-    "S",
-    "T",
-  ];
+  const samplerLetters: SamplerLetter[] = ["S", "A", "M", "P", "L", "E", "R"];
+  const opqrstLetters: OpqrstLetter[] = ["O", "P", "Q", "R", "S", "T"];
 
   return (
     <SafeAreaView style={styles.container}>
@@ -1437,284 +1224,3 @@ ${actionsText}${evalText}
     </SafeAreaView>
   );
 }
-
-// ---------- Styles ----------
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#0b1520",
-    paddingHorizontal: 16,
-    paddingTop: 16,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "white",
-  },
-  subtitle: {
-    fontSize: 13,
-    color: "#cbd5f5",
-    marginTop: 2,
-  },
-  headerRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 8,
-    gap: 8,
-  },
-  timerText: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#fbbf24",
-  },
-  smallButton: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#111827",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  smallButtonText: {
-    color: "white",
-    fontSize: 18,
-    fontWeight: "700",
-  },
-  periodButton: {
-    backgroundColor: "#111827",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-    flex: 0.48,
-  },
-  periodTitle: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  periodSubtitle: {
-    color: "#9ca3af",
-    fontSize: 12,
-    marginTop: 4,
-  },
-  caseCard: {
-    backgroundColor: "#111827",
-    borderRadius: 12,
-    padding: 12,
-    marginBottom: 12,
-  },
-  caseTitle: {
-    color: "white",
-    fontSize: 15,
-    fontWeight: "600",
-    marginBottom: 2,
-  },
-  caseSubtitle: {
-    color: "#9ca3af",
-    fontSize: 12,
-    marginBottom: 4,
-  },
-  badgeRow: {
-    flexDirection: "row",
-    gap: 6,
-    marginTop: 2,
-    flexWrap: "wrap",
-  },
-  badge: {
-    backgroundColor: "#1f2937",
-    color: "#e5e7eb",
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 999,
-    fontSize: 11,
-  },
-  card: {
-    backgroundColor: "#111827",
-    padding: 10,
-    borderRadius: 10,
-    marginBottom: 8,
-  },
-  cardTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: "#e5e7eb",
-    marginBottom: 4,
-  },
-  text: {
-    fontSize: 13,
-    color: "#d1d5db",
-  },
-  textSmall: {
-    fontSize: 11,
-    color: "#9ca3af",
-    marginTop: 4,
-  },
-  button: {
-    backgroundColor: "#10b981",
-    paddingVertical: 10,
-    borderRadius: 999,
-    alignItems: "center",
-    marginTop: 4,
-    marginBottom: 8,
-  },
-  buttonText: {
-    color: "black",
-    fontSize: 14,
-    fontWeight: "700",
-  },
-  sectionTitle: {
-    fontSize: 16,
-    fontWeight: "600",
-    color: "#e5e7eb",
-    marginTop: 12,
-    marginBottom: 6,
-  },
-  logContainer: {
-    backgroundColor: "#111827",
-    padding: 8,
-    borderRadius: 10,
-    marginBottom: 8,
-  },
-  logItem: {
-    backgroundColor: "#111827",
-    padding: 8,
-    borderRadius: 8,
-    marginBottom: 4,
-  },
-  logTime: {
-    color: "#9ca3af",
-    fontSize: 12,
-    marginBottom: 2,
-  },
-  logText: {
-    color: "#e5e7eb",
-    fontSize: 13,
-  },
-  evalItem: {
-    backgroundColor: "#111827",
-    padding: 8,
-    borderRadius: 8,
-    marginBottom: 6,
-  },
-  evalTitle: {
-    fontSize: 14,
-    fontWeight: "700",
-    marginBottom: 2,
-  },
-  evalText: {
-    fontSize: 13,
-    color: "#d1d5db",
-  },
-  abcdeRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  abcdeButton: {
-    flex: 1,
-    marginHorizontal: 2,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#4b5563",
-    alignItems: "center",
-  },
-  abcdeButtonActive: {
-    backgroundColor: "#fbbf24",
-  },
-  abcdeButtonText: {
-    color: "#e5e7eb",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  actionButton: {
-    backgroundColor: "#2563eb",
-    paddingHorizontal: 10,
-    paddingVertical: 8,
-    borderRadius: 999,
-    marginRight: 8,
-    marginTop: 4,
-  },
-  actionButtonText: {
-    color: "white",
-    fontSize: 12,
-    fontWeight: "600",
-  },
-  samplerButton: {
-    flex: 1,
-    marginHorizontal: 2,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#4b5563",
-    alignItems: "center",
-  },
-  samplerButtonActive: {
-    backgroundColor: "#10b981",
-  },
-  samplerButtonText: {
-    color: "#e5e7eb",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  dropdownHeader: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    paddingVertical: 4,
-  },
-  dropdownHeaderText: {
-    color: "#e5e7eb",
-    fontSize: 14,
-    fontWeight: "600",
-  },
-  medButton: {
-    backgroundColor: "#1f2937",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    marginRight: 6,
-    marginTop: 4,
-  },
-  medButtonActive: {
-    backgroundColor: "#f97316",
-  },
-  medButtonText: {
-    color: "#e5e7eb",
-    fontSize: 12,
-  },
-  doseButton: {
-    flex: 1,
-    marginHorizontal: 2,
-    paddingVertical: 6,
-    borderRadius: 999,
-    borderWidth: 1,
-    borderColor: "#4b5563",
-    alignItems: "center",
-  },
-  doseButtonActive: {
-    backgroundColor: "#a855f7",
-  },
-  doseButtonText: {
-    color: "#e5e7eb",
-    fontSize: 12,
-  },
-  popup: {
-    position: "absolute",
-    top: 50,
-    left: 16,
-    right: 16,
-    zIndex: 20,
-    backgroundColor: "#0f172a",
-    borderRadius: 12,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#38bdf8",
-  },
-  popupText: {
-    color: "#e5e7eb",
-    fontSize: 13,
-    textAlign: "center",
-  },
-});
