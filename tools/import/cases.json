@@ -1,0 +1,1399 @@
+[
+  {
+    "id": "case_aks_01",
+    "title": "SKP 3 – AKS – M 58 – brystsmerter",
+    "subtitle": "(mand 58 år, trykkende retrosternale smerter)",
+    "dispatchText": "58-årig mand. Brystsmerter gennem 30 min. Kold og klam. Let åndenød.",
+    "schoolPeriods": [3],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "Mistænkt AKS (NSTEMI/ustabil angina)",
+    "actionDiagnoses": ["AKS", "Brystsmerter", "Åndenød"],
+    "caseType": "AKS",
+    "patientInfo": {
+      "age": 58,
+      "sex": "M",
+      "chiefComplaint": "Trykkende brystsmerter",
+      "history": "Hypertension. Ryger. Smerter ved anstrengelse, nu i hvile.",
+      "meds": ["Amlodipin"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 102, "rr": 22, "btSys": 155, "btDia": 95, "spo2": 94, "painNrs": 7 },
+        "abcde": {
+          "A": "Fri luftvej, taler i hele sætninger.",
+          "B": "Let dyspnø, RF 22, SpO₂ 94%.",
+          "C": "Kold/klam, brystsmerter, puls 102.",
+          "D": "GCS 15, angstpræget.",
+          "E": "Ingen traumer, bleg."
+        },
+        "extraInfo": "Smerter stråler til venstre arm."
+      },
+      {
+        "id": "s1",
+        "vitals": { "hr": 92, "rr": 18, "btSys": 150, "btDia": 90, "spo2": 96, "painNrs": 5 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre komfort, mindre dyspnø.",
+          "C": "Mindre klam, smerter aftager.",
+          "D": "GCS 15.",
+          "E": "Uændret."
+        },
+        "extraInfo": "Efter ilt + rolig guidning virker han mindre panisk."
+      }
+    ],
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "B_HUDSON",
+        "feedbackToFacilitator": "Ilt kan lindre subjektiv dyspnø; fokusér på EKG tidligt."
+      }
+    ],
+    "expectedActions": [
+      { "actionId": "C_EKG12", "importance": "CRITICAL", "recommendedBeforeSec": 120, "mustBeforeSec": 300 },
+      { "actionId": "C_BP", "importance": "IMPORTANT", "recommendedBeforeSec": 120 },
+      { "actionId": "B_HUDSON", "importance": "OPTIONAL" }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_stemi_01",
+    "title": "SKP 4 – STEMI – K 64 – stærke brystsmerter",
+    "subtitle": "(kvinde 64 år, pludselige brystsmerter og kvalme)",
+    "dispatchText": "64-årig kvinde. Kraftige brystsmerter, kvalme, koldsved. Start for 20 min siden.",
+    "schoolPeriods": [4],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "Mistænkt STEMI",
+    "actionDiagnoses": ["STEMI", "Brystsmerter"],
+    "caseType": "AKS",
+    "patientInfo": {
+      "age": 64,
+      "sex": "K",
+      "chiefComplaint": "Kraftige brystsmerter",
+      "history": "Tidligere hyperlipidæmi. Familiehistorie med AMI.",
+      "meds": ["Atorvastatin"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 110, "rr": 24, "btSys": 145, "btDia": 85, "spo2": 93, "painNrs": 9 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "RF 24, SpO₂ 93%, let cyanose ved læber.",
+          "C": "Kold/klam, hurtig puls.",
+          "D": "GCS 15, kvalme.",
+          "E": "Ingen traumer."
+        },
+        "extraInfo": "Smerter ud i kæbe/ryg."
+      },
+      {
+        "id": "s1",
+        "vitals": { "hr": 104, "rr": 22, "btSys": 140, "btDia": 82, "spo2": 96, "painNrs": 8 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "SpO₂ 96% med ilt.",
+          "C": "Stadig klam.",
+          "D": "GCS 15.",
+          "E": "Uændret."
+        }
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "s0", "toStateId": "s1", "actionId": "B_NASAL_O2", "feedbackToFacilitator": "Stabiliser og få 12-aflednings EKG hurtigt mhp. STEMI-aktivering." }
+    ],
+    "expectedActions": [
+      { "actionId": "C_EKG12", "importance": "CRITICAL", "recommendedBeforeSec": 120, "mustBeforeSec": 240 },
+      { "actionId": "C_BP", "importance": "IMPORTANT", "recommendedBeforeSec": 120 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_svt_01",
+    "title": "SKP 2 – SVT – K 23 – palpitationer",
+    "subtitle": "(kvinde 23 år, pludselig hjertebanken)",
+    "dispatchText": "23-årig kvinde. Pludselig hjertebanken, svimmel, angst. Ingen brystsmerter.",
+    "schoolPeriods": [2],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "SVT (supraventrikulær takykardi)",
+    "actionDiagnoses": ["SVT", "Palpitationer"],
+    "caseType": "SVT",
+    "patientInfo": {
+      "age": 23,
+      "sex": "K",
+      "chiefComplaint": "Hjertebanken",
+      "history": "Tidligere kortvarige episoder. Stresset op til eksamen.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 180, "rr": 22, "btSys": 110, "btDia": 70, "spo2": 98, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri, taler hurtigt.",
+          "B": "Normal iltning.",
+          "C": "Meget hurtig puls, svimmel.",
+          "D": "GCS 15, angst.",
+          "E": "Ingen traumer."
+        },
+        "extraInfo": "Klage over 'flagrende' hjerte."
+      },
+      {
+        "id": "s1",
+        "vitals": { "hr": 130, "rr": 18, "btSys": 118, "btDia": 75, "spo2": 98, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Roligere vejrtrækning.",
+          "C": "Puls faldet, mindre svimmel.",
+          "D": "GCS 15, roligere.",
+          "E": "Uændret."
+        }
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "s0", "toStateId": "s1", "actionId": "C_EKG4", "feedbackToFacilitator": "Vis EKG 4 tidligt; overvej vagale manøvrer/algoritme (uden medicin i denne app-version)." }
+    ],
+    "expectedActions": [
+      { "actionId": "C_EKG4", "importance": "CRITICAL", "recommendedBeforeSec": 120 },
+      { "actionId": "C_BP", "importance": "IMPORTANT", "recommendedBeforeSec": 180 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_afli_01",
+    "title": "SKP 5 – Nyopstået AFLI – M 71 – svimmelhed",
+    "subtitle": "(mand 71 år, uregelmæssig puls og træthed)",
+    "dispatchText": "71-årig mand. Svimmel, træt, uregelmæssig puls. Ingen stærke smerter.",
+    "schoolPeriods": [5],
+    "acuity": "SUBAKUT",
+    "difficulty": 2,
+    "diagnosis": "Nyopstået atrieflimren",
+    "actionDiagnoses": ["AFLI", "Svimmelhed"],
+    "caseType": "Nyopstået AFLI",
+    "patientInfo": {
+      "age": 71,
+      "sex": "M",
+      "chiefComplaint": "Svimmelhed og uregelmæssig puls",
+      "history": "HTN. Drak meget kaffe i dag. Føler 'uro i brystet'.",
+      "meds": ["Metoprolol"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 130, "rr": 18, "btSys": 135, "btDia": 85, "spo2": 97, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Normal.",
+          "C": "Uregelmæssig uregelmæssig puls, let utilpas.",
+          "D": "GCS 15.",
+          "E": "Uændret."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "C_EKG12", "importance": "IMPORTANT", "recommendedBeforeSec": 300 },
+      { "actionId": "C_BP", "importance": "IMPORTANT", "recommendedBeforeSec": 300 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_kol_exa_01",
+    "title": "SKP 3 – KOL i EXA – K 69 – åndenød",
+    "subtitle": "(kvinde 69 år, forværret åndenød og hoste)",
+    "dispatchText": "69-årig KOL-patient. Tiltagende åndenød, pibende vejrtrækning, produktiv hoste.",
+    "schoolPeriods": [3],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "KOL exacerbation",
+    "actionDiagnoses": ["KOL i EXA", "Åndenød"],
+    "caseType": "KOL-exacerbation",
+    "patientInfo": {
+      "age": 69,
+      "sex": "K",
+      "chiefComplaint": "Åndenød",
+      "history": "Kendt svær KOL, hjemmeilt ved behov. Infektionstegn sidste døgn.",
+      "meds": ["Tiotropium", "Salbutamol inhalation"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 112, "rr": 30, "btSys": 150, "btDia": 90, "spo2": 86, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri, kan kun sige korte sætninger.",
+          "B": "RF 30, SpO₂ 86%, expiratorisk hvæsen.",
+          "C": "Tachycard, perifert kølig.",
+          "D": "GCS 15, udmattet.",
+          "E": "Ingen traumer."
+        },
+        "extraInfo": "Bruger accessoriske muskler."
+      },
+      {
+        "id": "s1",
+        "vitals": { "hr": 105, "rr": 26, "btSys": 145, "btDia": 88, "spo2": 90, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "RF faldet lidt, mindre hvæsen.",
+          "C": "Stadig tachycard.",
+          "D": "GCS 15.",
+          "E": "Uændret."
+        },
+        "extraInfo": "Efter nebulisator oplever patienten lindring."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "s0", "toStateId": "s1", "actionId": "B_NEBULISER", "feedbackToFacilitator": "Nebulisator forventes at give klinisk bedring; titrér ilt og vurder fatigue." }
+    ],
+    "expectedActions": [
+      { "actionId": "B_STETHO", "importance": "IMPORTANT", "recommendedBeforeSec": 180 },
+      { "actionId": "B_NEBULISER", "importance": "CRITICAL", "recommendedBeforeSec": 240 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_asthma_exa_01",
+    "title": "SKP 2 – Astma i EXA – M 17 – hvæsende",
+    "subtitle": "(mand 17 år, akut hvæsende vejrtrækning)",
+    "dispatchText": "17-årig. Astma. Akut forværret åndenød efter sport. Kan næsten ikke tale.",
+    "schoolPeriods": [2],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Astma-exacerbation",
+    "actionDiagnoses": ["Astma i EXA", "Åndenød"],
+    "caseType": "Astma-exacerbation",
+    "patientInfo": {
+      "age": 17,
+      "sex": "M",
+      "chiefComplaint": "Åndenød og hvæsen",
+      "history": "Kendt astma. Mistet inhalator. Panik.",
+      "meds": ["Salbutamol (ikke tilgængelig nu)"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 140, "rr": 36, "btSys": 135, "btDia": 80, "spo2": 89, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri, men kan kun sige enkelte ord.",
+          "B": "RF 36, SpO₂ 89%, udtalt hvæsen, brug af accessoriske muskler.",
+          "C": "Tachycard.",
+          "D": "GCS 15, panik.",
+          "E": "Svedende."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": { "hr": 125, "rr": 28, "btSys": 130, "btDia": 78, "spo2": 93, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre luftskifte, mindre hvæsen.",
+          "C": "Stadig tachycard.",
+          "D": "GCS 15, roligere.",
+          "E": "Uændret."
+        }
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "s0", "toStateId": "s1", "actionId": "B_NEBULISER", "feedbackToFacilitator": "Akut bronkodilatation forventes at bedre RF og SpO₂." }
+    ],
+    "expectedActions": [
+      { "actionId": "B_NEBULISER", "importance": "CRITICAL", "recommendedBeforeSec": 120 },
+      { "actionId": "B_HUDSON", "importance": "IMPORTANT", "recommendedBeforeSec": 120 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_anaphylaxis_01",
+    "title": "SKP 4 – Anafylaksi – K 34 – hævelse",
+    "subtitle": "(kvinde 34 år, urticaria og hævelse i ansigt)",
+    "dispatchText": "34-årig. Efter nødder. Kløe, nældefeber, hævelse, tiltagende åndenød.",
+    "schoolPeriods": [4],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Anafylaksi",
+    "actionDiagnoses": ["Anafylaksi", "Åndenød"],
+    "caseType": "Anafylaksi",
+    "patientInfo": {
+      "age": 34,
+      "sex": "K",
+      "chiefComplaint": "Hævelse og åndenød",
+      "history": "Kendt nøddeallergi. Ingen EpiPen ved hånden.",
+      "meds": ["Cetirizin (ikke taget)"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 128, "rr": 28, "btSys": 95, "btDia": 60, "spo2": 90, "painNrs": 0 },
+        "abcde": {
+          "A": "Hæs stemme, hævelse i læber/tunge (truet luftvej).",
+          "B": "RF 28, SpO₂ 90%, stridor/bronchospasme.",
+          "C": "Hypotensiv, tachycard, varm hud.",
+          "D": "GCS 15, angst.",
+          "E": "Urticaria over thorax/arme."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": { "hr": 115, "rr": 22, "btSys": 105, "btDia": 65, "spo2": 94, "painNrs": 0 },
+        "abcde": {
+          "A": "Mindre hæshed, luftvej mere fri.",
+          "B": "Bedre luftskifte.",
+          "C": "BT stiger, stadig tachycard.",
+          "D": "GCS 15.",
+          "E": "Urticaria aftager langsomt."
+        },
+        "extraInfo": "Efter ilt virker hun mindre forpustet (men årsag er stadig kritisk)."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "s0", "toStateId": "s1", "actionId": "B_HUDSON", "feedbackToFacilitator": "Ilt kan støtte, men her er kritisk behandling ellers nødvendig (ikke modelleret fuldt endnu)." }
+    ],
+    "expectedActions": [
+      { "actionId": "A_LOOK", "importance": "CRITICAL", "recommendedBeforeSec": 60 },
+      { "actionId": "B_HUDSON", "importance": "IMPORTANT", "recommendedBeforeSec": 60 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_hypoglycemia_01",
+    "title": "SKP 1 – Hypoglykæmi – M 52 – konfus",
+    "subtitle": "(mand 52 år, konfus og svedende)",
+    "dispatchText": "52-årig diabetiker. Konfus, sveder, irritabel. Fundet hjemme.",
+    "schoolPeriods": [1],
+    "acuity": "AKUT",
+    "difficulty": 1,
+    "diagnosis": "Hypoglykæmi",
+    "actionDiagnoses": ["Hypoglykæmi", "Bevidsthedspåvirkning"],
+    "caseType": "Hypoglykæmi",
+    "patientInfo": {
+      "age": 52,
+      "sex": "M",
+      "chiefComplaint": "Konfus",
+      "history": "Type 1 diabetes. Har spist dårligt i dag. Tog insulin som vanligt.",
+      "meds": ["Insulin"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 110, "rr": 18, "btSys": 140, "btDia": 85, "spo2": 98, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Normal.",
+          "C": "Tachycard, svedende.",
+          "D": "GCS 14, konfus, tremor.",
+          "E": "Kold og klam."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "D_BS", "importance": "CRITICAL", "recommendedBeforeSec": 60 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_sepsis_01",
+    "title": "SKP 6 – Sepsis – K 78 – feber og konfusion",
+    "subtitle": "(kvinde 78 år, feber, utilpas og konfus)",
+    "dispatchText": "78-årig. Høj feber, sløv, konfus. Mistanke om infektion.",
+    "schoolPeriods": [6],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Sepsis",
+    "actionDiagnoses": ["Sepsis", "Feber", "Konfusion"],
+    "caseType": "Sepsis",
+    "patientInfo": {
+      "age": 78,
+      "sex": "K",
+      "chiefComplaint": "Feber og konfusion",
+      "history": "UVI tidligere. Indtag dårlig. Påvirket almen.",
+      "meds": ["Furosemid"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 122, "rr": 28, "btSys": 92, "btDia": 58, "spo2": 92, "painNrs": 2 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "RF 28, SpO₂ 92%.",
+          "C": "Hypotensiv, varm hud.",
+          "D": "GCS 14, konfus.",
+          "E": "Febermistanke."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "E_TEMP", "importance": "IMPORTANT", "recommendedBeforeSec": 180 },
+      { "actionId": "C_BP", "importance": "CRITICAL", "recommendedBeforeSec": 120 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_headtrauma_01",
+    "title": "SKP 5 – Hovedtraume – M 32 – fald",
+    "subtitle": "(mand 32 år, fald fra stige, hovedpine)",
+    "dispatchText": "32-årig faldet fra ca. 2 meter. Hovedpine, kvalme, kortvarig svimmelhed.",
+    "schoolPeriods": [5],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "Hovedtraume / commotio mistanke",
+    "actionDiagnoses": ["Hovedtraume", "Kvalme"],
+    "caseType": "Hovedtraume",
+    "patientInfo": {
+      "age": 32,
+      "sex": "M",
+      "chiefComplaint": "Hovedpine og kvalme",
+      "history": "Ingen kendt sygdom. Ikke antikoaguleret.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 88, "rr": 16, "btSys": 135, "btDia": 85, "spo2": 98, "painNrs": 6 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Normal.",
+          "C": "Stabil.",
+          "D": "GCS 14, hovedpine, let kvalme.",
+          "E": "Skrammer i hovedbund."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "D_GCS", "importance": "CRITICAL", "recommendedBeforeSec": 120 },
+      { "actionId": "E_TOPTOE", "importance": "IMPORTANT", "recommendedBeforeSec": 180 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_pneumothorax_01",
+    "title": "SKP 6 – Pneumothorax – M 24 – stik/brystsmerter",
+    "subtitle": "(mand 24 år, pludselig ensidig brystsmerte og åndenød)",
+    "dispatchText": "24-årig. Pludselig skarp smerte i højre thorax. Åndenød. Ingen feber.",
+    "schoolPeriods": [6],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Mistænkt pneumothorax (evt. spændingspneumothorax)",
+    "actionDiagnoses": ["Pneumothorax", "Åndenød", "Brystsmerter"],
+    "caseType": "Pneumothorax",
+    "patientInfo": {
+      "age": 24,
+      "sex": "M",
+      "chiefComplaint": "Skarp brystsmerte og åndenød",
+      "history": "Høj, slank. Ingen kendt sygdom. Debut i hvile.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 130, "rr": 34, "btSys": 105, "btDia": 70, "spo2": 86, "painNrs": 8 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "RF 34, SpO₂ 86%, nedsatte respirationslyde på højre.",
+          "C": "Tachycard, let hypotensiv.",
+          "D": "GCS 15, panik.",
+          "E": "Ingen synlige traumer."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": { "hr": 110, "rr": 26, "btSys": 118, "btDia": 78, "spo2": 92, "painNrs": 6 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre luftskifte efter intervention.",
+          "C": "BT bedre, mindre tachycard.",
+          "D": "GCS 15, roligere.",
+          "E": "Uændret."
+        }
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "s0", "toStateId": "s1", "actionId": "B_NEEDLE_DECOMP", "feedbackToFacilitator": "Ved spændingspneumothorax forventes markant klinisk bedring efter dekompression." }
+    ],
+    "expectedActions": [
+      { "actionId": "B_STETHO", "importance": "CRITICAL", "recommendedBeforeSec": 120 },
+      { "actionId": "B_NEEDLE_DECOMP", "importance": "CRITICAL", "recommendedBeforeSec": 240 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_febrile_seizure_01",
+    "title": "SKP 2 – Feberkramper – K 2 – krampe",
+    "subtitle": "(pige 2 år, kramper og feber)",
+    "dispatchText": "2-årig. Kramper set af forældre. Feber. Nu træt efter anfald.",
+    "schoolPeriods": [2],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "Feberkramper (simpel)",
+    "actionDiagnoses": ["Kramper", "Feber"],
+    "caseType": "Feberkramper",
+    "patientInfo": {
+      "age": 2,
+      "sex": "K",
+      "chiefComplaint": "Kramper",
+      "history": "Forkølet i 2 dage. Pludselig krampe 2-3 min.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 150, "rr": 30, "btSys": 95, "btDia": 55, "spo2": 95, "painNrs": 0, "temp": 39.2 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Let hurtig vejrtrækning.",
+          "C": "Tachycard passende til feber.",
+          "D": "Postiktal, reagerer på tiltale, GCS 13-14.",
+          "E": "Varm, febril."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "E_TEMP", "importance": "IMPORTANT", "recommendedBeforeSec": 180 },
+      { "actionId": "D_GCS", "importance": "IMPORTANT", "recommendedBeforeSec": 180 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_stroke_01",
+    "title": "SKP 4 – Apopleksi – M 67 – halvsidig kraftnedsættelse",
+    "subtitle": "(mand 67 år, pludselig ansigtsasymmetri og taleproblemer)",
+    "dispatchText": "67-årig. Pludselig venstresidig svaghed, skæv mund, talebesvær. Debut 30 min siden.",
+    "schoolPeriods": [4],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "Mistænkt apopleksi",
+    "actionDiagnoses": ["Apopleksi", "Neurologi"],
+    "caseType": "Apopleksi",
+    "patientInfo": {
+      "age": 67,
+      "sex": "M",
+      "chiefComplaint": "Lammelse og taleproblemer",
+      "history": "HTN. Ingen kendt AFLI. Debut pludseligt.",
+      "meds": ["Amlodipin"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 88, "rr": 16, "btSys": 175, "btDia": 95, "spo2": 97, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Normal.",
+          "C": "Hypertensiv, stabil.",
+          "D": "GCS 15, dysartri, venstresidig kraftnedsættelse.",
+          "E": "Uændret."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "C_BP", "importance": "IMPORTANT", "recommendedBeforeSec": 180 },
+      { "actionId": "D_GCS", "importance": "IMPORTANT", "recommendedBeforeSec": 180 },
+      { "actionId": "D_BS", "importance": "IMPORTANT", "recommendedBeforeSec": 180 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_overdose_benzo_01",
+    "title": "SKP 3 – Overdosis – K 25 – sløv",
+    "subtitle": "(kvinde 25 år, fundet sløv, mulig indtagelse af benzodiazepiner)",
+    "dispatchText": "25-årig. Fundet i seng. Sløv, langsom vejrtrækning. Tom blisterpakning.",
+    "schoolPeriods": [3],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "Mistænkt benzodiazepin-intoksikation",
+    "actionDiagnoses": ["Forgiftning", "Bevidsthedspåvirkning"],
+    "caseType": "Forgiftning",
+    "patientInfo": {
+      "age": 25,
+      "sex": "K",
+      "chiefComplaint": "Sløvhed",
+      "history": "Stress/depression. Ukendt mængde indtaget.",
+      "meds": ["Diazepam (muligt)"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 78, "rr": 10, "btSys": 110, "btDia": 70, "spo2": 90, "painNrs": 0 },
+        "abcde": {
+          "A": "Snorkende respiration, risiko for obstruktion.",
+          "B": "RF 10, SpO₂ 90%.",
+          "C": "Stabil.",
+          "D": "GCS 9-10, svært vækkelig.",
+          "E": "Ingen traumer."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": { "hr": 80, "rr": 14, "btSys": 112, "btDia": 72, "spo2": 95, "painNrs": 0 },
+        "abcde": {
+          "A": "Luftvej bedre sikret.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS uændret, men bedre iltning.",
+          "E": "Uændret."
+        },
+        "extraInfo": "Efter ventilation ses bedre SpO₂."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "s0", "toStateId": "s1", "actionId": "A_RUBENS", "feedbackToFacilitator": "Poseventilation forbedrer iltning/ventilation ved respirationsdepression." }
+    ],
+    "expectedActions": [
+      { "actionId": "A_POSITION", "importance": "CRITICAL", "recommendedBeforeSec": 60 },
+      { "actionId": "A_RUBENS", "importance": "IMPORTANT", "recommendedBeforeSec": 120 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_trauma_bleed_01",
+    "title": "SKP 6 – Større traume – M 29 – motorcykel",
+    "subtitle": "(mand 29 år, motorcykelstyrt, kraftig smerte og shock-tegn)",
+    "dispatchText": "29-årig. Motorcykel. Mistanke om bækken/ben-skade. Bleg og kold.",
+    "schoolPeriods": [6],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Traume med mistanke om større blødning",
+    "actionDiagnoses": ["Traume", "Shock"],
+    "caseType": "Traume",
+    "patientInfo": {
+      "age": 29,
+      "sex": "M",
+      "chiefComplaint": "Smerter og svimmelhed",
+      "history": "Højenergi traume. Ingen kendt sygdom.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 140, "rr": 28, "btSys": 85, "btDia": 55, "spo2": 94, "painNrs": 9 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "RF 28, overfladisk.",
+          "C": "Hypotensiv, tachycard, bleg/kold.",
+          "D": "GCS 14, svimmel.",
+          "E": "Smerter i hofte/ben, evt. deformitet."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "C_BP", "importance": "CRITICAL", "recommendedBeforeSec": 120 },
+      { "actionId": "E_TOPTOE", "importance": "IMPORTANT", "recommendedBeforeSec": 240 }
+    ],
+    "access": { "isPublic": false, "allowedRoles": ["school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_syncope_01",
+    "title": "SKP 1 – Synkope – K 19 – besvimelse",
+    "subtitle": "(kvinde 19 år, kortvarigt bevidsthedstab)",
+    "dispatchText": "19-årig besvimede i bus. Vågen nu. Føler sig svag og kvalm.",
+    "schoolPeriods": [1],
+    "acuity": "SUBAKUT",
+    "difficulty": 1,
+    "diagnosis": "Synkope (vasovagal mistanke)",
+    "actionDiagnoses": ["Synkope"],
+    "caseType": "Synkope",
+    "patientInfo": {
+      "age": 19,
+      "sex": "K",
+      "chiefComplaint": "Besvimelse",
+      "history": "Stod længe. Spist lidt. Ingen epilepsi-historik.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 72, "rr": 14, "btSys": 105, "btDia": 65, "spo2": 99, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Normal.",
+          "C": "Stabil.",
+          "D": "GCS 15, let utilpas.",
+          "E": "Bleg."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "C_BP", "importance": "IMPORTANT", "recommendedBeforeSec": 300 },
+      { "actionId": "D_BS", "importance": "IMPORTANT", "recommendedBeforeSec": 300 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_seizure_01",
+    "title": "SKP 4 – Kramper – M 41 – postiktal",
+    "subtitle": "(mand 41 år, krampeanfald, nu træt)",
+    "dispatchText": "41-årig. Set generaliseret krampe 2 min. Nu postiktal. Kendt epilepsi?",
+    "schoolPeriods": [4],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "Krampeanfald (postiktal fase)",
+    "actionDiagnoses": ["Kramper", "Neurologi"],
+    "caseType": "Kramper",
+    "patientInfo": {
+      "age": 41,
+      "sex": "M",
+      "chiefComplaint": "Kramper",
+      "history": "Mulig kendt epilepsi. Uregelmæssig medicinindtag.",
+      "meds": ["Levetiracetam (ifølge familie)"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      {
+        "id": "s0",
+        "vitals": { "hr": 110, "rr": 20, "btSys": 140, "btDia": 88, "spo2": 93, "painNrs": 0 },
+        "abcde": {
+          "A": "Snorkende, sekret i mund.",
+          "B": "RF 20, SpO₂ 93%.",
+          "C": "Stabil.",
+          "D": "GCS 12-13, postiktal.",
+          "E": "Bidsår i tunge."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "A_LOOK", "importance": "CRITICAL", "recommendedBeforeSec": 60 },
+      { "actionId": "A_POSITION", "importance": "CRITICAL", "recommendedBeforeSec": 60 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_abdominal_pain_01",
+    "title": "SKP 2 – Mavesmerter – K 28 – RIF smerter",
+    "subtitle": "(kvinde 28 år, højresidige mavesmerter)",
+    "dispatchText": "28-årig. Smerter nedre højre abdomen. Kvalme. Ingen traume.",
+    "schoolPeriods": [2],
+    "acuity": "SUBAKUT",
+    "difficulty": 1,
+    "diagnosis": "Mavesmerter (appendicit-mistanke)",
+    "actionDiagnoses": ["Abdomen", "Smerter"],
+    "caseType": "Abdomen",
+    "patientInfo": {
+      "age": 28,
+      "sex": "K",
+      "chiefComplaint": "Mavesmerter",
+      "history": "Tiltagende smerter 12 timer. Kvalme.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 96, "rr": 16, "btSys": 120, "btDia": 78, "spo2": 99, "painNrs": 7 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Normal.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Øm nedre højre abdomen."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "C_BP", "importance": "IMPORTANT", "recommendedBeforeSec": 600 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_dka_mild_01",
+    "title": "SKP 6 – DKA mistanke – M 21 – sløv og tørstig",
+    "subtitle": "(mand 21 år, tørst, kvalme, Kussmaul)",
+    "dispatchText": "21-årig type 1 diabetiker. Kvalme, mavesmerter, hurtig dyb vejrtrækning.",
+    "schoolPeriods": [6],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Mistænkt ketoacidose (DKA)",
+    "actionDiagnoses": ["DKA", "Diabetes", "Dehydrering"],
+    "caseType": "Diabetes",
+    "patientInfo": {
+      "age": 21,
+      "sex": "M",
+      "chiefComplaint": "Kvalme og svaghed",
+      "history": "Glemt insulin 1 døgn. Tørst og polyuri.",
+      "meds": ["Insulin"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 125, "rr": 30, "btSys": 100, "btDia": 65, "spo2": 98, "painNrs": 4 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Dyb hurtig respiration (Kussmaul).",
+          "C": "Tachycard, dehydrering.",
+          "D": "GCS 14-15, sløv.",
+          "E": "Tørre slimhinder."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "D_BS", "importance": "CRITICAL", "recommendedBeforeSec": 180 },
+      { "actionId": "C_BP", "importance": "CRITICAL", "recommendedBeforeSec": 180 }
+    ],
+    "access": { "isPublic": false, "allowedRoles": ["school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_burns_01",
+    "title": "SKP 3 – Forbrænding – M 45 – skoldning",
+    "subtitle": "(mand 45 år, varm væske på arm/torso)",
+    "dispatchText": "45-årig. Forbrænding efter kogende vand. Smerter. Ingen inhalationsskade.",
+    "schoolPeriods": [3],
+    "acuity": "SUBAKUT",
+    "difficulty": 1,
+    "diagnosis": "Forbrænding (partiel tykkelse mistanke)",
+    "actionDiagnoses": ["Forbrænding", "Smerter"],
+    "caseType": "Forbrænding",
+    "patientInfo": {
+      "age": 45,
+      "sex": "M",
+      "chiefComplaint": "Smerter fra forbrænding",
+      "history": "Skoldet ved madlavning. Kølet kort.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 95, "rr": 18, "btSys": 135, "btDia": 85, "spo2": 99, "painNrs": 8 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Normal.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Rødme/blærer på underarm, smerte."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "E_TOPTOE", "importance": "IMPORTANT", "recommendedBeforeSec": 600 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_croup_01",
+    "title": "SKP 2 – Krupp – M 3 – stridor",
+    "subtitle": "(dreng 3 år, gøende hoste og stridor)",
+    "dispatchText": "3-årig. Vågnede med gøende hoste. Stridor i hvile. Forældrene bekymrede.",
+    "schoolPeriods": [2],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "Mistænkt krupp",
+    "actionDiagnoses": ["ØNH", "Stridor"],
+    "caseType": "ØNH",
+    "patientInfo": {
+      "age": 3,
+      "sex": "M",
+      "chiefComplaint": "Stridor",
+      "history": "Forkølet. Ingen kendt allergi.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 140, "rr": 32, "btSys": 95, "btDia": 55, "spo2": 93, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri men stridor.",
+          "B": "RF 32, indtrækninger.",
+          "C": "Tachycard passende til distress.",
+          "D": "GCS 15, urolig.",
+          "E": "Let febril."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "A_LOOK", "importance": "IMPORTANT", "recommendedBeforeSec": 120 },
+      { "actionId": "B_HUDSON", "importance": "OPTIONAL" }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_heart_failure_01",
+    "title": "SKP 6 – Lungeødem – K 82 – akut åndenød",
+    "subtitle": "(kvinde 82 år, ortopnø, krepitationer)",
+    "dispatchText": "82-årig. Akut åndenød, kan ikke ligge ned. Skummende opspyt. Kold/klam.",
+    "schoolPeriods": [6],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Akut lungeødem ved hjertesvigt",
+    "actionDiagnoses": ["Hjertesvigt", "Lungeødem", "Åndenød"],
+    "caseType": "Hjertesvigt",
+    "patientInfo": {
+      "age": 82,
+      "sex": "K",
+      "chiefComplaint": "Akut åndenød",
+      "history": "Kendt hjertesvigt. Vægtøgning. Hævede ben.",
+      "meds": ["Furosemid", "ACE-hæmmer"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 120, "rr": 34, "btSys": 175, "btDia": 100, "spo2": 84, "painNrs": 2 },
+        "abcde": {
+          "A": "Fri.",
+          "B": "RF 34, SpO₂ 84%, krepitationer.",
+          "C": "Hypertensiv, kold/klam.",
+          "D": "GCS 15, panik.",
+          "E": "Perifere ødemer."
+        }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "B_STETHO", "importance": "CRITICAL", "recommendedBeforeSec": 120 },
+      { "actionId": "C_BP", "importance": "CRITICAL", "recommendedBeforeSec": 120 },
+      { "actionId": "B_HUDSON", "importance": "IMPORTANT", "recommendedBeforeSec": 60 }
+    ],
+    "access": { "isPublic": false, "allowedRoles": ["school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_acs_lowrisk_01",
+    "title": "SKP 2 – Brystsmerter – M 44 – atypisk",
+    "subtitle": "(mand 44 år, stikkende smerter, normal vejrtrækning)",
+    "dispatchText": "44-årig. Stikkende brystsmerter ved bevægelse. Ingen udstråling. Ingen koldsved.",
+    "schoolPeriods": [2],
+    "acuity": "SUBAKUT",
+    "difficulty": 1,
+    "diagnosis": "Brystsmerter (lav risiko, men AKS skal udelukkes)",
+    "actionDiagnoses": ["Brystsmerter"],
+    "caseType": "AKS",
+    "patientInfo": {
+      "age": 44,
+      "sex": "M",
+      "chiefComplaint": "Brystsmerter",
+      "history": "Smerte ved palpation og bevægelse. Ingen kendt hjertesygdom.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 82, "rr": 16, "btSys": 135, "btDia": 85, "spo2": 98, "painNrs": 4 },
+        "abcde": { "A": "Fri.", "B": "Normal.", "C": "Stabil.", "D": "GCS 15.", "E": "Palpationsøm thorax." }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "C_EKG12", "importance": "IMPORTANT", "recommendedBeforeSec": 600 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_respiratory_infection_01",
+    "title": "SKP 1 – Luftvejsinfektion – K 36 – feber og hoste",
+    "subtitle": "(kvinde 36 år, feber, hoste, utilpas)",
+    "dispatchText": "36-årig. Feber og hoste i 3 dage. Let åndenød ved aktivitet.",
+    "schoolPeriods": [1],
+    "acuity": "SUBAKUT",
+    "difficulty": 1,
+    "diagnosis": "Luftvejsinfektion (pneumoni mistanke)",
+    "actionDiagnoses": ["Infektion", "Feber"],
+    "caseType": "Sepsis",
+    "patientInfo": {
+      "age": 36,
+      "sex": "K",
+      "chiefComplaint": "Feber og hoste",
+      "history": "Fryser. Brystsmerter ved hoste.",
+      "meds": ["Paracetamol"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 105, "rr": 22, "btSys": 118, "btDia": 75, "spo2": 94, "painNrs": 3, "temp": 38.6 },
+        "abcde": { "A": "Fri.", "B": "RF 22, let dyspnø.", "C": "Let tachycard.", "D": "GCS 15.", "E": "Feber." }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "E_TEMP", "importance": "IMPORTANT", "recommendedBeforeSec": 600 },
+      { "actionId": "B_STETHO", "importance": "IMPORTANT", "recommendedBeforeSec": 600 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_poisoning_opioid_01",
+    "title": "SKP 5 – Opioid overdosis – M 33 – cyanotisk",
+    "subtitle": "(mand 33 år, respirationsdepression, pinpoint pupiller)",
+    "dispatchText": "33-årig fundet i opgang. Blålig. Langsom vejrtrækning. Mistanke om opioid.",
+    "schoolPeriods": [5],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Mistænkt opioid-intoksikation",
+    "actionDiagnoses": ["Forgiftning", "Respirationsdepression"],
+    "caseType": "Forgiftning",
+    "patientInfo": {
+      "age": 33,
+      "sex": "M",
+      "chiefComplaint": "Bevidsthedspåvirkning",
+      "history": "Fundet med sprøjteudstyr. Ukendt tid.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 60, "rr": 6, "btSys": 100, "btDia": 60, "spo2": 78, "painNrs": 0 },
+        "abcde": { "A": "Snorkende, obstrueret.", "B": "RF 6, SpO₂ 78%.", "C": "Bradycard.", "D": "GCS 6-7.", "E": "Kold/klam." }
+      },
+      { "id": "s1",
+        "vitals": { "hr": 70, "rr": 12, "btSys": 105, "btDia": 65, "spo2": 92, "painNrs": 0 },
+        "abcde": { "A": "Bedre luftvej.", "B": "Bedre ventilation.", "C": "Stabil.", "D": "GCS stadig lav, men bedre iltning.", "E": "Uændret." }
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "s0", "toStateId": "s1", "actionId": "A_RUBENS", "feedbackToFacilitator": "Ventilation er livreddende ved opioid-respirationsdepression." }
+    ],
+    "expectedActions": [
+      { "actionId": "A_POSITION", "importance": "CRITICAL", "recommendedBeforeSec": 30 },
+      { "actionId": "A_RUBENS", "importance": "CRITICAL", "recommendedBeforeSec": 60 }
+    ],
+    "access": { "isPublic": false, "allowedRoles": ["school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_hemorrhage_gi_01",
+    "title": "SKP 6 – GI blødning – K 74 – sort afføring",
+    "subtitle": "(kvinde 74 år, svimmel, melæna)",
+    "dispatchText": "74-årig. Sort afføring, svimmel, svag. BT lavt.",
+    "schoolPeriods": [6],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Mistænkt GI blødning",
+    "actionDiagnoses": ["Blødning", "Shock"],
+    "caseType": "Blødning",
+    "patientInfo": {
+      "age": 74,
+      "sex": "K",
+      "chiefComplaint": "Svimmelhed og svaghed",
+      "history": "NSAID brug. Melæna i 2 dage.",
+      "meds": ["Ibuprofen (høj dosis)"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 125, "rr": 22, "btSys": 88, "btDia": 55, "spo2": 96, "painNrs": 2 },
+        "abcde": { "A": "Fri.", "B": "Normal.", "C": "Hypotensiv, tachycard, bleg.", "D": "GCS 14-15, svimmel.", "E": "Bleg, kold." }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "C_BP", "importance": "CRITICAL", "recommendedBeforeSec": 120 },
+      { "actionId": "C_IV", "importance": "IMPORTANT", "recommendedBeforeSec": 240 }
+    ],
+    "access": { "isPublic": false, "allowedRoles": ["school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_obg_postpartum_01",
+    "title": "SKP 7 – Postpartum blødning – K 31 – hjemmefødsel",
+    "subtitle": "(kvinde 31 år, kraftig blødning efter fødsel)",
+    "dispatchText": "31-årig. Fødsel i hjemmet. Kraftig vaginal blødning. Svimmel.",
+    "schoolPeriods": [7],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Mistænkt postpartum blødning",
+    "actionDiagnoses": ["Obstetrik", "Blødning", "Shock"],
+    "caseType": "Obstetrik",
+    "patientInfo": {
+      "age": 31,
+      "sex": "K",
+      "chiefComplaint": "Kraftig blødning",
+      "history": "Fødte for 30 min siden. Placenta usikker.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 135, "rr": 24, "btSys": 90, "btDia": 55, "spo2": 97, "painNrs": 6 },
+        "abcde": { "A": "Fri.", "B": "Normal.", "C": "Hypotensiv, tachycard, bløder.", "D": "GCS 15, svimmel.", "E": "Kraftig blødning." }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "C_BP", "importance": "CRITICAL", "recommendedBeforeSec": 120 },
+      { "actionId": "C_IV", "importance": "IMPORTANT", "recommendedBeforeSec": 180 }
+    ],
+    "access": { "isPublic": false, "allowedRoles": ["school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_heatstroke_01",
+    "title": "SKP 3 – Hypertermi – M 56 – kollapset",
+    "subtitle": "(mand 56 år, varm og konfus efter arbejde)",
+    "dispatchText": "56-årig. Arbejdet i varme. Konfus, meget varm. Dehydrering.",
+    "schoolPeriods": [3],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "Hypertermi/hedeslag mistanke",
+    "actionDiagnoses": ["Hypertermi", "Konfusion"],
+    "caseType": "Sepsis",
+    "patientInfo": {
+      "age": 56,
+      "sex": "M",
+      "chiefComplaint": "Konfus og varm",
+      "history": "Varmt miljø, lav væskeindtag.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 130, "rr": 24, "btSys": 105, "btDia": 65, "spo2": 97, "painNrs": 0, "temp": 40.1 },
+        "abcde": { "A": "Fri.", "B": "Normal.", "C": "Tachycard.", "D": "GCS 14, konfus.", "E": "Meget varm hud." }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "E_TEMP", "importance": "CRITICAL", "recommendedBeforeSec": 180 },
+      { "actionId": "C_BP", "importance": "IMPORTANT", "recommendedBeforeSec": 180 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_chest_infection_elderly_01",
+    "title": "SKP 5 – Pneumoni – M 83 – faldende saturation",
+    "subtitle": "(mand 83 år, hoste, feber, lav SpO₂)",
+    "dispatchText": "83-årig. Hoste, feber. Tiltagende åndenød. Lav saturation hjemme.",
+    "schoolPeriods": [5],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "Mistænkt pneumoni",
+    "actionDiagnoses": ["Pneumoni", "Åndenød", "Feber"],
+    "caseType": "Sepsis",
+    "patientInfo": {
+      "age": 83,
+      "sex": "M",
+      "chiefComplaint": "Åndenød",
+      "history": "Flere dages hoste. Sløv.",
+      "meds": ["Furosemid"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 115, "rr": 28, "btSys": 110, "btDia": 70, "spo2": 88, "painNrs": 2, "temp": 38.9 },
+        "abcde": { "A": "Fri.", "B": "RF 28, SpO₂ 88%.", "C": "Let tachycard.", "D": "GCS 14-15.", "E": "Feber." }
+      },
+      { "id": "s1",
+        "vitals": { "hr": 110, "rr": 26, "btSys": 112, "btDia": 72, "spo2": 92, "painNrs": 2, "temp": 38.9 },
+        "abcde": { "A": "Fri.", "B": "SpO₂ forbedres med ilt.", "C": "Stabil.", "D": "GCS 15.", "E": "Feber." }
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "s0", "toStateId": "s1", "actionId": "B_HUDSON", "feedbackToFacilitator": "Ilt giver symptomlindring; tænk sepsis/transporttidligt." }
+    ],
+    "expectedActions": [
+      { "actionId": "B_HUDSON", "importance": "IMPORTANT", "recommendedBeforeSec": 120 },
+      { "actionId": "E_TEMP", "importance": "IMPORTANT", "recommendedBeforeSec": 240 }
+    ],
+    "access": { "isPublic": false, "allowedRoles": ["school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_fracture_ankle_01",
+    "title": "SKP 1 – Ankeltraume – K 40 – fejltrin",
+    "subtitle": "(kvinde 40 år, hævelse og smerter i ankel)",
+    "dispatchText": "40-årig. Vredet om på foden. Hævelse. Kan ikke støtte.",
+    "schoolPeriods": [1],
+    "acuity": "SUBAKUT",
+    "difficulty": 1,
+    "diagnosis": "Ankeltraume (fraktur/sprain mistanke)",
+    "actionDiagnoses": ["Traume", "Smerter"],
+    "caseType": "Traume",
+    "patientInfo": {
+      "age": 40,
+      "sex": "K",
+      "chiefComplaint": "Ankelsmerter",
+      "history": "Fejltrin på trappe. Ingen andet.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 88, "rr": 14, "btSys": 125, "btDia": 80, "spo2": 99, "painNrs": 7 },
+        "abcde": { "A": "Fri.", "B": "Normal.", "C": "Stabil.", "D": "GCS 15.", "E": "Hævelse/ømhed ankel." }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "E_TOPTOE", "importance": "IMPORTANT", "recommendedBeforeSec": 600 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_diabetic_hyperglycemia_01",
+    "title": "SKP 3 – Hyperglykæmi – K 62 – tør og træt",
+    "subtitle": "(kvinde 62 år, tørst, polyuri, træthed)",
+    "dispatchText": "62-årig type 2. Meget tørstig, træt, kvalme. Højt blodsukker hjemme.",
+    "schoolPeriods": [3],
+    "acuity": "SUBAKUT",
+    "difficulty": 2,
+    "diagnosis": "Hyperglykæmi (dehydrering mistanke)",
+    "actionDiagnoses": ["Diabetes", "Dehydrering"],
+    "caseType": "Diabetes",
+    "patientInfo": {
+      "age": 62,
+      "sex": "K",
+      "chiefComplaint": "Træthed og tørst",
+      "history": "Type 2. Dårlig compliance. Infektionstegn.",
+      "meds": ["Metformin"]
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 108, "rr": 18, "btSys": 112, "btDia": 70, "spo2": 98, "painNrs": 1 },
+        "abcde": { "A": "Fri.", "B": "Normal.", "C": "Let tachycard, dehydrering.", "D": "GCS 15.", "E": "Tørre slimhinder." }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "D_BS", "importance": "CRITICAL", "recommendedBeforeSec": 300 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_sob_intox_01",
+    "title": "SKP 2 – Alkohol – M 48 – fald i byen",
+    "subtitle": "(mand 48 år, beruset, mindre hovedtraume)",
+    "dispatchText": "48-årig. Beruset. Faldet. Lille sår i pande. Urolig.",
+    "schoolPeriods": [2],
+    "acuity": "SUBAKUT",
+    "difficulty": 1,
+    "diagnosis": "Intoksikation (alkohol) + mindre traume",
+    "actionDiagnoses": ["Intoksikation", "Hovedtraume"],
+    "caseType": "Hovedtraume",
+    "patientInfo": {
+      "age": 48,
+      "sex": "M",
+      "chiefComplaint": "Fald",
+      "history": "Meget beruset. Uklar hændelse.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 98, "rr": 16, "btSys": 135, "btDia": 85, "spo2": 97, "painNrs": 3 },
+        "abcde": { "A": "Fri.", "B": "Normal.", "C": "Stabil.", "D": "GCS 14-15, beruset.", "E": "Sår i pande." }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "D_GCS", "importance": "IMPORTANT", "recommendedBeforeSec": 300 },
+      { "actionId": "E_TOPTOE", "importance": "IMPORTANT", "recommendedBeforeSec": 300 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_allergic_urticaria_01",
+    "title": "SKP 1 – Allergisk reaktion – K 27 – udslæt",
+    "subtitle": "(kvinde 27 år, nældefeber, ingen åndenød)",
+    "dispatchText": "27-årig. Urticaria efter nyt kosmetikprodukt. Ingen stridor. Normal tale.",
+    "schoolPeriods": [1],
+    "acuity": "SUBAKUT",
+    "difficulty": 1,
+    "diagnosis": "Mild allergisk reaktion",
+    "actionDiagnoses": ["Allergi"],
+    "caseType": "Anafylaksi",
+    "patientInfo": {
+      "age": 27,
+      "sex": "K",
+      "chiefComplaint": "Udslæt og kløe",
+      "history": "Ny creme. Ingen kendt anafylaksi.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 92, "rr": 16, "btSys": 120, "btDia": 78, "spo2": 99, "painNrs": 0 },
+        "abcde": { "A": "Fri.", "B": "Normal.", "C": "Stabil.", "D": "GCS 15.", "E": "Urticaria, kløe." }
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "A_LOOK", "importance": "IMPORTANT", "recommendedBeforeSec": 600 }
+    ],
+    "access": { "isPublic": true, "allowedRoles": ["student", "school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  },
+
+  {
+    "id": "case_cardiac_arrest_training_01",
+    "title": "SKP 8 – Hjertestop (træning) – M 60 – kollaps",
+    "subtitle": "(mand 60 år, fundet bevidstløs, ingen normal vejrtrækning)",
+    "dispatchText": "60-årig. Kollapset. Påbegyndt HLR af vidner. AED til stede.",
+    "schoolPeriods": [8],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Hjertestop (træningscase)",
+    "actionDiagnoses": ["Hjertestop", "HLR"],
+    "caseType": "Hjertestop",
+    "patientInfo": {
+      "age": 60,
+      "sex": "M",
+      "chiefComplaint": "Bevidstløs",
+      "history": "Pludseligt kollaps. Ukendt rytme.",
+      "meds": []
+    },
+    "initialStateId": "s0",
+    "states": [
+      { "id": "s0",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "painNrs": 0 },
+        "abcde": { "A": "Ingen respons.", "B": "Ingen normal vejrtrækning.", "C": "Ingen palpabel puls.", "D": "GCS 3.", "E": "Kold/klam." },
+        "extraInfo": "Denne app modellerer ikke fuld ALS endnu, men kan bruges til ABCDE/handlinger-log."
+      }
+    ],
+    "transitions": [],
+    "expectedActions": [
+      { "actionId": "A_LOOK", "importance": "CRITICAL", "recommendedBeforeSec": 30 },
+      { "actionId": "A_RUBENS", "importance": "IMPORTANT", "recommendedBeforeSec": 60 }
+    ],
+    "access": { "isPublic": false, "allowedRoles": ["school", "enterprise"], "allowedOrgIds": [], "allowedUserUids": [] }
+  }
+]

@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { styles } from "../src/styles/indexStyles";
 
 import {
+  ActivityIndicator,
   Alert,
   FlatList,
   ScrollView,
@@ -14,10 +15,11 @@ import {
 
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// If you want to actually use the shared header later:
-// import Header from "../components/Header";
+// Firebase
+import { onAuthStateChanged, signInAnonymously } from "firebase/auth";
+import { collection, getDocs } from "firebase/firestore";
+import { auth, db } from "../src/firebase/firebase";
 
-import { getCasesByPeriod } from "../src/domain/cases/localRepository";
 import type {
   AbcdeAction,
   AbcdeLetter,
@@ -29,26 +31,37 @@ import type {
   OpqrstLetter,
   PatientState,
   SamplerLetter,
-  SchoolPeriod,
-  Screen
 } from "../src/domain/cases/types";
 
-// ---------- ABCDE actions including interventions ----------
+// ---------- App screens ----------
+type AppScreen = "login" | "caseList" | "caseDetail" | "summary";
 
+// ---------- "Login" choices (front-end only for now) ----------
+type OrgChoice = {
+  id: string;
+  label: string;
+  role: "student" | "school" | "enterprise";
+};
+
+const ORG_CHOICES: OrgChoice[] = [
+  { id: "student", label: "Elev", role: "student" },
+  { id: "unord_hillerod", label: "U/Nord Hillerød", role: "school" },
+  { id: "unord_esbjerg", label: "U/Nord Esbjerg", role: "school" },
+  { id: "akutberedskabet", label: "Akutberedskabet", role: "enterprise" },
+  { id: "falck", label: "Falck", role: "enterprise" },
+];
+
+// ---------- ABCDE actions including interventions ----------
 const ABCDE_ACTIONS: AbcdeAction[] = [
-  // A – assessment
   { id: "A_LOOK", letter: "A", label: "Inspicer mund/svælg" },
   { id: "A_POSITION", letter: "A", label: "Luftvejslejring / kæbeløft" },
-  // A – interventions
   { id: "A_RUBENS", letter: "A", label: "Rubens ballon / poseventilation" },
   { id: "A_NPA", letter: "A", label: "Anlæg NPA" },
   { id: "A_OPA", letter: "A", label: "Anlæg OPA" },
   { id: "A_LMA", letter: "A", label: "Larynxmaske" },
 
-  // B – assessment
   { id: "B_INSPECT", letter: "B", label: "Inspicer thorax / RF" },
   { id: "B_STETHO", letter: "B", label: "Stetoskopér lunger" },
-  // B – interventions
   { id: "B_NASAL_O2", letter: "B", label: "Næsebrille O₂" },
   { id: "B_HUDSON", letter: "B", label: "Hudson maske" },
   { id: "B_NEBULISER", letter: "B", label: "Nebulisator (fx Ventoline)" },
@@ -56,7 +69,6 @@ const ABCDE_ACTIONS: AbcdeAction[] = [
   { id: "B_ETT", letter: "B", label: "Tube (intubation)" },
   { id: "B_BINASAL", letter: "B", label: "Binasal tube + kapnografi" },
 
-  // C – assessment / monitoring
   { id: "C_BP", letter: "C", label: "Mål blodtryk" },
   { id: "C_PULSE", letter: "C", label: "Tæl puls / rytme" },
   { id: "C_IV", letter: "C", label: "Anlæg IV-adgang" },
@@ -64,20 +76,15 @@ const ABCDE_ACTIONS: AbcdeAction[] = [
   { id: "C_EKG4", letter: "C", label: "EKG 4-afledninger" },
   { id: "C_EKG12", letter: "C", label: "EKG 12-afledninger" },
 
-  // D – assessment
   { id: "D_GCS", letter: "D", label: "Vurder GCS" },
   { id: "D_BS", letter: "D", label: "Mål blodsukker" },
   { id: "D_PUPILS", letter: "D", label: "Tjek pupiller" },
 
-  // E – assessment
   { id: "E_TEMP", letter: "E", label: "Mål temperatur" },
   { id: "E_TOPTOE", letter: "E", label: "Top-til-tå inspektion" },
 ];
 
 // ---------- Medications ----------
-// All normalDose values are deliberately 0 – replace with REAL doses
-// from your official Region H / Akutberedskab guidelines.
-
 const MEDICATIONS: Medication[] = [
   {
     id: "acetylsalicylsyre",
@@ -98,54 +105,18 @@ const MEDICATIONS: Medication[] = [
   { id: "berodual", name: "Berodual", type: "drug", normalDose: 0, unit: "ml" },
   { id: "fentanyl", name: "Fentanyl", type: "drug", normalDose: 0, unit: "µg" },
   { id: "glukagon", name: "Glukagon", type: "drug", normalDose: 0, unit: "mg" },
-  {
-    id: "glukose_50",
-    name: "Glukose 50%",
-    type: "drug",
-    normalDose: 0,
-    unit: "ml",
-  },
-  {
-    id: "glycerylnitrat",
-    name: "Glycerylnitrat",
-    type: "drug",
-    normalDose: 0,
-    unit: "mg",
-  },
+  { id: "glukose_50", name: "Glukose 50%", type: "drug", normalDose: 0, unit: "ml" },
+  { id: "glycerylnitrat", name: "Glycerylnitrat", type: "drug", normalDose: 0, unit: "mg" },
   { id: "heparin", name: "Heparin", type: "drug", normalDose: 0, unit: "IE" },
   { id: "hypo_fit", name: "Hypo-Fit", type: "drug", normalDose: 0, unit: "g" },
   { id: "ibuprofen", name: "Ibuprofen", type: "drug", normalDose: 0, unit: "mg" },
   { id: "midazolam", name: "Midazolam", type: "drug", normalDose: 0, unit: "mg" },
   { id: "naloxon", name: "Naloxon", type: "drug", normalDose: 0, unit: "mg" },
-  {
-    id: "nacl_iso",
-    name: "Natrium-klorid (NaCl iso)",
-    type: "drug",
-    normalDose: 0,
-    unit: "ml",
-  },
-  {
-    id: "ondansetron",
-    name: "Ondansetron",
-    type: "drug",
-    normalDose: 0,
-    unit: "mg",
-  },
-  {
-    id: "paracetamol",
-    name: "Paracetamol",
-    type: "drug",
-    normalDose: 0,
-    unit: "mg",
-  },
+  { id: "nacl_iso", name: "Natrium-klorid (NaCl iso)", type: "drug", normalDose: 0, unit: "ml" },
+  { id: "ondansetron", name: "Ondansetron", type: "drug", normalDose: 0, unit: "mg" },
+  { id: "paracetamol", name: "Paracetamol", type: "drug", normalDose: 0, unit: "mg" },
   { id: "salbutamol", name: "Salbutamol", type: "drug", normalDose: 0, unit: "mg" },
-  {
-    id: "solu_cortef",
-    name: "Solu-cortef",
-    type: "drug",
-    normalDose: 0,
-    unit: "mg",
-  },
+  { id: "solu_cortef", name: "Solu-cortef", type: "drug", normalDose: 0, unit: "mg" },
   { id: "thiamin", name: "Thiamin", type: "drug", normalDose: 0, unit: "mg" },
   { id: "amiodaron", name: "Amiodaron", type: "drug", normalDose: 0, unit: "mg" },
   {
@@ -155,65 +126,17 @@ const MEDICATIONS: Medication[] = [
     normalDose: 0,
     unit: "ml",
   },
-  {
-    id: "isoprenalin",
-    name: "Isoprenalin",
-    type: "drug",
-    normalDose: 0,
-    unit: "µg",
-  },
+  { id: "isoprenalin", name: "Isoprenalin", type: "drug", normalDose: 0, unit: "µg" },
   { id: "labetalol", name: "Labetalol", type: "drug", normalDose: 0, unit: "mg" },
-  {
-    id: "n_acetylcystein",
-    name: "N-Acetylcystein",
-    type: "drug",
-    normalDose: 0,
-    unit: "mg",
-  },
-  {
-    id: "s_ketamin",
-    name: "S-ketamin",
-    type: "drug",
-    normalDose: 0,
-    unit: "mg",
-  },
+  { id: "n_acetylcystein", name: "N-Acetylcystein", type: "drug", normalDose: 0, unit: "mg" },
+  { id: "s_ketamin", name: "S-ketamin", type: "drug", normalDose: 0, unit: "mg" },
   { id: "atropin", name: "Atropin", type: "drug", normalDose: 0, unit: "mg" },
-  {
-    id: "clemastin",
-    name: "Clemastin",
-    type: "drug",
-    normalDose: 0,
-    unit: "mg",
-  },
+  { id: "clemastin", name: "Clemastin", type: "drug", normalDose: 0, unit: "mg" },
   { id: "diazepam", name: "Diazepam", type: "drug", normalDose: 0, unit: "mg" },
-  {
-    id: "furosemid",
-    name: "Furosemid",
-    type: "drug",
-    normalDose: 0,
-    unit: "mg",
-  },
-  {
-    id: "ketorolac",
-    name: "Ketorolac",
-    type: "drug",
-    normalDose: 0,
-    unit: "mg",
-  },
-  {
-    id: "solu_medrol",
-    name: "Solu-medrol",
-    type: "drug",
-    normalDose: 0,
-    unit: "mg",
-  },
-  {
-    id: "tranexamsyre",
-    name: "Tranexamsyre",
-    type: "drug",
-    normalDose: 0,
-    unit: "mg",
-  },
+  { id: "furosemid", name: "Furosemid", type: "drug", normalDose: 0, unit: "mg" },
+  { id: "ketorolac", name: "Ketorolac", type: "drug", normalDose: 0, unit: "mg" },
+  { id: "solu_medrol", name: "Solu-medrol", type: "drug", normalDose: 0, unit: "mg" },
+  { id: "tranexamsyre", name: "Tranexamsyre", type: "drug", normalDose: 0, unit: "mg" },
 ];
 
 const DOSE_OPTIONS: { id: DoseStrength; label: string; factor: number }[] = [
@@ -223,7 +146,6 @@ const DOSE_OPTIONS: { id: DoseStrength; label: string; factor: number }[] = [
 ];
 
 // ---------- Helpers ----------
-
 function formatTime(ms: number): string {
   const minutes = Math.floor(ms / 60000);
   const seconds = Math.floor((ms % 60000) / 1000);
@@ -245,7 +167,6 @@ function statusColor(status: "GREEN" | "YELLOW" | "RED"): string {
   }
 }
 
-// small helper to show what an action “finds”
 function getActionEffectText(
   scenario: CaseScenario,
   action: AbcdeAction,
@@ -399,13 +320,25 @@ function evaluateCase(
   return { evaluated, extraActions };
 }
 
-// ---------- Component ----------
+async function loadAllCasesFromFirestore(): Promise<CaseScenario[]> {
+  const snap = await getDocs(collection(db, "cases"));
+  const cases: CaseScenario[] = [];
+  snap.forEach((doc) => {
+    cases.push(doc.data() as CaseScenario);
+  });
+  cases.sort((a, b) => a.title.localeCompare(b.title));
+  return cases;
+}
 
+// ---------- Component ----------
 export default function Index() {
-  const [screen, setScreen] = useState<Screen>("home");
-  const [selectedPeriod, setSelectedPeriod] = useState<SchoolPeriod | null>(
-    null,
-  );
+  const [screen, setScreen] = useState<AppScreen>("login");
+  const [selectedOrg, setSelectedOrg] = useState<OrgChoice | null>(null);
+
+  const [authReady, setAuthReady] = useState(false);
+  const [loadingCases, setLoadingCases] = useState(false);
+  const [allCases, setAllCases] = useState<CaseScenario[]>([]);
+
   const [scenario, setScenario] = useState<CaseScenario | null>(null);
   const [currentState, setCurrentState] = useState<PatientState | null>(null);
 
@@ -451,6 +384,25 @@ export default function Index() {
 
   const [popupText, setPopupText] = useState<string | null>(null);
 
+  // ---- Auth bootstrap (anonymous) ----
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, async (user) => {
+      try {
+        if (!user) {
+          await signInAnonymously(auth);
+        }
+        setAuthReady(true);
+      } catch (e) {
+        console.error(e);
+        Alert.alert(
+          "Firebase auth fejl",
+          "Kunne ikke logge ind anonymt. Tjek Firebase config + internet.",
+        );
+      }
+    });
+    return () => unsub();
+  }, []);
+
   // timer
   useEffect(() => {
     if (!running) return;
@@ -459,11 +411,6 @@ export default function Index() {
     }, 1000);
     return () => clearInterval(id);
   }, [running]);
-
-  const filteredCases = useMemo(() => {
-    if (!selectedPeriod) return [];
-    return getCasesByPeriod(selectedPeriod);
-  }, [selectedPeriod]);
 
   const evaluation = useMemo(() => {
     if (!scenario) return { evaluated: [], extraActions: [] };
@@ -501,16 +448,12 @@ export default function Index() {
       transition && scenario.states.find((s) => s.id === transition.toStateId);
     const resultingState = newState || currentState;
 
-    if (newState) {
-      setCurrentState(newState);
-    }
+    if (newState) setCurrentState(newState);
 
     const effectText = getActionEffectText(scenario, action);
     if (effectText) {
       setPopupText(effectText);
-      setTimeout(() => {
-        setPopupText(null);
-      }, 3000);
+      setTimeout(() => setPopupText(null), 3000);
     }
 
     const description = effectText
@@ -634,58 +577,117 @@ ${actionsText}${evalText}
     Alert.alert("Kopieret", "Summary er kopieret til udklipsholderen.");
   };
 
-  // ---------- Home ----------
-  if (screen === "home") {
+  // ---------- LOGIN ----------
+  if (screen === "login") {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.title}>Case Facilitator</Text>
         <Text style={styles.subtitle}>
-          Vælg skoleperiode. Hver periode har 30 cases.
+          Vælg bruger-type / organisation (midlertidig login).
         </Text>
 
+        {!authReady && (
+          <View style={{ marginTop: 16, alignItems: "center" }}>
+            <ActivityIndicator />
+            <Text style={[styles.text, { marginTop: 8 }]}>
+              Logger ind anonymt…
+            </Text>
+          </View>
+        )}
+
         <View style={{ marginTop: 16 }}>
-          <FlatList
-            data={[1, 2, 3, 4, 5, 6, 7, 8] as SchoolPeriod[]}
-            numColumns={2}
-            keyExtractor={(item) => item.toString()}
-            columnWrapperStyle={{ justifyContent: "space-between" }}
-            renderItem={({ item }) => (
-              <TouchableOpacity
-                style={styles.periodButton}
-                onPress={() => {
-                  setSelectedPeriod(item);
+          {ORG_CHOICES.map((org) => (
+            <TouchableOpacity
+              key={org.id}
+              style={styles.caseCard}
+              disabled={!authReady}
+              onPress={async () => {
+                try {
+                  setSelectedOrg(org);
+                  setLoadingCases(true);
+                  const cases = await loadAllCasesFromFirestore();
+                  setAllCases(cases);
+                  setLoadingCases(false);
                   setScreen("caseList");
-                }}
-              >
-                <Text style={styles.periodTitle}>{item}. skoleperiode</Text>
-                <Text style={styles.periodSubtitle}>30 cases</Text>
-              </TouchableOpacity>
-            )}
-          />
+                } catch (e) {
+                  console.error(e);
+                  setLoadingCases(false);
+                  Alert.alert(
+                    "Kunne ikke hente cases",
+                    "Tjek Firestore regler + at du har internet og cases i /cases.",
+                  );
+                }
+              }}
+            >
+              <Text style={styles.caseTitle}>{org.label}</Text>
+              <Text style={styles.caseSubtitle}>Rolle: {org.role}</Text>
+            </TouchableOpacity>
+          ))}
         </View>
+
+        {loadingCases && (
+          <View style={{ marginTop: 12, alignItems: "center" }}>
+            <ActivityIndicator />
+            <Text style={[styles.text, { marginTop: 8 }]}>
+              Henter cases…
+            </Text>
+          </View>
+        )}
       </SafeAreaView>
     );
   }
 
-  // ---------- Case list ----------
+  // ---------- CASE LIST ----------
   if (screen === "caseList") {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.headerRow}>
           <TouchableOpacity
-            onPress={() => setScreen("home")}
+            onPress={() => {
+              setSelectedOrg(null);
+              setAllCases([]);
+              setScreen("login");
+            }}
             style={styles.smallButton}
           >
-            <Text style={styles.smallButtonText}>⌂</Text>
+            <Text style={styles.smallButtonText}>←</Text>
           </TouchableOpacity>
-          <Text style={styles.title}>
-            {selectedPeriod}. skoleperiode – cases
-          </Text>
+
+          <View style={{ flex: 1 }}>
+            <Text style={styles.title}>Cases</Text>
+            <Text style={styles.subtitle}>
+              {selectedOrg ? `Logget ind som: ${selectedOrg.label}` : ""}
+            </Text>
+          </View>
+
+          <TouchableOpacity
+            onPress={async () => {
+              try {
+                setLoadingCases(true);
+                const cases = await loadAllCasesFromFirestore();
+                setAllCases(cases);
+                setLoadingCases(false);
+              } catch (e) {
+                console.error(e);
+                setLoadingCases(false);
+                Alert.alert("Fejl", "Kunne ikke opdatere cases.");
+              }
+            }}
+            style={styles.smallButton}
+          >
+            <Text style={styles.smallButtonText}>⟳</Text>
+          </TouchableOpacity>
         </View>
-        <Text style={styles.subtitle}>Vælg case.</Text>
+
+        {loadingCases && (
+          <View style={{ marginTop: 12, alignItems: "center" }}>
+            <ActivityIndicator />
+            <Text style={[styles.text, { marginTop: 8 }]}>Opdaterer…</Text>
+          </View>
+        )}
 
         <ScrollView style={{ marginTop: 12 }}>
-          {filteredCases.map((c) => (
+          {allCases.map((c) => (
             <TouchableOpacity
               key={c.id}
               style={styles.caseCard}
@@ -695,12 +697,13 @@ ${actionsText}${evalText}
               <Text style={styles.caseSubtitle}>{c.subtitle}</Text>
               <View style={styles.badgeRow}>
                 <Text style={styles.badge}>{c.acuity}</Text>
-                <Text style={styles.badge}>
-                  Sværhedsgrad {c.difficulty}/3
-                </Text>
+                <Text style={styles.badge}>Sværhedsgrad {c.difficulty}/3</Text>
               </View>
             </TouchableOpacity>
           ))}
+          {allCases.length === 0 && !loadingCases && (
+            <Text style={styles.text}>Ingen cases fundet i Firestore.</Text>
+          )}
         </ScrollView>
       </SafeAreaView>
     );
@@ -715,7 +718,7 @@ ${actionsText}${evalText}
     );
   }
 
-  // ---------- Summary ----------
+  // ---------- SUMMARY ----------
   if (screen === "summary") {
     const { evaluated, extraActions } = evaluation;
     const samplerText = Object.entries(samplerState)
@@ -739,13 +742,14 @@ ${actionsText}${evalText}
             onPress={() => {
               setScenario(null);
               setCurrentState(null);
-              setScreen("home");
+              setScreen("caseList");
             }}
             style={styles.smallButton}
           >
             <Text style={styles.smallButtonText}>⌂</Text>
           </TouchableOpacity>
         </View>
+
         <Text style={styles.subtitle}>{scenario.title}</Text>
         <Text style={styles.subtitle}>{scenario.subtitle}</Text>
 
@@ -786,9 +790,7 @@ ${actionsText}${evalText}
           )}
           {log.map((entry) => (
             <View key={entry.id} style={styles.logItem}>
-              <Text style={styles.logTime}>
-                {formatTime(entry.timeMs)}
-              </Text>
+              <Text style={styles.logTime}>{formatTime(entry.timeMs)}</Text>
               <Text style={styles.logText}>{entry.description}</Text>
             </View>
           ))}
@@ -796,12 +798,7 @@ ${actionsText}${evalText}
           <Text style={styles.sectionTitle}>Vurdering</Text>
           {evaluated.map((ev, idx) => (
             <View key={idx} style={styles.evalItem}>
-              <Text
-                style={[
-                  styles.evalTitle,
-                  { color: statusColor(ev.status) },
-                ]}
-              >
+              <Text style={[styles.evalTitle, { color: statusColor(ev.status) }]}>
                 {ev.status === "GREEN"
                   ? "Godt"
                   : ev.status === "YELLOW"
@@ -811,9 +808,7 @@ ${actionsText}${evalText}
               <Text style={styles.evalText}>
                 Tiltag: {ev.expected.actionId}
                 {ev.logEntry
-                  ? ` – udført kl. ${formatTime(
-                      ev.logEntry.timeMs,
-                    )}`
+                  ? ` – udført kl. ${formatTime(ev.logEntry.timeMs)}`
                   : " – ikke udført"}
               </Text>
               <Text style={styles.evalText}>{ev.comment}</Text>
@@ -825,12 +820,8 @@ ${actionsText}${evalText}
               <Text style={styles.sectionTitle}>Ekstra handlinger</Text>
               {extraActions.map((entry) => (
                 <View key={entry.id} style={styles.logItem}>
-                  <Text style={styles.logTime}>
-                    {formatTime(entry.timeMs)}
-                  </Text>
-                  <Text style={styles.logText}>
-                    {entry.description}
-                  </Text>
+                  <Text style={styles.logTime}>{formatTime(entry.timeMs)}</Text>
+                  <Text style={styles.logText}>{entry.description}</Text>
                 </View>
               ))}
             </>
@@ -846,9 +837,7 @@ ${actionsText}${evalText}
           </TouchableOpacity>
           <TouchableOpacity
             style={[styles.button, { flex: 1 }]}
-            onPress={() => {
-              startCase(scenario);
-            }}
+            onPress={() => startCase(scenario)}
           >
             <Text style={styles.buttonText}>Kør casen igen</Text>
           </TouchableOpacity>
@@ -857,17 +846,14 @@ ${actionsText}${evalText}
     );
   }
 
-  // ---------- Case detail / live sim ----------
-  const actionsForLetter = ABCDE_ACTIONS.filter(
-    (a) => a.letter === selectedLetter,
-  );
+  // ---------- CASE DETAIL / LIVE SIM ----------
+  const actionsForLetter = ABCDE_ACTIONS.filter((a) => a.letter === selectedLetter);
 
   const samplerLetters: SamplerLetter[] = ["S", "A", "M", "P", "L", "E", "R"];
   const opqrstLetters: OpqrstLetter[] = ["O", "P", "Q", "R", "S", "T"];
 
   return (
     <SafeAreaView style={styles.container}>
-      {/* popup with action effect */}
       {popupText && (
         <View style={styles.popup}>
           <Text style={styles.popupText}>{popupText}</Text>
@@ -884,10 +870,12 @@ ${actionsText}${evalText}
         >
           <Text style={styles.smallButtonText}>←</Text>
         </TouchableOpacity>
+
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>{scenario.title}</Text>
           <Text style={styles.subtitle}>{scenario.subtitle}</Text>
         </View>
+
         <Text style={styles.timerText}>{formatTime(elapsedMs)}</Text>
       </View>
 
@@ -926,7 +914,6 @@ ${actionsText}${evalText}
         </Text>
       </View>
 
-      {/* ABCDE patient info, always visible */}
       <View style={styles.card}>
         <Text style={styles.cardTitle}>ABCDE status</Text>
         <Text style={styles.text}>A: {currentState.abcde.A}</Text>
@@ -1103,8 +1090,7 @@ ${actionsText}${evalText}
                   key={med.id}
                   style={[
                     styles.medButton,
-                    selectedMedication?.id === med.id &&
-                      styles.medButtonActive,
+                    selectedMedication?.id === med.id && styles.medButtonActive,
                   ]}
                   onPress={() => {
                     setSelectedMedication(med);
@@ -1115,9 +1101,7 @@ ${actionsText}${evalText}
                   <Text
                     style={[
                       styles.medButtonText,
-                      selectedMedication?.id === med.id && {
-                        color: "black",
-                      },
+                      selectedMedication?.id === med.id && { color: "black" },
                     ]}
                   >
                     {med.name}
@@ -1170,8 +1154,7 @@ ${actionsText}${evalText}
                       key={flow}
                       style={[
                         styles.doseButton,
-                        selectedOxygenFlow === flow &&
-                          styles.doseButtonActive,
+                        selectedOxygenFlow === flow && styles.doseButtonActive,
                       ]}
                       onPress={() => setSelectedOxygenFlow(flow)}
                     >
@@ -1190,13 +1173,7 @@ ${actionsText}${evalText}
             )}
 
             <TouchableOpacity
-              style={[
-                styles.button,
-                {
-                  marginTop: 8,
-                  backgroundColor: "#38bdf8",
-                },
-              ]}
+              style={[styles.button, { marginTop: 8, backgroundColor: "#38bdf8" }]}
               onPress={handleRegisterMedication}
             >
               <Text style={styles.buttonText}>Registrer medicin</Text>
@@ -1205,7 +1182,6 @@ ${actionsText}${evalText}
         )}
       </View>
 
-      {/* Latest action */}
       <View style={styles.logContainer}>
         <Text style={styles.cardTitle}>Seneste respons</Text>
         {log.length === 0 ? (
