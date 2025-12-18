@@ -231,12 +231,12 @@ export const styles = StyleSheet.create({
     fontWeight: "600",
   },
   medButton: {
-    backgroundColor: "#1f2937",
-    paddingHorizontal: 10,
-    paddingVertical: 6,
-    borderRadius: 999,
-    marginRight: 6,
-    marginTop: 4,
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    backgroundColor: "#1f2933",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.15)",
   },
   medButtonActive: {
     backgroundColor: "#f97316",

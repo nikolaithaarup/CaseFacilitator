@@ -8,12 +8,9 @@ export type Acuity = "AKUT" | "SUBAKUT";
 export type AbcdeLetter = "A" | "B" | "C" | "D" | "E";
 export type SamplerLetter = "S" | "A" | "M" | "P" | "L" | "E" | "R";
 export type OpqrstLetter = "O" | "P" | "Q" | "R" | "S" | "T";
+export type MidasheLetter = "M" | "I" | "D" | "A" | "S" | "H" | "E";
 
-export type ActionImportance =
-  | "CRITICAL"
-  | "IMPORTANT"
-  | "OPTIONAL"
-  | "FORBIDDEN";
+export type ActionImportance = "CRITICAL" | "IMPORTANT" | "OPTIONAL" | "FORBIDDEN";
 
 export type DoseStrength = "HALF" | "NORMAL" | "DOUBLE";
 
@@ -60,21 +57,29 @@ export interface Transition {
 export interface ExpectedAction {
   actionId: string;
   importance: ActionImportance;
-  recommendedBeforeSec?: number;
-  mustBeforeSec?: number;
+
+  // timing
+  recommendedBeforeSec?: number; // green if <= this
+  mustBeforeSec?: number; // red if > this (or missing)
+
+  // ✅ new: what to show in Summary
+  title?: string; // "Adrenalin (IM)"
+  successText?: string; // "Adrenalin givet hurtigt"
+  improveText?: string; // "Giv adrenalin tidligere"
+  criticalText?: string; // "Adrenalin for sent / mangler"
 }
 
 export interface CaseScenario {
   id: string;
-  title: string;        // "skp 1 – AKS – M 58 sygdom"
-  subtitle: string;     // "(mand 58 år, ...)"
+  title: string; // "skp 1 – AKS – M 58 sygdom"
+  subtitle: string; // "(mand 58 år, ...)"
   dispatchText: string;
   schoolPeriods: SchoolPeriod[];
   acuity: Acuity;
   difficulty: 1 | 2 | 3;
   diagnosis: string;
   actionDiagnoses: string[];
-  caseType: string;     // "AKS", "Hypoglykæmi", "SVT", ...
+  caseType: string; // "AKS", "Hypoglykæmi", "SVT", ...
   patientInfo: {
     age: number;
     sex: "M" | "K";
@@ -100,19 +105,29 @@ export interface Medication {
   id: string;
   name: string;
   type: MedicationType;
-  normalDose?: number;   // you fill these in from Region H guidelines
-  unit?: string;         // "mg", "µg", "ml", etc.
+  normalDose?: number; // you fill these in from Region H guidelines
+  unit?: string; // "mg", "µg", "ml", etc.
   note?: string;
   oxygenFlows?: number[]; // for medicinsk ilt
 }
 
-export interface ActionLogEntry {
+export type ActionLogEntry = {
   id: string;
   timeMs: number;
   actionId: string;
   description: string;
   resultingStateId: string;
-}
+
+  meta?: {
+    doseStrength?: DoseStrength;
+    baseDose?: number;
+    factor?: number;
+    actualDose?: number;
+    unit?: string;
+
+    oxygenFlow?: number;
+  };
+};
 
 export interface EvaluatedAction {
   expected: ExpectedAction;

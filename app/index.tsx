@@ -1,25 +1,57 @@
 // app/index.tsx
-import * as Clipboard from "expo-clipboard";
-import { useEffect, useMemo, useState } from "react";
-import { styles } from "../src/styles/indexStyles";
-
-import {
-  ActivityIndicator,
-  Alert,
-  FlatList,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
-} from "react-native";
-
-import { SafeAreaView } from "react-native-safe-area-context";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as Linking from "expo-linking";
+import { useRouter } from "expo-router";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { Alert } from "react-native";
 
 // Firebase
 import { onAuthStateChanged, signInAnonymously } from "firebase/auth";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, doc, getDocs, serverTimestamp, setDoc } from "firebase/firestore";
 import { auth, db } from "../src/firebase/firebase";
 
+// Camera
+import { useCameraPermissions } from "expo-camera";
+
+// Styles
+import { Text, TouchableOpacity } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { styles } from "../src/styles/indexStyles";
+
+// Data
+import { DOSE_OPTIONS } from "../src/data/medications";
+import { type OrgChoice } from "../src/data/orgChoices";
+
+// Utils
+import { stripUndefined } from "../src/utils/format";
+import { buildJoinUrl, parseJoinRole } from "../src/utils/joinLinks";
+
+// Services
+import { getUserProfile } from "../src/services/users";
+
+import {
+  createSession,
+  joinSession,
+  listenToSession,
+  setFacilitatorFocus,
+  setSessionRunning,
+  type FacilitatorFocus,
+  type SessionDoc,
+} from "../src/services/sessions";
+
+import {
+  listenLiveState,
+  publishLiveState,
+  type SessionLiveState,
+} from "../src/services/sessionState";
+
+import {
+  loadSessionEvents,
+  logSessionEvent,
+  type SessionEvent,
+} from "../src/services/sessionEvents";
+
+// Domain
 import type {
   AbcdeAction,
   AbcdeLetter,
@@ -28,325 +60,130 @@ import type {
   DoseStrength,
   EvaluatedAction,
   Medication,
+  MidasheLetter,
   OpqrstLetter,
   PatientState,
   SamplerLetter,
 } from "../src/domain/cases/types";
 
-// ---------- App screens ----------
-type AppScreen = "login" | "caseList" | "caseDetail" | "summary";
+// EKG lookup (Defib screen uses it)
 
-// ---------- "Login" choices (front-end only for now) ----------
-type OrgChoice = {
-  id: string;
-  label: string;
-  role: "student" | "school" | "enterprise";
+// Screens (you created these)
+import { CaseDetailScreen } from "../src/screens/CaseDetailScreen";
+import CaseListScreen from "../src/screens/CaseListScreen";
+import CaseSetupScreen from "../src/screens/CaseSetupScreen";
+import { DefibScreen } from "../src/screens/DefibScreen";
+import { InviteQrScreen } from "../src/screens/InviteQrScreen";
+import { LoginScreen } from "../src/screens/LoginScreen";
+import { PickFocusScreen } from "../src/screens/PickFocusScreen";
+import { ScanQrScreen } from "../src/screens/ScanQrScreen";
+import { SummaryScreen } from "../src/screens/SummaryScreen";
+
+// If you moved evaluation helpers into a file:
+import { evaluateCase, eventToLogEntry } from "../src/utils/caseEvaluation";
+
+// ---------- App screens ----------
+type AppScreen =
+  | "login"
+  | "caseList"
+  | "caseSetup"
+  | "inviteQr"
+  | "scanQr"
+  | "pickFocus"
+  | "defib"
+  | "caseDetail"
+  | "summary";
+
+type UnitsRunConfig = {
+  ambulancer: number;
+  akutbil: number;
+  laegebil: number;
 };
 
-const ORG_CHOICES: OrgChoice[] = [
-  { id: "student", label: "Elev", role: "student" },
-  { id: "unord_hillerod", label: "U/Nord Hillerød", role: "school" },
-  { id: "unord_esbjerg", label: "U/Nord Esbjerg", role: "school" },
-  { id: "akutberedskabet", label: "Akutberedskabet", role: "enterprise" },
-  { id: "falck", label: "Falck", role: "enterprise" },
-];
-
-// ---------- ABCDE actions including interventions ----------
-const ABCDE_ACTIONS: AbcdeAction[] = [
-  { id: "A_LOOK", letter: "A", label: "Inspicer mund/svælg" },
-  { id: "A_POSITION", letter: "A", label: "Luftvejslejring / kæbeløft" },
-  { id: "A_RUBENS", letter: "A", label: "Rubens ballon / poseventilation" },
-  { id: "A_NPA", letter: "A", label: "Anlæg NPA" },
-  { id: "A_OPA", letter: "A", label: "Anlæg OPA" },
-  { id: "A_LMA", letter: "A", label: "Larynxmaske" },
-
-  { id: "B_INSPECT", letter: "B", label: "Inspicer thorax / RF" },
-  { id: "B_STETHO", letter: "B", label: "Stetoskopér lunger" },
-  { id: "B_NASAL_O2", letter: "B", label: "Næsebrille O₂" },
-  { id: "B_HUDSON", letter: "B", label: "Hudson maske" },
-  { id: "B_NEBULISER", letter: "B", label: "Nebulisator (fx Ventoline)" },
-  { id: "B_NEEDLE_DECOMP", letter: "B", label: "Nåledekompression" },
-  { id: "B_ETT", letter: "B", label: "Tube (intubation)" },
-  { id: "B_BINASAL", letter: "B", label: "Binasal tube + kapnografi" },
-
-  { id: "C_BP", letter: "C", label: "Mål blodtryk" },
-  { id: "C_PULSE", letter: "C", label: "Tæl puls / rytme" },
-  { id: "C_IV", letter: "C", label: "Anlæg IV-adgang" },
-  { id: "C_IO", letter: "C", label: "Anlæg IO-adgang" },
-  { id: "C_EKG4", letter: "C", label: "EKG 4-afledninger" },
-  { id: "C_EKG12", letter: "C", label: "EKG 12-afledninger" },
-
-  { id: "D_GCS", letter: "D", label: "Vurder GCS" },
-  { id: "D_BS", letter: "D", label: "Mål blodsukker" },
-  { id: "D_PUPILS", letter: "D", label: "Tjek pupiller" },
-
-  { id: "E_TEMP", letter: "E", label: "Mål temperatur" },
-  { id: "E_TOPTOE", letter: "E", label: "Top-til-tå inspektion" },
-];
-
-// ---------- Medications ----------
-const MEDICATIONS: Medication[] = [
-  {
-    id: "acetylsalicylsyre",
-    name: "Acetylsalicylsyre",
-    type: "drug",
-    normalDose: 0,
-    unit: "mg",
-    note: "Sæt korrekt dosis i koden",
-  },
-  {
-    id: "medicinsk_ilt",
-    name: "Medicinsk ilt",
-    type: "oxygen",
-    oxygenFlows: [1, 2, 3, 4, 5, 6, 8, 10, 12, 15],
-  },
-  { id: "oxytocin", name: "Oxytocin", type: "drug", normalDose: 0, unit: "IE" },
-  { id: "adrenalin", name: "Adrenalin", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "berodual", name: "Berodual", type: "drug", normalDose: 0, unit: "ml" },
-  { id: "fentanyl", name: "Fentanyl", type: "drug", normalDose: 0, unit: "µg" },
-  { id: "glukagon", name: "Glukagon", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "glukose_50", name: "Glukose 50%", type: "drug", normalDose: 0, unit: "ml" },
-  { id: "glycerylnitrat", name: "Glycerylnitrat", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "heparin", name: "Heparin", type: "drug", normalDose: 0, unit: "IE" },
-  { id: "hypo_fit", name: "Hypo-Fit", type: "drug", normalDose: 0, unit: "g" },
-  { id: "ibuprofen", name: "Ibuprofen", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "midazolam", name: "Midazolam", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "naloxon", name: "Naloxon", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "nacl_iso", name: "Natrium-klorid (NaCl iso)", type: "drug", normalDose: 0, unit: "ml" },
-  { id: "ondansetron", name: "Ondansetron", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "paracetamol", name: "Paracetamol", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "salbutamol", name: "Salbutamol", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "solu_cortef", name: "Solu-cortef", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "thiamin", name: "Thiamin", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "amiodaron", name: "Amiodaron", type: "drug", normalDose: 0, unit: "mg" },
-  {
-    id: "glukose_insulin_kalium",
-    name: "Glukose-Insulin(-Kalium)",
-    type: "drug",
-    normalDose: 0,
-    unit: "ml",
-  },
-  { id: "isoprenalin", name: "Isoprenalin", type: "drug", normalDose: 0, unit: "µg" },
-  { id: "labetalol", name: "Labetalol", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "n_acetylcystein", name: "N-Acetylcystein", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "s_ketamin", name: "S-ketamin", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "atropin", name: "Atropin", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "clemastin", name: "Clemastin", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "diazepam", name: "Diazepam", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "furosemid", name: "Furosemid", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "ketorolac", name: "Ketorolac", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "solu_medrol", name: "Solu-medrol", type: "drug", normalDose: 0, unit: "mg" },
-  { id: "tranexamsyre", name: "Tranexamsyre", type: "drug", normalDose: 0, unit: "mg" },
-];
-
-const DOSE_OPTIONS: { id: DoseStrength; label: string; factor: number }[] = [
-  { id: "HALF", label: "½ dosis", factor: 0.5 },
-  { id: "NORMAL", label: "Normal dosis", factor: 1 },
-  { id: "DOUBLE", label: "Dobbelt dosis", factor: 2 },
-];
-
-// ---------- Helpers ----------
-function formatTime(ms: number): string {
-  const minutes = Math.floor(ms / 60000);
-  const seconds = Math.floor((ms % 60000) / 1000);
-  return `${minutes.toString().padStart(2, "0")}:${seconds
-    .toString()
-    .padStart(2, "0")}`;
+// ---------- Helpers that may remain here ----------
+function rhythmKeyFromScenario(s: CaseScenario): string {
+  const t = (s.caseType || "").toLowerCase();
+  if (t.includes("svt")) return "SVT";
+  if (t.includes("afli") || t.includes("af")) return "AF";
+  if (t.includes("stemi")) return "STEMI";
+  if (t.includes("aks")) return "ACS";
+  if (t.includes("vf")) return "VF";
+  if (t.includes("vt")) return "VT";
+  return "SINUS";
 }
 
-function statusColor(status: "GREEN" | "YELLOW" | "RED"): string {
-  switch (status) {
-    case "GREEN":
-      return "#10b981";
-    case "YELLOW":
-      return "#facc15";
-    case "RED":
-      return "#f97316";
-    default:
-      return "white";
-  }
-}
-
-function getActionEffectText(
-  scenario: CaseScenario,
-  action: AbcdeAction,
-): string | null {
-  const type = scenario.caseType;
-
-  switch (action.id) {
-    case "D_BS":
-      if (type === "Hypoglykæmi")
-        return "Blodsukker: 2,1 mmol/L (markant lavt).";
-      if (type === "AKS")
-        return "Blodsukker: 6,0 mmol/L (inden for normalområdet).";
-      return "Blodsukker: 5,5 mmol/L (normal).";
-
-    case "D_GCS":
-      if (type === "Hovedtraume")
-        return "GCS: 14 (E4 V4 M6) – let påvirket, hovedpine.";
-      if (type === "Hypoglykæmi") return "GCS: 14 – konfus, tøvende svar.";
-      return "GCS: 15 – helt klar og orienteret.";
-
-    case "C_EKG12":
-      if (type === "SVT")
-        return "EKG 12: smal QRS-takykardi ca. 180/min, foreneligt med SVT.";
-      if (type === "Nyopstået AFLI")
-        return "EKG 12: uregelmæssig rytme uden tydelige P-takker, forenelig med AFLI.";
-      if (type === "AKS")
-        return "EKG 12: ST-depression lateralt, T-taks inversion – muligt AKS.";
-      return "EKG 12: ingen akutte ischæmitegn.";
-
-    case "C_EKG4":
-      if (type === "SVT")
-        return "EKG 4: regelmæssig hurtig rytme omkring 180/min.";
-      if (type === "Nyopstået AFLI")
-        return "EKG 4: uregelmæssig uregelmæssig rytme, frekvens ca. 130/min.";
-      return "EKG 4: sinusrytme eller let tachykardi.";
-
-    case "B_NEBULISER":
-      if (type === "Astma-exacerbation" || type === "KOL-exacerbation")
-        return "Efter nebulisator falder RF lidt, og patienten oplever lindring.";
-      return "Ingen tydelig effekt på RF.";
-
-    case "B_NASAL_O2":
-    case "B_HUDSON":
-      if (
-        type === "Astma-exacerbation" ||
-        type === "KOL-exacerbation" ||
-        type === "Anafylaksi" ||
-        type === "Sepsis"
-      )
-        return "SpO₂ stiger et par procent, patienten virker mere rolig.";
-      return "SpO₂ forbliver stort set uændret men passende.";
-
-    case "A_RUBENS":
-      return "Effektiv ventilation, thorax bevæger sig passende.";
-
-    case "A_NPA":
-    case "A_OPA":
-      return "Luftvejen sikres bedre, snorken mindskes.";
-
-    case "E_TEMP":
-      if (type === "Sepsis") return "Temperatur: 39,1 °C (høj feber).";
-      return "Temperatur: 37,2 °C (normal).";
-
-    case "E_TOPTOE":
-      if (type === "Hovedtraume")
-        return "Palpation viser ømhed på caput, ingen åben fraktur.";
-      if (type === "Sepsis")
-        return "Der ses varm, rød hud, evt. enkelte petekkier.";
-      return "Ingen yderligere fund ved top-til-tå undersøgelse.";
-
-    default:
-      return null;
-  }
-}
-
-function evaluateCase(
-  scenario: CaseScenario,
-  log: ActionLogEntry[],
-): { evaluated: EvaluatedAction[]; extraActions: ActionLogEntry[] } {
-  const logByActionId: Record<string, ActionLogEntry[]> = {};
-  for (const entry of log) {
-    if (!logByActionId[entry.actionId]) logByActionId[entry.actionId] = [];
-    logByActionId[entry.actionId].push(entry);
-  }
-
-  const evaluated: EvaluatedAction[] = [];
-
-  for (const exp of scenario.expectedActions) {
-    const entries = logByActionId[exp.actionId] || [];
-    const first = entries[0];
-
-    if (!first) {
-      if (exp.importance === "CRITICAL") {
-        evaluated.push({
-          expected: exp,
-          status: "RED",
-          comment: "Kritisk tiltag blev aldrig udført.",
-        });
-      } else if (exp.importance === "IMPORTANT") {
-        evaluated.push({
-          expected: exp,
-          status: "YELLOW",
-          comment: "Vigtigt tiltag mangler – kunne styrke behandlingen.",
-        });
-      }
-      continue;
-    }
-
-    const timeSec = first.timeMs / 1000;
-
-    if (exp.importance === "FORBIDDEN") {
-      evaluated.push({
-        expected: exp,
-        logEntry: first,
-        status: "RED",
-        comment: "Tiltag der ikke burde udføres i dette case.",
-      });
-      continue;
-    }
-
-    if (exp.mustBeforeSec && timeSec > exp.mustBeforeSec) {
-      evaluated.push({
-        expected: exp,
-        logEntry: first,
-        status: "RED",
-        comment: `Udført for sent (efter ${exp.mustBeforeSec} sek).`,
-      });
-    } else if (
-      exp.recommendedBeforeSec &&
-      timeSec > exp.recommendedBeforeSec
-    ) {
-      evaluated.push({
-        expected: exp,
-        logEntry: first,
-        status: "YELLOW",
-        comment: "Udført, men senere end anbefalet.",
-      });
-    } else {
-      evaluated.push({
-        expected: exp,
-        logEntry: first,
-        status: "GREEN",
-        comment: "Udført passende og til tiden.",
-      });
-    }
-  }
-
-  const expectedIds = new Set(scenario.expectedActions.map((e) => e.actionId));
-  const extraActions = log.filter((e) => !expectedIds.has(e.actionId));
-
-  return { evaluated, extraActions };
+function makeRunId(): string {
+  return `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 }
 
 async function loadAllCasesFromFirestore(): Promise<CaseScenario[]> {
   const snap = await getDocs(collection(db, "cases"));
   const cases: CaseScenario[] = [];
-  snap.forEach((doc) => {
-    cases.push(doc.data() as CaseScenario);
+  snap.forEach((docSnap) => {
+    const data: any = docSnap.data();
+    if (!data?.title || typeof data.title !== "string") return;
+    if (!data?.id || typeof data.id !== "string") return;
+    cases.push(data as CaseScenario);
   });
-  cases.sort((a, b) => a.title.localeCompare(b.title));
+
+  cases.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
   return cases;
 }
 
 // ---------- Component ----------
 export default function Index() {
+  // Screens + login org (legacy)
   const [screen, setScreen] = useState<AppScreen>("login");
   const [selectedOrg, setSelectedOrg] = useState<OrgChoice | null>(null);
 
+  // Auth + cases loading
   const [authReady, setAuthReady] = useState(false);
   const [loadingCases, setLoadingCases] = useState(false);
   const [allCases, setAllCases] = useState<CaseScenario[]>([]);
+  const [selectedCaseTemplate, setSelectedCaseTemplate] = useState<CaseScenario | null>(null);
 
+  const router = useRouter();
+
+  // Setup overrides
+  const [setupSex, setSetupSex] = useState<"M" | "K">("M");
+  const [setupAge, setSetupAge] = useState<number>(50);
+  const [units, setUnits] = useState<UnitsRunConfig>({
+    ambulancer: 1,
+    akutbil: 0,
+    laegebil: 0,
+  });
+  const [facilitatorsCount, setFacilitatorsCount] = useState<number>(1);
+
+  // Session / pairing
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [sessionDoc, setSessionDoc] = useState<SessionDoc | null>(null);
+
+  const [pendingJoinSessionId, setPendingJoinSessionId] = useState<string | null>(null);
+  const [pendingJoinRole, setPendingJoinRole] = useState<"FACILITATOR" | "DEFIB">("FACILITATOR");
+
+  // Live state for defib
+  const [liveState, setLiveState] = useState<SessionLiveState | null>(null);
+
+  const [pickedFocus, setPickedFocus] = useState<FacilitatorFocus>("ALL");
+
+  const sessionUnsubRef = useRef<null | (() => void)>(null);
+  const liveUnsubRef = useRef<null | (() => void)>(null);
+
+  // Live case state (lead device)
   const [scenario, setScenario] = useState<CaseScenario | null>(null);
   const [currentState, setCurrentState] = useState<PatientState | null>(null);
 
+  // Run/timer/log
   const [elapsedMs, setElapsedMs] = useState(0);
   const [running, setRunning] = useState(false);
   const [log, setLog] = useState<ActionLogEntry[]>([]);
   const [selectedLetter, setSelectedLetter] = useState<AbcdeLetter>("A");
 
+  // Run identity
+  const [runId, setRunId] = useState<string | null>(null);
+  const [runStartedAtEpochMs, setRunStartedAtEpochMs] = useState<number | null>(null);
+
+  // Acronyms
   const initialSampler: Record<SamplerLetter, boolean> = {
     S: false,
     A: false,
@@ -364,107 +201,287 @@ export default function Index() {
     S: false,
     T: false,
   };
+  const initialMidashe: Record<MidasheLetter, boolean> = {
+    M: false,
+    I: false,
+    D: false,
+    A: false,
+    S: false,
+    H: false,
+    E: false,
+  };
 
-  const [samplerState, setSamplerState] =
-    useState<Record<SamplerLetter, boolean>>(initialSampler);
-  const [opqrstState, setOpqrstState] =
-    useState<Record<OpqrstLetter, boolean>>(initialOpqrst);
+  const [samplerState, setSamplerState] = useState<Record<SamplerLetter, boolean>>(initialSampler);
+  const [opqrstState, setOpqrstState] = useState<Record<OpqrstLetter, boolean>>(initialOpqrst);
+  const [midasheState, setMidasheState] = useState<Record<MidasheLetter, boolean>>(initialMidashe);
 
+  // UI expanded toggles
   const [abcdeActionsExpanded, setAbcdeActionsExpanded] = useState(true);
   const [samplerExpanded, setSamplerExpanded] = useState(false);
   const [opqrstExpanded, setOpqrstExpanded] = useState(false);
+  const [midasheExpanded, setMidasheExpanded] = useState(false);
   const [medExpanded, setMedExpanded] = useState(false);
 
-  const [selectedMedication, setSelectedMedication] =
-    useState<Medication | null>(null);
+  // Med selection
+  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
   const [selectedDose, setSelectedDose] = useState<DoseStrength | null>(null);
-  const [selectedOxygenFlow, setSelectedOxygenFlow] = useState<number | null>(
-    null,
-  );
+  const [selectedOxygenFlow, setSelectedOxygenFlow] = useState<number | null>(null);
 
   const [popupText, setPopupText] = useState<string | null>(null);
 
-  // ---- Auth bootstrap (anonymous) ----
+  // Defib UI state
+  const [defibOn, setDefibOn] = useState(false);
+  const [defibBusy, setDefibBusy] = useState<null | "NIBP" | "SAT" | "ECG" | "ETCO2">(null);
+  const [defibDisplay, setDefibDisplay] = useState<string>("");
+  const [defibEkgKey, setDefibEkgKey] = useState<string | null>(null);
+
+  // Summary events
+  const [remoteEvents, setRemoteEvents] = useState<SessionEvent[]>([]);
+
+  // Feedback / grading
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [feedbackText, setFeedbackText] = useState("");
+  const [feedbackGrade, setFeedbackGrade] = useState<string>("");
+  const [savingFeedback, setSavingFeedback] = useState(false);
+
+  // Camera permission (QR scanner)
+  const [perm, requestPerm] = useCameraPermissions();
+
+  // ---- Auth bootstrap ----
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, async (user) => {
       try {
-        if (!user) {
-          await signInAnonymously(auth);
-        }
+        if (!user) await signInAnonymously(auth);
         setAuthReady(true);
       } catch (e) {
         console.error(e);
-        Alert.alert(
-          "Firebase auth fejl",
-          "Kunne ikke logge ind anonymt. Tjek Firebase config + internet.",
-        );
+        Alert.alert("Firebase auth fejl", "Kunne ikke logge ind anonymt.");
       }
     });
     return () => unsub();
   }, []);
 
+  function cleanupSessionListener() {
+    if (sessionUnsubRef.current) {
+      sessionUnsubRef.current();
+      sessionUnsubRef.current = null;
+    }
+    if (liveUnsubRef.current) {
+      liveUnsubRef.current();
+      liveUnsubRef.current = null;
+    }
+  }
+
+  async function ensureSessionListener(sid: string) {
+    cleanupSessionListener();
+    sessionUnsubRef.current = listenToSession(
+      sid,
+      (data) => setSessionDoc(data),
+      (e) => console.warn("Session listen error:", e),
+    );
+    liveUnsubRef.current = listenLiveState(
+      sid,
+      (st) => setLiveState(st),
+      (e) => console.warn("Live state listen error:", e),
+    );
+  }
+
+  // ---- Profile loading ----
+  useEffect(() => {
+    (async () => {
+      if (!authReady) return;
+      const user = auth.currentUser;
+      if (!user) return;
+
+      try {
+        const profile = await getUserProfile(user.uid);
+        if (!profile) {
+          router.replace("/profile");
+          return;
+        }
+      } catch (e) {
+        console.warn("profile check failed:", e);
+      }
+    })();
+  }, [authReady, router]);
+
+  // ---- Deep link handler ----
+  useEffect(() => {
+    const handleUrl = (url: string) => {
+      const parsed = Linking.parse(url);
+      if (parsed?.path === "join") {
+        const sid = (parsed.queryParams?.sessionId as string) || null;
+        const role = parseJoinRole(parsed.queryParams?.role);
+        if (sid) {
+          setPendingJoinSessionId(sid);
+          setPendingJoinRole(role);
+          if (role === "DEFIB") setScreen("defib");
+          else setScreen("pickFocus");
+        }
+      }
+    };
+
+    const sub = Linking.addEventListener("url", (e) => handleUrl(e.url));
+    Linking.getInitialURL().then((url) => url && handleUrl(url));
+
+    return () => sub.remove();
+  }, []);
+
   // timer
   useEffect(() => {
     if (!running) return;
-    const id = setInterval(() => {
-      setElapsedMs((prev) => prev + 1000);
-    }, 1000);
+    const id = setInterval(() => setElapsedMs((prev) => prev + 1000), 1000);
     return () => clearInterval(id);
   }, [running]);
 
+  // Lead: publish live state when currentState changes (only if session exists)
+  useEffect(() => {
+    if (!sessionId) return;
+    if (!scenario || !currentState) return;
+    publishLiveState({
+      sessionId,
+      currentState,
+      rhythmKey: rhythmKeyFromScenario(scenario),
+    }).catch((e) => console.warn("publishLiveState error:", e));
+  }, [sessionId, scenario, currentState]);
+
+  // Auto-join defib when landing on defib screen via QR/deeplink
+  useEffect(() => {
+    (async () => {
+      if (screen !== "defib") return;
+      const sid = pendingJoinSessionId;
+      if (!sid) return;
+
+      try {
+        const docSnap = await joinSession({ sessionId: sid, role: "DEFIB" });
+        setSessionId(sid);
+        setSessionDoc(docSnap);
+        await ensureSessionListener(sid);
+      } catch (e: any) {
+        console.error(e);
+        Alert.alert("Defib join fejl", e?.message ?? "Kunne ikke joine session.");
+        setScreen("login");
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [screen, pendingJoinSessionId]);
+
+  // Load remote events when entering summary (and sessionId exists)
+  useEffect(() => {
+    (async () => {
+      if (screen !== "summary") return;
+      if (!sessionId) return;
+      try {
+        const evs = await loadSessionEvents(sessionId);
+        setRemoteEvents(evs);
+      } catch (e) {
+        console.warn("loadSessionEvents:", e);
+        setRemoteEvents([]);
+      }
+    })();
+  }, [screen, sessionId]);
+
+  const mergedTimeline = useMemo(() => {
+    const evEntries = remoteEvents.map(eventToLogEntry);
+    const all = [...log, ...evEntries];
+    all.sort((a, b) => a.timeMs - b.timeMs);
+    return all;
+  }, [log, remoteEvents]);
+
   const evaluation = useMemo(() => {
-    if (!scenario) return { evaluated: [], extraActions: [] };
-    return evaluateCase(scenario, log);
-  }, [scenario, log]);
+    if (!scenario) {
+      return { evaluated: [] as EvaluatedAction[], extraActions: [] as ActionLogEntry[] };
+    }
+    return evaluateCase(scenario, mergedTimeline);
+  }, [scenario, mergedTimeline]);
 
   const startCase = (c: CaseScenario) => {
     setScenario(c);
     const initState = c.states.find((s) => s.id === c.initialStateId)!;
     setCurrentState(initState);
+
     setElapsedMs(0);
     setRunning(false);
     setLog([]);
     setSelectedLetter("A");
+
     setSamplerState(initialSampler);
     setOpqrstState(initialOpqrst);
+    setMidasheState(initialMidashe);
+
     setAbcdeActionsExpanded(true);
     setSamplerExpanded(false);
     setOpqrstExpanded(false);
+    setMidasheExpanded(false);
     setMedExpanded(false);
+
     setSelectedMedication(null);
     setSelectedDose(null);
     setSelectedOxygenFlow(null);
+
     setPopupText(null);
+
+    setRunId(null);
+    setRunStartedAtEpochMs(null);
+
+    setFeedbackOpen(false);
+    setFeedbackText("");
+    setFeedbackGrade("");
+    setSavingFeedback(false);
+
     setScreen("caseDetail");
   };
 
+  async function startTimer() {
+    const newRunId = makeRunId();
+    setRunId(newRunId);
+    setRunStartedAtEpochMs(Date.now());
+
+    setRunning(true);
+
+    if (sessionId) {
+      try {
+        await setSessionRunning(sessionId);
+      } catch (e) {
+        console.warn("setSessionRunning failed:", e);
+      }
+    }
+  }
+
+  function sessionRelNowMs(): number {
+    if (!sessionDoc?.startedAtEpochMs) return 0;
+    return Math.max(0, Date.now() - sessionDoc.startedAtEpochMs);
+  }
+
+  // ---------- Actions & handlers used by screens ----------
+  const caseStarted = running || elapsedMs > 0;
+  const locked = !caseStarted;
+
+  const guardLocked = () => {
+    if (locked) {
+      Alert.alert("Start casen først", "Tryk på 'GO – start timer' før du bruger funktionerne.");
+      return true;
+    }
+    return false;
+  };
+
   const handleActionPress = (action: AbcdeAction) => {
+    if (guardLocked()) return;
     if (!scenario || !currentState) return;
 
     const transition = scenario.transitions.find(
       (t) => t.fromStateId === currentState.id && t.actionId === action.id,
     );
-    const newState =
-      transition && scenario.states.find((s) => s.id === transition.toStateId);
+    const newState = transition && scenario.states.find((s) => s.id === transition.toStateId);
     const resultingState = newState || currentState;
 
     if (newState) setCurrentState(newState);
-
-    const effectText = getActionEffectText(scenario, action);
-    if (effectText) {
-      setPopupText(effectText);
-      setTimeout(() => setPopupText(null), 3000);
-    }
-
-    const description = effectText
-      ? `${action.label} – ${effectText}`
-      : `${action.label} – ingen tydelig ændring.`;
 
     const entry: ActionLogEntry = {
       id: `${Date.now()}_${action.id}`,
       timeMs: elapsedMs,
       actionId: action.id,
-      description,
+      description: `${action.label}`,
       resultingStateId: resultingState.id,
     };
 
@@ -472,7 +489,9 @@ export default function Index() {
   };
 
   const handleRegisterMedication = () => {
+    if (guardLocked()) return;
     if (!scenario || !currentState) return;
+
     if (!selectedMedication) {
       Alert.alert("Manglende valg", "Vælg et præparat.");
       return;
@@ -480,27 +499,55 @@ export default function Index() {
 
     let description = "";
     let actionId = "";
+    let meta: ActionLogEntry["meta"] = {};
 
     if (selectedMedication.type === "oxygen") {
-      if (!selectedOxygenFlow) {
+      if (selectedOxygenFlow == null) {
         Alert.alert("Manglende valg", "Vælg liter/min for ilt.");
         return;
       }
-      actionId = `O2_${selectedMedication.id}_${selectedOxygenFlow}`;
+
+      // ✅ Stable ID: match Firestore expectedActions.actionId like "medicinsk_ilt"
+      actionId = selectedMedication.id;
+
+      meta = { oxygenFlow: selectedOxygenFlow };
       description = `Medicinsk ilt: ${selectedOxygenFlow} L/min.`;
     } else {
       if (!selectedDose) {
         Alert.alert("Manglende valg", "Vælg dosis (½ / normal / dobbelt).");
         return;
       }
-      const doseMeta = DOSE_OPTIONS.find((d) => d.id === selectedDose)!;
+
+      const doseMeta = DOSE_OPTIONS.find((d) => d.id === selectedDose);
+      if (!doseMeta) {
+        Alert.alert("Fejl", "Kunne ikke finde dosis-valg.");
+        return;
+      }
+
       const base = selectedMedication.normalDose ?? 0;
       const actual = base * doseMeta.factor;
       const unit = selectedMedication.unit || "enhed";
 
-      description = `Medicin: ${selectedMedication.name} – ${doseMeta.label} (${actual} ${unit}, sæt korrekt dosis i koden).`;
-      actionId = `MED_${selectedMedication.id}_${selectedDose}`;
+      // ✅ Stable ID: match Firestore expectedActions.actionId like "MED_ADRENALIN_IM"
+      actionId = selectedMedication.id;
+
+      meta = {
+        doseStrength: selectedDose,
+        baseDose: base,
+        factor: doseMeta.factor,
+        actualDose: actual,
+        unit,
+      };
+
+      description = `Medicin: ${selectedMedication.name} – ${doseMeta.label} (${actual} ${unit}).`;
     }
+
+    console.log(
+      "REGISTER MED actionId:",
+      actionId,
+      "selectedMedication.id:",
+      selectedMedication.id,
+    );
 
     const entry: ActionLogEntry = {
       id: `${Date.now()}_${actionId}`,
@@ -508,212 +555,293 @@ export default function Index() {
       actionId,
       description,
       resultingStateId: currentState.id,
+      meta,
     };
 
     setLog((prev) => [...prev, entry]);
+
+    // ✅ UI reset: clear selections so boxes un-highlight
+    setSelectedMedication(null);
+    setSelectedDose(null);
+    setSelectedOxygenFlow(null);
+
+    // Optional: collapse medicine section after register
+    // setMedExpanded(false);
   };
 
-  const handleFinishCase = () => {
-    setRunning(false);
-    setScreen("summary");
-  };
-
-  const handleCopyReport = async () => {
+  async function saveSummaryWithFeedback() {
     if (!scenario) return;
-    const totalTime = formatTime(elapsedMs);
 
-    const actionsText =
-      log.length === 0
-        ? "Ingen handlinger registreret."
-        : log
-            .map((e) => `${formatTime(e.timeMs)} – ${e.description}`)
-            .join("\n");
+    const uid = auth.currentUser?.uid ?? null;
 
-    const samplerText =
-      Object.entries(samplerState)
-        .map(([k, v]) => `${k}:${v ? "✓" : "-"}`)
-        .join(" ") || "";
+    const payload = stripUndefined({
+      runId: runId ?? makeRunId(),
+      createdAtEpochMs: runStartedAtEpochMs ?? Date.now(),
+      createdAtServer: serverTimestamp(),
 
-    const opqrstText =
-      Object.entries(opqrstState)
-        .map(([k, v]) => `${k}:${v ? "✓" : "-"}`)
-        .join(" ") || "";
+      sessionId: sessionId ?? null,
+      caseId: scenario.id ?? null,
+      caseTitle: scenario.title ?? null,
+      patient: scenario.patientInfo ?? null,
 
-    const evalText =
-      evaluation.evaluated.length === 0
-        ? ""
-        : "\n\nVurdering:\n" +
-          evaluation.evaluated
-            .map((ev) => {
-              const status =
-                ev.status === "GREEN"
-                  ? "Godt"
-                  : ev.status === "YELLOW"
-                  ? "Kan forbedres"
-                  : "Kritisk";
-              const timePart = ev.logEntry
-                ? ` (udført ${formatTime(ev.logEntry.timeMs)})`
-                : " (ikke udført)";
-              return `- ${status}${timePart}: ${ev.comment}`;
-            })
-            .join("\n");
+      org: {
+        orgId: selectedOrg?.id ?? null,
+        orgRole: selectedOrg?.role ?? null,
+      },
+      user: {
+        uid,
+      },
+      focus: pickedFocus ?? null,
 
-    const report = `Case: ${scenario.title}
-${scenario.subtitle}
+      totalTimeMs: elapsedMs,
+      timeline: mergedTimeline,
 
-Diagnose: ${scenario.diagnosis}
-Aktionsdiagnoser: ${scenario.actionDiagnoses.join(", ")}
+      acronyms: {
+        sampler: samplerState,
+        opqrst: opqrstState,
+        midashe: midasheState,
+      },
 
-SAMPLER: ${samplerText}
-OPQRST: ${opqrstText}
+      feedback: {
+        text: feedbackText.trim() || null,
+        grade: selectedOrg?.role === "school" ? feedbackGrade.trim() || null : null,
+      },
+    });
 
-Samlet tid: ${totalTime}
+    setSavingFeedback(true);
+    try {
+      // 1) Save locally
+      const key = "casefacilitator:runs";
+      const existingRaw = await AsyncStorage.getItem(key);
+      const existing = existingRaw ? JSON.parse(existingRaw) : [];
+      existing.unshift(payload);
+      await AsyncStorage.setItem(key, JSON.stringify(existing.slice(0, 250)));
 
-Handlinger:
-${actionsText}${evalText}
-`;
+      // 2) Save to Firestore
+      const effectiveRunId = payload.runId as string;
 
-    await Clipboard.setStringAsync(report);
-    Alert.alert("Kopieret", "Summary er kopieret til udklipsholderen.");
-  };
+      if (sessionId) {
+        const ref = doc(db, "sessions", sessionId, "runs", effectiveRunId);
+        await setDoc(ref, payload, { merge: true });
+      } else {
+        const ref = doc(db, "runs", effectiveRunId);
+        await setDoc(ref, payload, { merge: true });
+      }
 
-  // ---------- LOGIN ----------
+      Alert.alert("Gemt", "Feedback + summary gemt lokalt og i backend.");
+      setFeedbackOpen(false);
+    } catch (e: any) {
+      console.warn(e);
+      Alert.alert("Kunne ikke gemme", e?.message ?? "Ukendt fejl.");
+    } finally {
+      setSavingFeedback(false);
+    }
+  }
+
+  // ---------- Render screens ----------
   if (screen === "login") {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={styles.title}>Case Facilitator</Text>
-        <Text style={styles.subtitle}>
-          Vælg bruger-type / organisation (midlertidig login).
-        </Text>
-
-        {!authReady && (
-          <View style={{ marginTop: 16, alignItems: "center" }}>
-            <ActivityIndicator />
-            <Text style={[styles.text, { marginTop: 8 }]}>
-              Logger ind anonymt…
-            </Text>
-          </View>
-        )}
-
-        <View style={{ marginTop: 16 }}>
-          {ORG_CHOICES.map((org) => (
-            <TouchableOpacity
-              key={org.id}
-              style={styles.caseCard}
-              disabled={!authReady}
-              onPress={async () => {
-                try {
-                  setSelectedOrg(org);
-                  setLoadingCases(true);
-                  const cases = await loadAllCasesFromFirestore();
-                  setAllCases(cases);
-                  setLoadingCases(false);
-                  setScreen("caseList");
-                } catch (e) {
-                  console.error(e);
-                  setLoadingCases(false);
-                  Alert.alert(
-                    "Kunne ikke hente cases",
-                    "Tjek Firestore regler + at du har internet og cases i /cases.",
-                  );
-                }
-              }}
-            >
-              <Text style={styles.caseTitle}>{org.label}</Text>
-              <Text style={styles.caseSubtitle}>Rolle: {org.role}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-
-        {loadingCases && (
-          <View style={{ marginTop: 12, alignItems: "center" }}>
-            <ActivityIndicator />
-            <Text style={[styles.text, { marginTop: 8 }]}>
-              Henter cases…
-            </Text>
-          </View>
-        )}
-      </SafeAreaView>
+      <LoginScreen
+        authReady={authReady}
+        loadingCases={loadingCases}
+        onPickOrg={async (org) => {
+          try {
+            setSelectedOrg(org);
+            setLoadingCases(true);
+            const cases = await loadAllCasesFromFirestore();
+            setAllCases(cases);
+            setLoadingCases(false);
+            setScreen("caseList");
+          } catch (e) {
+            console.error(e);
+            setLoadingCases(false);
+            Alert.alert("Kunne ikke hente cases", "Tjek Firestore regler + internet.");
+          }
+        }}
+        onScanQr={() => setScreen("scanQr")}
+      />
     );
   }
 
-  // ---------- CASE LIST ----------
   if (screen === "caseList") {
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity
-            onPress={() => {
-              setSelectedOrg(null);
-              setAllCases([]);
-              setScreen("login");
-            }}
-            style={styles.smallButton}
-          >
-            <Text style={styles.smallButtonText}>←</Text>
-          </TouchableOpacity>
-
-          <View style={{ flex: 1 }}>
-            <Text style={styles.title}>Cases</Text>
-            <Text style={styles.subtitle}>
-              {selectedOrg ? `Logget ind som: ${selectedOrg.label}` : ""}
-            </Text>
-          </View>
-
-          <TouchableOpacity
-            onPress={async () => {
-              try {
-                setLoadingCases(true);
-                const cases = await loadAllCasesFromFirestore();
-                setAllCases(cases);
-                setLoadingCases(false);
-              } catch (e) {
-                console.error(e);
-                setLoadingCases(false);
-                Alert.alert("Fejl", "Kunne ikke opdatere cases.");
-              }
-            }}
-            style={styles.smallButton}
-          >
-            <Text style={styles.smallButtonText}>⟳</Text>
-          </TouchableOpacity>
-        </View>
-
-        {loadingCases && (
-          <View style={{ marginTop: 12, alignItems: "center" }}>
-            <ActivityIndicator />
-            <Text style={[styles.text, { marginTop: 8 }]}>Opdaterer…</Text>
-          </View>
-        )}
-
-        <ScrollView style={{ marginTop: 12 }}>
-          {allCases.map((c) => (
-            <TouchableOpacity
-              key={c.id}
-              style={styles.caseCard}
-              onPress={() => startCase(c)}
-            >
-              <Text style={styles.caseTitle}>{c.title}</Text>
-              <Text style={styles.caseSubtitle}>{c.subtitle}</Text>
-              <View style={styles.badgeRow}>
-                <Text style={styles.badge}>{c.acuity}</Text>
-                <Text style={styles.badge}>Sværhedsgrad {c.difficulty}/3</Text>
-              </View>
-            </TouchableOpacity>
-          ))}
-          {allCases.length === 0 && !loadingCases && (
-            <Text style={styles.text}>Ingen cases fundet i Firestore.</Text>
-          )}
-        </ScrollView>
-      </SafeAreaView>
+      <CaseListScreen
+        selectedOrg={selectedOrg}
+        allCases={allCases}
+        onBackToLogin={() => {
+          cleanupSessionListener();
+          setSessionId(null);
+          setSessionDoc(null);
+          setLiveState(null);
+          setSelectedOrg(null);
+          setAllCases([]);
+          setScreen("login");
+        }}
+        onPickCase={(c) => {
+          setSelectedCaseTemplate(c);
+          setSetupSex(c.patientInfo?.sex ?? "M");
+          setSetupAge(c.patientInfo?.age ?? 50);
+          setUnits({ ambulancer: 1, akutbil: 0, laegebil: 0 });
+          setFacilitatorsCount(1);
+          setScreen("caseSetup");
+        }}
+      />
     );
   }
 
-  // guard
-  if (!scenario || !currentState) {
+  if (screen === "caseSetup") {
+    return (
+      <CaseSetupScreen
+        selectedOrg={selectedOrg}
+        selectedCaseTemplate={selectedCaseTemplate}
+        setupSex={setupSex}
+        setupAge={setupAge}
+        units={units}
+        facilitatorsCount={facilitatorsCount}
+        onSetSex={setSetupSex}
+        onSetAge={setSetupAge}
+        onSetUnits={setUnits}
+        onSetFacilitatorsCount={setFacilitatorsCount}
+        onBack={() => setScreen("caseList")}
+        onScanQr={() => setScreen("scanQr")}
+        onStartSoloCase={(derivedScenario) => {
+          if (units.ambulancer + units.akutbil + units.laegebil <= 0) {
+            Alert.alert("Ingen enheder", "Angiv mindst 1 enhed (fx 1 ambulance).");
+            return;
+          }
+          startCase(derivedScenario);
+        }}
+        onCreateSessionInvite={async () => {
+          if (!selectedOrg || !selectedCaseTemplate) return;
+          try {
+            const { sessionId: sid } = await createSession({
+              caseId: selectedCaseTemplate.id,
+              orgId: selectedOrg.id,
+              facilitatorsCount,
+              units,
+              patient: { sex: setupSex, age: setupAge },
+            });
+            setSessionId(sid);
+            await ensureSessionListener(sid);
+            setScreen("inviteQr");
+          } catch (e: any) {
+            console.error(e);
+            Alert.alert("Session fejl", e?.message ?? "Kunne ikke oprette session.");
+          }
+        }}
+      />
+    );
+  }
+
+  if (screen === "inviteQr") {
+    const facUrl = sessionId ? buildJoinUrl(sessionId, "facilitator") : null;
+    const defUrl = sessionId ? buildJoinUrl(sessionId, "defib") : null;
+
+    return (
+      <InviteQrScreen
+        sessionId={sessionId}
+        facUrl={facUrl}
+        defUrl={defUrl}
+        onBack={() => setScreen("caseSetup")}
+      />
+    );
+  }
+
+  if (screen === "scanQr") {
+    return (
+      <ScanQrScreen
+        perm={perm ?? null}
+        requestPerm={requestPerm}
+        onBack={() => setScreen(selectedOrg ? "caseSetup" : "login")}
+        onParsedInvite={({ sessionId: sid, role }) => {
+          setPendingJoinSessionId(sid);
+          setPendingJoinRole(role);
+
+          if (role === "DEFIB") setScreen("defib");
+          else setScreen("pickFocus");
+        }}
+      />
+    );
+  }
+
+  if (screen === "pickFocus") {
+    return (
+      <PickFocusScreen
+        sessionId={pendingJoinSessionId}
+        pickedFocus={pickedFocus}
+        onPickFocus={(f) => setPickedFocus(f)}
+        onJoin={async () => {
+          const sid = pendingJoinSessionId;
+          if (!sid) {
+            Alert.alert("Mangler session", "Ingen sessionId fundet.");
+            setScreen("login");
+            return;
+          }
+
+          try {
+            const docSnap = await joinSession({ sessionId: sid, role: "FACILITATOR" });
+            setSessionId(sid);
+            setSessionDoc(docSnap);
+            await ensureSessionListener(sid);
+            await setFacilitatorFocus(sid, pickedFocus);
+
+            Alert.alert("Joined", `Du er nu i sessionen.\nFokus: ${pickedFocus}`);
+            setScreen(selectedOrg ? "caseSetup" : "login");
+          } catch (e: any) {
+            console.error(e);
+            Alert.alert("Join fejl", e?.message ?? "Kunne ikke joine session.");
+            setScreen("login");
+          }
+        }}
+      />
+    );
+  }
+
+  if (screen === "defib") {
+    return (
+      <DefibScreen
+        sessionId={sessionId}
+        sessionDoc={sessionDoc}
+        liveState={liveState}
+        defibOn={defibOn}
+        defibBusy={defibBusy}
+        defibDisplay={defibDisplay}
+        defibEkgKey={defibEkgKey}
+        onBack={() => setScreen("login")}
+        onTogglePower={() => {
+          setDefibOn((p) => !p);
+          setDefibDisplay("");
+          setDefibEkgKey(null);
+          // optional: also clear busy
+          setDefibBusy(null);
+        }}
+        onSetBusy={(v) => setDefibBusy(v)}
+        onSetDisplay={(s) => setDefibDisplay(s)}
+        onSetEkgKey={(k) => setDefibEkgKey(k)}
+        onLogDefib={async (type, payload, note) => {
+          if (!sessionId) return;
+          await logSessionEvent({
+            sessionId,
+            type,
+            tRelMs: sessionRelNowMs(),
+            payload,
+            note,
+            source: "DEFIB",
+          });
+        }}
+        sessionRelNowMs={sessionRelNowMs}
+      />
+    );
+  }
+
+  // Guard: only these screens need a scenario loaded
+  if ((screen === "summary" || screen === "caseDetail") && (!scenario || !currentState)) {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.text}>Ingen case valgt.</Text>
+        <TouchableOpacity style={styles.button} onPress={() => setScreen("login")}>
+          <Text style={styles.buttonText}>Til login</Text>
+        </TouchableOpacity>
       </SafeAreaView>
     );
   }
@@ -721,482 +849,94 @@ ${actionsText}${evalText}
   // ---------- SUMMARY ----------
   if (screen === "summary") {
     const { evaluated, extraActions } = evaluation;
-    const samplerText = Object.entries(samplerState)
-      .map(([k, v]) => `${k}:${v ? "✓" : "-"}`)
-      .join(" ");
-    const opqrstText = Object.entries(opqrstState)
-      .map(([k, v]) => `${k}:${v ? "✓" : "-"}`)
-      .join(" ");
 
     return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.headerRow}>
-          <TouchableOpacity
-            onPress={() => setScreen("caseList")}
-            style={styles.smallButton}
-          >
-            <Text style={styles.smallButtonText}>←</Text>
-          </TouchableOpacity>
-          <Text style={styles.title}>Case summary</Text>
-          <TouchableOpacity
-            onPress={() => {
-              setScenario(null);
-              setCurrentState(null);
-              setScreen("caseList");
-            }}
-            style={styles.smallButton}
-          >
-            <Text style={styles.smallButtonText}>⌂</Text>
-          </TouchableOpacity>
-        </View>
-
-        <Text style={styles.subtitle}>{scenario.title}</Text>
-        <Text style={styles.subtitle}>{scenario.subtitle}</Text>
-
-        <ScrollView style={{ marginTop: 8, flex: 1 }}>
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Diagnose</Text>
-            <Text style={styles.text}>{scenario.diagnosis}</Text>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>Aktionsdiagnoser</Text>
-            {scenario.actionDiagnoses.map((d) => (
-              <Text key={d} style={styles.text}>
-                • {d}
-              </Text>
-            ))}
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>
-              Samlet tid: {formatTime(elapsedMs)}
-            </Text>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>SAMPLER gennemgået</Text>
-            <Text style={styles.text}>{samplerText}</Text>
-          </View>
-
-          <View style={styles.card}>
-            <Text style={styles.cardTitle}>OPQRST gennemgået</Text>
-            <Text style={styles.text}>{opqrstText}</Text>
-          </View>
-
-          <Text style={styles.sectionTitle}>Handlinger (tidslinje)</Text>
-          {log.length === 0 && (
-            <Text style={styles.text}>Ingen handlinger registreret.</Text>
-          )}
-          {log.map((entry) => (
-            <View key={entry.id} style={styles.logItem}>
-              <Text style={styles.logTime}>{formatTime(entry.timeMs)}</Text>
-              <Text style={styles.logText}>{entry.description}</Text>
-            </View>
-          ))}
-
-          <Text style={styles.sectionTitle}>Vurdering</Text>
-          {evaluated.map((ev, idx) => (
-            <View key={idx} style={styles.evalItem}>
-              <Text style={[styles.evalTitle, { color: statusColor(ev.status) }]}>
-                {ev.status === "GREEN"
-                  ? "Godt"
-                  : ev.status === "YELLOW"
-                  ? "Kan forbedres"
-                  : "Kritisk"}
-              </Text>
-              <Text style={styles.evalText}>
-                Tiltag: {ev.expected.actionId}
-                {ev.logEntry
-                  ? ` – udført kl. ${formatTime(ev.logEntry.timeMs)}`
-                  : " – ikke udført"}
-              </Text>
-              <Text style={styles.evalText}>{ev.comment}</Text>
-            </View>
-          ))}
-
-          {extraActions.length > 0 && (
-            <>
-              <Text style={styles.sectionTitle}>Ekstra handlinger</Text>
-              {extraActions.map((entry) => (
-                <View key={entry.id} style={styles.logItem}>
-                  <Text style={styles.logTime}>{formatTime(entry.timeMs)}</Text>
-                  <Text style={styles.logText}>{entry.description}</Text>
-                </View>
-              ))}
-            </>
-          )}
-        </ScrollView>
-
-        <View style={{ flexDirection: "row", gap: 8 }}>
-          <TouchableOpacity
-            style={[styles.button, { flex: 1, backgroundColor: "#60a5fa" }]}
-            onPress={handleCopyReport}
-          >
-            <Text style={styles.buttonText}>Copy summary</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.button, { flex: 1 }]}
-            onPress={() => startCase(scenario)}
-          >
-            <Text style={styles.buttonText}>Kør casen igen</Text>
-          </TouchableOpacity>
-        </View>
-      </SafeAreaView>
+      <SummaryScreen
+        scenario={scenario!}
+        sessionId={sessionId}
+        runId={runId}
+        elapsedMs={elapsedMs}
+        mergedTimeline={mergedTimeline}
+        evaluated={evaluated}
+        extraActions={extraActions}
+        samplerState={samplerState}
+        opqrstState={opqrstState}
+        midasheState={midasheState}
+        selectedOrgRole={selectedOrg?.role ?? null}
+        feedbackOpen={feedbackOpen}
+        feedbackText={feedbackText}
+        feedbackGrade={feedbackGrade}
+        savingFeedback={savingFeedback}
+        onOpenFeedback={() => setFeedbackOpen(true)}
+        onCloseFeedback={() => setFeedbackOpen(false)}
+        onSetFeedbackText={setFeedbackText}
+        onSetFeedbackGrade={setFeedbackGrade}
+        onSaveSummaryWithFeedback={saveSummaryWithFeedback}
+        onBackToSetup={() => {
+          setRunning(false);
+          setScreen("caseSetup");
+        }}
+        onBackToCases={() => {
+          setRunning(false);
+          setScenario(null);
+          setCurrentState(null);
+          setLog([]);
+          setElapsedMs(0);
+          setRunId(null);
+          setRunStartedAtEpochMs(null);
+          setScreen("caseList");
+        }}
+        onRunAgain={() => {
+          setRunning(false);
+          setScreen("caseSetup");
+        }}
+      />
     );
   }
 
-  // ---------- CASE DETAIL / LIVE SIM ----------
-  const actionsForLetter = ABCDE_ACTIONS.filter((a) => a.letter === selectedLetter);
-
-  const samplerLetters: SamplerLetter[] = ["S", "A", "M", "P", "L", "E", "R"];
-  const opqrstLetters: OpqrstLetter[] = ["O", "P", "Q", "R", "S", "T"];
-
+  // ---------- DEFAULT: CASE DETAIL ----------
   return (
-    <SafeAreaView style={styles.container}>
-      {popupText && (
-        <View style={styles.popup}>
-          <Text style={styles.popupText}>{popupText}</Text>
-        </View>
-      )}
-
-      <View style={styles.headerRow}>
-        <TouchableOpacity
-          onPress={() => {
-            setRunning(false);
-            setScreen("caseList");
-          }}
-          style={styles.smallButton}
-        >
-          <Text style={styles.smallButtonText}>←</Text>
-        </TouchableOpacity>
-
-        <View style={{ flex: 1 }}>
-          <Text style={styles.title}>{scenario.title}</Text>
-          <Text style={styles.subtitle}>{scenario.subtitle}</Text>
-        </View>
-
-        <Text style={styles.timerText}>{formatTime(elapsedMs)}</Text>
-      </View>
-
-      <View style={styles.badgeRow}>
-        <Text style={styles.badge}>{scenario.acuity}</Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Alarmtekst</Text>
-        <Text style={styles.text}>{scenario.dispatchText}</Text>
-      </View>
-
-      <TouchableOpacity
-        style={[
-          styles.button,
-          {
-            backgroundColor: running ? "#4b5563" : "#10b981",
-            marginBottom: 8,
-          },
-        ]}
-        disabled={running}
-        onPress={() => setRunning(true)}
-      >
-        <Text style={styles.buttonText}>
-          {running ? "Case i gang" : "GO – start timer"}
-        </Text>
-      </TouchableOpacity>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>Vitale parametre</Text>
-        <Text style={styles.text}>
-          HR {currentState.vitals.hr} · RF {currentState.vitals.rr} · BT{" "}
-          {currentState.vitals.btSys}/{currentState.vitals.btDia} · SpO₂{" "}
-          {currentState.vitals.spo2}% · Smerte{" "}
-          {currentState.vitals.painNrs ?? "-"}
-        </Text>
-      </View>
-
-      <View style={styles.card}>
-        <Text style={styles.cardTitle}>ABCDE status</Text>
-        <Text style={styles.text}>A: {currentState.abcde.A}</Text>
-        <Text style={styles.text}>B: {currentState.abcde.B}</Text>
-        <Text style={styles.text}>C: {currentState.abcde.C}</Text>
-        <Text style={styles.text}>D: {currentState.abcde.D}</Text>
-        <Text style={styles.text}>E: {currentState.abcde.E}</Text>
-        {currentState.extraInfo && (
-          <Text style={styles.text}>Ekstra: {currentState.extraInfo}</Text>
-        )}
-      </View>
-
-      {/* Handlinger – ABCDE dropdown */}
-      <View style={styles.card}>
-        <TouchableOpacity
-          style={styles.dropdownHeader}
-          onPress={() => setAbcdeActionsExpanded((prev) => !prev)}
-        >
-          <Text style={styles.dropdownHeaderText}>Handlinger – ABCDE</Text>
-          <Text style={styles.dropdownHeaderText}>
-            {abcdeActionsExpanded ? "▲" : "▼"}
-          </Text>
-        </TouchableOpacity>
-
-        {abcdeActionsExpanded && (
-          <>
-            <View style={styles.abcdeRow}>
-              {(["A", "B", "C", "D", "E"] as AbcdeLetter[]).map((letter) => (
-                <TouchableOpacity
-                  key={letter}
-                  style={[
-                    styles.abcdeButton,
-                    selectedLetter === letter && styles.abcdeButtonActive,
-                  ]}
-                  onPress={() => setSelectedLetter(letter)}
-                >
-                  <Text
-                    style={[
-                      styles.abcdeButtonText,
-                      selectedLetter === letter && {
-                        color: "black",
-                        fontWeight: "700",
-                      },
-                    ]}
-                  >
-                    {letter}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-
-            <FlatList
-              data={actionsForLetter}
-              keyExtractor={(item) => item.id}
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              renderItem={({ item }) => (
-                <TouchableOpacity
-                  style={styles.actionButton}
-                  onPress={() => handleActionPress(item)}
-                >
-                  <Text style={styles.actionButtonText}>{item.label}</Text>
-                </TouchableOpacity>
-              )}
-            />
-          </>
-        )}
-      </View>
-
-      {/* SAMPLER dropdown */}
-      <View style={styles.card}>
-        <TouchableOpacity
-          style={styles.dropdownHeader}
-          onPress={() => setSamplerExpanded((prev) => !prev)}
-        >
-          <Text style={styles.dropdownHeaderText}>SAMPLER</Text>
-          <Text style={styles.dropdownHeaderText}>
-            {samplerExpanded ? "▲" : "▼"}
-          </Text>
-        </TouchableOpacity>
-        {samplerExpanded && (
-          <View style={styles.abcdeRow}>
-            {samplerLetters.map((letter) => (
-              <TouchableOpacity
-                key={letter}
-                style={[
-                  styles.samplerButton,
-                  samplerState[letter] && styles.samplerButtonActive,
-                ]}
-                onPress={() =>
-                  setSamplerState((prev) => ({
-                    ...prev,
-                    [letter]: !prev[letter],
-                  }))
-                }
-              >
-                <Text
-                  style={[
-                    styles.samplerButtonText,
-                    samplerState[letter] && { color: "black" },
-                  ]}
-                >
-                  {letter}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
-
-      {/* OPQRST dropdown */}
-      <View style={styles.card}>
-        <TouchableOpacity
-          style={styles.dropdownHeader}
-          onPress={() => setOpqrstExpanded((prev) => !prev)}
-        >
-          <Text style={styles.dropdownHeaderText}>OPQRST</Text>
-          <Text style={styles.dropdownHeaderText}>
-            {opqrstExpanded ? "▲" : "▼"}
-          </Text>
-        </TouchableOpacity>
-        {opqrstExpanded && (
-          <View style={styles.abcdeRow}>
-            {opqrstLetters.map((letter) => (
-              <TouchableOpacity
-                key={letter}
-                style={[
-                  styles.samplerButton,
-                  opqrstState[letter] && styles.samplerButtonActive,
-                ]}
-                onPress={() =>
-                  setOpqrstState((prev) => ({
-                    ...prev,
-                    [letter]: !prev[letter],
-                  }))
-                }
-              >
-                <Text
-                  style={[
-                    styles.samplerButtonText,
-                    opqrstState[letter] && { color: "black" },
-                  ]}
-                >
-                  {letter}
-                </Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        )}
-      </View>
-
-      {/* Medicine dropdown */}
-      <View style={styles.card}>
-        <TouchableOpacity
-          style={styles.dropdownHeader}
-          onPress={() => setMedExpanded((prev) => !prev)}
-        >
-          <Text style={styles.dropdownHeaderText}>Medicin</Text>
-          <Text style={styles.dropdownHeaderText}>
-            {medExpanded ? "▲" : "▼"}
-          </Text>
-        </TouchableOpacity>
-
-        {medExpanded && (
-          <>
-            <Text style={styles.text}>Vælg præparat og dosis.</Text>
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              style={{ marginTop: 4 }}
-            >
-              {MEDICATIONS.map((med) => (
-                <TouchableOpacity
-                  key={med.id}
-                  style={[
-                    styles.medButton,
-                    selectedMedication?.id === med.id && styles.medButtonActive,
-                  ]}
-                  onPress={() => {
-                    setSelectedMedication(med);
-                    setSelectedDose(null);
-                    setSelectedOxygenFlow(null);
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.medButtonText,
-                      selectedMedication?.id === med.id && { color: "black" },
-                    ]}
-                  >
-                    {med.name}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </ScrollView>
-
-            {selectedMedication && selectedMedication.type === "drug" && (
-              <>
-                <View style={[styles.abcdeRow, { marginTop: 6 }]}>
-                  {DOSE_OPTIONS.map((d) => (
-                    <TouchableOpacity
-                      key={d.id}
-                      style={[
-                        styles.doseButton,
-                        selectedDose === d.id && styles.doseButtonActive,
-                      ]}
-                      onPress={() => setSelectedDose(d.id)}
-                    >
-                      <Text
-                        style={[
-                          styles.doseButtonText,
-                          selectedDose === d.id && { color: "black" },
-                        ]}
-                      >
-                        {d.label}
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-                <Text style={styles.textSmall}>
-                  Alle doser er sat til 0 – indsæt korrekte værdier i koden.
-                </Text>
-              </>
-            )}
-
-            {selectedMedication && selectedMedication.type === "oxygen" && (
-              <>
-                <Text style={[styles.text, { marginTop: 6 }]}>
-                  Vælg liter/min:
-                </Text>
-                <ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  style={{ marginTop: 4 }}
-                >
-                  {selectedMedication.oxygenFlows?.map((flow) => (
-                    <TouchableOpacity
-                      key={flow}
-                      style={[
-                        styles.doseButton,
-                        selectedOxygenFlow === flow && styles.doseButtonActive,
-                      ]}
-                      onPress={() => setSelectedOxygenFlow(flow)}
-                    >
-                      <Text
-                        style={[
-                          styles.doseButtonText,
-                          selectedOxygenFlow === flow && { color: "black" },
-                        ]}
-                      >
-                        {flow} L/min
-                      </Text>
-                    </TouchableOpacity>
-                  ))}
-                </ScrollView>
-              </>
-            )}
-
-            <TouchableOpacity
-              style={[styles.button, { marginTop: 8, backgroundColor: "#38bdf8" }]}
-              onPress={handleRegisterMedication}
-            >
-              <Text style={styles.buttonText}>Registrer medicin</Text>
-            </TouchableOpacity>
-          </>
-        )}
-      </View>
-
-      <View style={styles.logContainer}>
-        <Text style={styles.cardTitle}>Seneste respons</Text>
-        {log.length === 0 ? (
-          <Text style={styles.text}>Ingen handlinger endnu.</Text>
-        ) : (
-          <Text style={styles.text}>
-            {formatTime(log[log.length - 1].timeMs)} –{" "}
-            {log[log.length - 1].description}
-          </Text>
-        )}
-      </View>
-
-      <TouchableOpacity style={styles.button} onPress={handleFinishCase}>
-        <Text style={styles.buttonText}>Case færdig → summary</Text>
-      </TouchableOpacity>
-    </SafeAreaView>
+    <CaseDetailScreen
+      scenario={scenario!}
+      currentState={currentState!}
+      elapsedMs={elapsedMs}
+      running={running}
+      popupText={popupText}
+      selectedLetter={selectedLetter}
+      setSelectedLetter={setSelectedLetter}
+      abcdeActionsExpanded={abcdeActionsExpanded}
+      setAbcdeActionsExpanded={setAbcdeActionsExpanded}
+      samplerExpanded={samplerExpanded}
+      setSamplerExpanded={setSamplerExpanded}
+      opqrstExpanded={opqrstExpanded}
+      setOpqrstExpanded={setOpqrstExpanded}
+      midasheExpanded={midasheExpanded}
+      setMidasheExpanded={setMidasheExpanded}
+      medExpanded={medExpanded}
+      setMedExpanded={setMedExpanded}
+      samplerState={samplerState}
+      setSamplerState={setSamplerState}
+      opqrstState={opqrstState}
+      setOpqrstState={setOpqrstState}
+      midasheState={midasheState}
+      setMidasheState={setMidasheState}
+      selectedMedication={selectedMedication}
+      setSelectedMedication={setSelectedMedication}
+      selectedDose={selectedDose}
+      setSelectedDose={setSelectedDose}
+      selectedOxygenFlow={selectedOxygenFlow}
+      setSelectedOxygenFlow={setSelectedOxygenFlow}
+      onBackToSetup={() => {
+        setRunning(false);
+        setScreen("caseSetup");
+      }}
+      onStartTimer={startTimer}
+      onActionPress={handleActionPress}
+      onRegisterMedication={handleRegisterMedication}
+      onFinishCaseToSummary={() => {
+        setRunning(false);
+        setScreen("summary");
+      }}
+    />
   );
 }
