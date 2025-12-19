@@ -7,7 +7,13 @@ import { Alert } from "react-native";
 
 // Firebase
 import { onAuthStateChanged, signInAnonymously } from "firebase/auth";
-import { collection, doc, getDocs, serverTimestamp, setDoc } from "firebase/firestore";
+import {
+  collection,
+  doc,
+  getDocs,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 import { auth, db } from "../src/firebase/firebase";
 
 // Camera
@@ -19,7 +25,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "../src/styles/indexStyles";
 
 // Data
-import { DOSE_OPTIONS } from "../src/data/medications";
+import { getDoseOptionsForMedication } from "../src/data/medications";
 import { type OrgChoice } from "../src/data/orgChoices";
 
 // Utils
@@ -56,6 +62,7 @@ import type {
   AbcdeAction,
   AbcdeLetter,
   ActionLogEntry,
+  AssistanceChoice, // ✅ NEW: import from types
   CaseScenario,
   DoseStrength,
   EvaluatedAction,
@@ -66,9 +73,7 @@ import type {
   SamplerLetter,
 } from "../src/domain/cases/types";
 
-// EKG lookup (Defib screen uses it)
-
-// Screens (you created these)
+// Screens
 import { CaseDetailScreen } from "../src/screens/CaseDetailScreen";
 import CaseListScreen from "../src/screens/CaseListScreen";
 import CaseSetupScreen from "../src/screens/CaseSetupScreen";
@@ -117,7 +122,7 @@ function makeRunId(): string {
 }
 
 async function loadAllCasesFromFirestore(): Promise<CaseScenario[]> {
-  const snap = await getDocs(collection(db, "cases"));
+  const snap = await getDocs(collection(db, "cases_v2"));
   const cases: CaseScenario[] = [];
   snap.forEach((docSnap) => {
     const data: any = docSnap.data();
@@ -126,7 +131,9 @@ async function loadAllCasesFromFirestore(): Promise<CaseScenario[]> {
     cases.push(data as CaseScenario);
   });
 
-  cases.sort((a, b) => String(a.title || "").localeCompare(String(b.title || "")));
+  cases.sort((a, b) =>
+    String(a.title || "").localeCompare(String(b.title || ""))
+  );
   return cases;
 }
 
@@ -140,7 +147,8 @@ export default function Index() {
   const [authReady, setAuthReady] = useState(false);
   const [loadingCases, setLoadingCases] = useState(false);
   const [allCases, setAllCases] = useState<CaseScenario[]>([]);
-  const [selectedCaseTemplate, setSelectedCaseTemplate] = useState<CaseScenario | null>(null);
+  const [selectedCaseTemplate, setSelectedCaseTemplate] =
+    useState<CaseScenario | null>(null);
 
   const router = useRouter();
 
@@ -158,8 +166,12 @@ export default function Index() {
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionDoc, setSessionDoc] = useState<SessionDoc | null>(null);
 
-  const [pendingJoinSessionId, setPendingJoinSessionId] = useState<string | null>(null);
-  const [pendingJoinRole, setPendingJoinRole] = useState<"FACILITATOR" | "DEFIB">("FACILITATOR");
+  const [pendingJoinSessionId, setPendingJoinSessionId] = useState<
+    string | null
+  >(null);
+  const [pendingJoinRole, setPendingJoinRole] = useState<
+    "FACILITATOR" | "DEFIB"
+  >("FACILITATOR");
 
   // Live state for defib
   const [liveState, setLiveState] = useState<SessionLiveState | null>(null);
@@ -173,6 +185,11 @@ export default function Index() {
   const [scenario, setScenario] = useState<CaseScenario | null>(null);
   const [currentState, setCurrentState] = useState<PatientState | null>(null);
 
+  // --- Assistance (UI state only) ---
+  const [assistanceModalOpen, setAssistanceModalOpen] = useState(false);
+  const [selectedAssistance, setSelectedAssistance] =
+    useState<AssistanceChoice | null>(null);
+
   // Run/timer/log
   const [elapsedMs, setElapsedMs] = useState(0);
   const [running, setRunning] = useState(false);
@@ -181,7 +198,9 @@ export default function Index() {
 
   // Run identity
   const [runId, setRunId] = useState<string | null>(null);
-  const [runStartedAtEpochMs, setRunStartedAtEpochMs] = useState<number | null>(null);
+  const [runStartedAtEpochMs, setRunStartedAtEpochMs] = useState<number | null>(
+    null
+  );
 
   // Acronyms
   const initialSampler: Record<SamplerLetter, boolean> = {
@@ -211,9 +230,12 @@ export default function Index() {
     E: false,
   };
 
-  const [samplerState, setSamplerState] = useState<Record<SamplerLetter, boolean>>(initialSampler);
-  const [opqrstState, setOpqrstState] = useState<Record<OpqrstLetter, boolean>>(initialOpqrst);
-  const [midasheState, setMidasheState] = useState<Record<MidasheLetter, boolean>>(initialMidashe);
+  const [samplerState, setSamplerState] =
+    useState<Record<SamplerLetter, boolean>>(initialSampler);
+  const [opqrstState, setOpqrstState] =
+    useState<Record<OpqrstLetter, boolean>>(initialOpqrst);
+  const [midasheState, setMidasheState] =
+    useState<Record<MidasheLetter, boolean>>(initialMidashe);
 
   // UI expanded toggles
   const [abcdeActionsExpanded, setAbcdeActionsExpanded] = useState(true);
@@ -223,15 +245,20 @@ export default function Index() {
   const [medExpanded, setMedExpanded] = useState(false);
 
   // Med selection
-  const [selectedMedication, setSelectedMedication] = useState<Medication | null>(null);
+  const [selectedMedication, setSelectedMedication] =
+    useState<Medication | null>(null);
   const [selectedDose, setSelectedDose] = useState<DoseStrength | null>(null);
-  const [selectedOxygenFlow, setSelectedOxygenFlow] = useState<number | null>(null);
+  const [selectedOxygenFlow, setSelectedOxygenFlow] = useState<number | null>(
+    null
+  );
 
   const [popupText, setPopupText] = useState<string | null>(null);
 
   // Defib UI state
   const [defibOn, setDefibOn] = useState(false);
-  const [defibBusy, setDefibBusy] = useState<null | "NIBP" | "SAT" | "ECG" | "ETCO2">(null);
+  const [defibBusy, setDefibBusy] = useState<
+    null | "NIBP" | "SAT" | "ECG" | "ETCO2"
+  >(null);
   const [defibDisplay, setDefibDisplay] = useState<string>("");
   const [defibEkgKey, setDefibEkgKey] = useState<string | null>(null);
 
@@ -277,12 +304,12 @@ export default function Index() {
     sessionUnsubRef.current = listenToSession(
       sid,
       (data) => setSessionDoc(data),
-      (e) => console.warn("Session listen error:", e),
+      (e) => console.warn("Session listen error:", e)
     );
     liveUnsubRef.current = listenLiveState(
       sid,
       (st) => setLiveState(st),
-      (e) => console.warn("Live state listen error:", e),
+      (e) => console.warn("Live state listen error:", e)
     );
   }
 
@@ -359,7 +386,10 @@ export default function Index() {
         await ensureSessionListener(sid);
       } catch (e: any) {
         console.error(e);
-        Alert.alert("Defib join fejl", e?.message ?? "Kunne ikke joine session.");
+        Alert.alert(
+          "Defib join fejl",
+          e?.message ?? "Kunne ikke joine session."
+        );
         setScreen("login");
       }
     })();
@@ -390,7 +420,10 @@ export default function Index() {
 
   const evaluation = useMemo(() => {
     if (!scenario) {
-      return { evaluated: [] as EvaluatedAction[], extraActions: [] as ActionLogEntry[] };
+      return {
+        evaluated: [] as EvaluatedAction[],
+        extraActions: [] as ActionLogEntry[],
+      };
     }
     return evaluateCase(scenario, mergedTimeline);
   }, [scenario, mergedTimeline]);
@@ -459,7 +492,10 @@ export default function Index() {
 
   const guardLocked = () => {
     if (locked) {
-      Alert.alert("Start casen først", "Tryk på 'GO – start timer' før du bruger funktionerne.");
+      Alert.alert(
+        "Start casen først",
+        "Tryk på 'GO – start timer' før du bruger funktionerne."
+      );
       return true;
     }
     return false;
@@ -470,9 +506,10 @@ export default function Index() {
     if (!scenario || !currentState) return;
 
     const transition = scenario.transitions.find(
-      (t) => t.fromStateId === currentState.id && t.actionId === action.id,
+      (t) => t.fromStateId === currentState.id && t.actionId === action.id
     );
-    const newState = transition && scenario.states.find((s) => s.id === transition.toStateId);
+    const newState =
+      transition && scenario.states.find((s) => s.id === transition.toStateId);
     const resultingState = newState || currentState;
 
     if (newState) setCurrentState(newState);
@@ -507,7 +544,6 @@ export default function Index() {
         return;
       }
 
-      // ✅ Stable ID: match Firestore expectedActions.actionId like "medicinsk_ilt"
       actionId = selectedMedication.id;
 
       meta = { oxygenFlow: selectedOxygenFlow };
@@ -518,36 +554,29 @@ export default function Index() {
         return;
       }
 
-      const doseMeta = DOSE_OPTIONS.find((d) => d.id === selectedDose);
+      const doseOptions = getDoseOptionsForMedication(selectedMedication);
+      const doseMeta = doseOptions.find((d) => d.id === selectedDose);
+
       if (!doseMeta) {
-        Alert.alert("Fejl", "Kunne ikke finde dosis-valg.");
+        Alert.alert(
+          "Fejl",
+          "Kunne ikke beregne dosis for det valgte præparat."
+        );
         return;
       }
 
-      const base = selectedMedication.normalDose ?? 0;
-      const actual = base * doseMeta.factor;
-      const unit = selectedMedication.unit || "enhed";
-
-      // ✅ Stable ID: match Firestore expectedActions.actionId like "MED_ADRENALIN_IM"
       actionId = selectedMedication.id;
 
       meta = {
         doseStrength: selectedDose,
-        baseDose: base,
+        baseDose: (selectedMedication as any).normalDose ?? null,
         factor: doseMeta.factor,
-        actualDose: actual,
-        unit,
+        actualDose: doseMeta.value,
+        unit: doseMeta.unit,
       };
 
-      description = `Medicin: ${selectedMedication.name} – ${doseMeta.label} (${actual} ${unit}).`;
+      description = `Medicin: ${selectedMedication.name} – ${doseMeta.label}.`;
     }
-
-    console.log(
-      "REGISTER MED actionId:",
-      actionId,
-      "selectedMedication.id:",
-      selectedMedication.id,
-    );
 
     const entry: ActionLogEntry = {
       id: `${Date.now()}_${actionId}`,
@@ -557,16 +586,72 @@ export default function Index() {
       resultingStateId: currentState.id,
       meta,
     };
+    // ✅ Apply state transition for meds too (if defined in scenario.transitions)
+    const medTransition = scenario.transitions.find(
+      (t) => t.fromStateId === currentState.id && t.actionId === actionId
+    );
+
+    const medNewState =
+      medTransition &&
+      scenario.states.find((s) => s.id === medTransition.toStateId);
+
+    if (medNewState) {
+      setCurrentState(medNewState);
+    }
 
     setLog((prev) => [...prev, entry]);
 
-    // ✅ UI reset: clear selections so boxes un-highlight
     setSelectedMedication(null);
     setSelectedDose(null);
     setSelectedOxygenFlow(null);
+  };
 
-    // Optional: collapse medicine section after register
-    // setMedExpanded(false);
+  const handleLogTriage = (isCritical: boolean) => {
+    if (guardLocked()) return;
+    if (!scenario || !currentState) return;
+
+    const actionId = isCritical
+      ? "PATIENT_TRIAGE_CRITICAL"
+      : "PATIENT_TRIAGE_NONCRITICAL";
+    const description = isCritical
+      ? "Triage: Kritisk patient."
+      : "Triage: Ikke kritisk patient.";
+
+    const entry: ActionLogEntry = {
+      id: `${Date.now()}_${actionId}`,
+      timeMs: elapsedMs,
+      actionId,
+      description,
+      resultingStateId: currentState.id,
+      meta: { triage: isCritical ? "CRITICAL" : "NONCRITICAL" },
+    };
+
+    setLog((prev) => [...prev, entry]);
+  };
+
+  const handleLogAssistance = (choice: AssistanceChoice) => {
+    if (guardLocked()) return;
+    if (!currentState) return;
+
+    const label =
+      choice === "EKSTRA_AMBULANCE"
+        ? "Ekstra ambulance"
+        : choice === "AKUTBIL"
+        ? "Akutbil"
+        : "Lægebil";
+
+    const actionId = `ASSIST_${choice}`;
+
+    const entry: ActionLogEntry = {
+      id: `${Date.now()}_${actionId}`,
+      timeMs: elapsedMs,
+      actionId,
+      description: `Tilkald assistance: ${label}.`,
+      resultingStateId: currentState.id,
+      meta: { assistance: choice },
+    };
+
+    setLog((prev) => [...prev, entry]);
   };
 
   async function saveSummaryWithFeedback() {
@@ -588,9 +673,7 @@ export default function Index() {
         orgId: selectedOrg?.id ?? null,
         orgRole: selectedOrg?.role ?? null,
       },
-      user: {
-        uid,
-      },
+      user: { uid },
       focus: pickedFocus ?? null,
 
       totalTimeMs: elapsedMs,
@@ -604,20 +687,19 @@ export default function Index() {
 
       feedback: {
         text: feedbackText.trim() || null,
-        grade: selectedOrg?.role === "school" ? feedbackGrade.trim() || null : null,
+        grade:
+          selectedOrg?.role === "school" ? feedbackGrade.trim() || null : null,
       },
     });
 
     setSavingFeedback(true);
     try {
-      // 1) Save locally
       const key = "casefacilitator:runs";
       const existingRaw = await AsyncStorage.getItem(key);
       const existing = existingRaw ? JSON.parse(existingRaw) : [];
       existing.unshift(payload);
       await AsyncStorage.setItem(key, JSON.stringify(existing.slice(0, 250)));
 
-      // 2) Save to Firestore
       const effectiveRunId = payload.runId as string;
 
       if (sessionId) {
@@ -655,7 +737,10 @@ export default function Index() {
           } catch (e) {
             console.error(e);
             setLoadingCases(false);
-            Alert.alert("Kunne ikke hente cases", "Tjek Firestore regler + internet.");
+            Alert.alert(
+              "Kunne ikke hente cases",
+              "Tjek Firestore regler + internet."
+            );
           }
         }}
         onScanQr={() => setScreen("scanQr")}
@@ -706,7 +791,10 @@ export default function Index() {
         onScanQr={() => setScreen("scanQr")}
         onStartSoloCase={(derivedScenario) => {
           if (units.ambulancer + units.akutbil + units.laegebil <= 0) {
-            Alert.alert("Ingen enheder", "Angiv mindst 1 enhed (fx 1 ambulance).");
+            Alert.alert(
+              "Ingen enheder",
+              "Angiv mindst 1 enhed (fx 1 ambulance)."
+            );
             return;
           }
           startCase(derivedScenario);
@@ -726,7 +814,10 @@ export default function Index() {
             setScreen("inviteQr");
           } catch (e: any) {
             console.error(e);
-            Alert.alert("Session fejl", e?.message ?? "Kunne ikke oprette session.");
+            Alert.alert(
+              "Session fejl",
+              e?.message ?? "Kunne ikke oprette session."
+            );
           }
         }}
       />
@@ -779,13 +870,19 @@ export default function Index() {
           }
 
           try {
-            const docSnap = await joinSession({ sessionId: sid, role: "FACILITATOR" });
+            const docSnap = await joinSession({
+              sessionId: sid,
+              role: "FACILITATOR",
+            });
             setSessionId(sid);
             setSessionDoc(docSnap);
             await ensureSessionListener(sid);
             await setFacilitatorFocus(sid, pickedFocus);
 
-            Alert.alert("Joined", `Du er nu i sessionen.\nFokus: ${pickedFocus}`);
+            Alert.alert(
+              "Joined",
+              `Du er nu i sessionen.\nFokus: ${pickedFocus}`
+            );
             setScreen(selectedOrg ? "caseSetup" : "login");
           } catch (e: any) {
             console.error(e);
@@ -835,11 +932,17 @@ export default function Index() {
   }
 
   // Guard: only these screens need a scenario loaded
-  if ((screen === "summary" || screen === "caseDetail") && (!scenario || !currentState)) {
+  if (
+    (screen === "summary" || screen === "caseDetail") &&
+    (!scenario || !currentState)
+  ) {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.text}>Ingen case valgt.</Text>
-        <TouchableOpacity style={styles.button} onPress={() => setScreen("login")}>
+        <TouchableOpacity
+          style={styles.button}
+          onPress={() => setScreen("login")}
+        >
           <Text style={styles.buttonText}>Til login</Text>
         </TouchableOpacity>
       </SafeAreaView>
@@ -858,7 +961,6 @@ export default function Index() {
         elapsedMs={elapsedMs}
         mergedTimeline={mergedTimeline}
         evaluated={evaluated}
-        extraActions={extraActions}
         samplerState={samplerState}
         opqrstState={opqrstState}
         midasheState={midasheState}
@@ -937,6 +1039,13 @@ export default function Index() {
         setRunning(false);
         setScreen("summary");
       }}
+      // ✅ NEW
+      onLogTriage={handleLogTriage}
+      onConfirmAssistance={handleLogAssistance}
+      assistanceModalOpen={assistanceModalOpen}
+      setAssistanceModalOpen={setAssistanceModalOpen}
+      selectedAssistance={selectedAssistance}
+      setSelectedAssistance={setSelectedAssistance}
     />
   );
 }

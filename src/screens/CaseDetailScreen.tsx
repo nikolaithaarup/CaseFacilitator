@@ -1,9 +1,11 @@
+// src/screens/CaseDetailScreen.tsx
+import { useMemo, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// ✅ FIX: named imports (matches: export const ABCDE_ACTIONS / MEDICATIONS / DOSE_OPTIONS)
+// ✅ named imports
 import { ABCDE_ACTIONS } from "../data/abcdeActions";
-import { DOSE_OPTIONS, MEDICATIONS } from "../data/medications";
+import { MEDICATIONS, getDoseOptionsForMedication } from "../data/medications";
 
 import type {
   AbcdeAction,
@@ -19,6 +21,22 @@ import type {
 
 import { styles } from "../styles/indexStyles";
 import { formatTime } from "../utils/format";
+
+// --- Local types for the new feature ---
+export type AssistanceChoice = "EKSTRA_AMBULANCE" | "AKUTBIL" | "LAEGEBIL";
+
+type AckState = {
+  key: string;
+  icon: string;
+} | null;
+
+function assistanceLabel(choice: AssistanceChoice): string {
+  return choice === "EKSTRA_AMBULANCE"
+    ? "Ekstra ambulance"
+    : choice === "AKUTBIL"
+    ? "Akutbil"
+    : "Lægebil";
+}
 
 export function CaseDetailScreen({
   scenario,
@@ -54,6 +72,14 @@ export function CaseDetailScreen({
   setSelectedDose,
   selectedOxygenFlow,
   setSelectedOxygenFlow,
+
+  // ✅ NEW: triage + assistance
+  onLogTriage,
+  assistanceModalOpen,
+  setAssistanceModalOpen,
+  selectedAssistance,
+  setSelectedAssistance,
+  onConfirmAssistance,
 
   onBackToSetup,
   onStartTimer,
@@ -96,18 +122,31 @@ export function CaseDetailScreen({
   selectedOxygenFlow: number | null;
   setSelectedOxygenFlow: (n: number | null) => void;
 
+  // ✅ NEW: triage + assistance
+  onLogTriage: (isCritical: boolean) => void;
+
+  assistanceModalOpen: boolean;
+  setAssistanceModalOpen: (v: boolean) => void;
+
+  selectedAssistance: AssistanceChoice | null;
+  setSelectedAssistance: (v: AssistanceChoice | null) => void;
+
+  onConfirmAssistance: (choice: AssistanceChoice) => void;
+
   onBackToSetup: () => void;
   onStartTimer: () => Promise<void>;
   onActionPress: (action: AbcdeAction) => void;
   onRegisterMedication: () => void;
   onFinishCaseToSummary: () => void;
 }) {
-  // ✅ HARD GUARDS: never let undefined reach filter/map
+  // ✅ HARD GUARDS
   const safeActions = Array.isArray(ABCDE_ACTIONS) ? ABCDE_ACTIONS : [];
   const safeMeds = Array.isArray(MEDICATIONS) ? MEDICATIONS : [];
-  const safeDoses = Array.isArray(DOSE_OPTIONS) ? DOSE_OPTIONS : [];
 
-  const actionsForLetter = safeActions.filter((a) => a.letter === selectedLetter);
+  const actionsForLetter = useMemo(
+    () => safeActions.filter((a) => a.letter === selectedLetter),
+    [safeActions, selectedLetter]
+  );
 
   const caseStarted = running || elapsedMs > 0;
   const locked = !caseStarted;
@@ -118,17 +157,63 @@ export function CaseDetailScreen({
 
   const guardLocked = () => {
     if (locked) {
-      Alert.alert("Start casen først", "Tryk på 'GO – start timer' før du bruger funktionerne.");
+      Alert.alert(
+        "Start casen først",
+        "Tryk på 'GO – start timer' før du bruger funktionerne."
+      );
       return true;
     }
     return false;
   };
+
+  // ✅ computed options: "½ dosis: X unit" etc
+  const doseOptions = getDoseOptionsForMedication(selectedMedication);
+
+  // ✅ Ack “tick” overlay
+  const [ack, setAck] = useState<AckState>(null);
+
+  const flashAck = (key: string, icon: string) => {
+    setAck({ key, icon });
+    setTimeout(() => setAck(null), 650);
+  };
+
+  // If modal opens and nothing is chosen yet, don’t force a choice.
+  // But if you WANT a default preselect, uncomment below:
+  // useEffect(() => {
+  //   if (assistanceModalOpen && selectedAssistance == null) {
+  //     setSelectedAssistance("EKSTRA_AMBULANCE");
+  //   }
+  // }, [assistanceModalOpen, selectedAssistance, setSelectedAssistance]);
+
+  const selectedAssistanceText = selectedAssistance
+    ? assistanceLabel(selectedAssistance)
+    : null;
 
   return (
     <SafeAreaView style={styles.container}>
       {popupText && (
         <View style={styles.popup}>
           <Text style={styles.popupText}>{popupText}</Text>
+        </View>
+      )}
+
+      {/* ✅ Ack overlay (place near top-right) */}
+      {ack && (
+        <View
+          style={{
+            position: "absolute",
+            top: 90,
+            right: 16,
+            backgroundColor: "rgba(16,185,129,0.9)",
+            paddingVertical: 6,
+            paddingHorizontal: 10,
+            borderRadius: 16,
+            zIndex: 100,
+          }}
+        >
+          <Text style={{ color: "black", fontWeight: "700", fontSize: 16 }}>
+            {ack.icon}
+          </Text>
         </View>
       )}
 
@@ -148,7 +233,10 @@ export function CaseDetailScreen({
         <Text style={styles.timerText}>{formatTime(elapsedMs)}</Text>
       </View>
 
-      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
+      <ScrollView
+        style={{ flex: 1 }}
+        contentContainerStyle={{ paddingBottom: 24 }}
+      >
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Alarmtekst</Text>
           <Text style={styles.text}>{scenario.dispatchText}</Text>
@@ -157,12 +245,17 @@ export function CaseDetailScreen({
         <TouchableOpacity
           style={[
             styles.button,
-            { backgroundColor: running ? "#4b5563" : "#10b981", marginBottom: 8 },
+            {
+              backgroundColor: running ? "#4b5563" : "#10b981",
+              marginBottom: 8,
+            },
           ]}
           disabled={running}
           onPress={() => onStartTimer()}
         >
-          <Text style={styles.buttonText}>{running ? "Case i gang" : "GO – start timer"}</Text>
+          <Text style={styles.buttonText}>
+            {running ? "Case i gang" : "GO – start timer"}
+          </Text>
         </TouchableOpacity>
 
         <View style={styles.card}>
@@ -170,7 +263,8 @@ export function CaseDetailScreen({
           <Text style={styles.text}>
             HR {currentState.vitals.hr} · RF {currentState.vitals.rr} · BT{" "}
             {currentState.vitals.btSys}/{currentState.vitals.btDia} · SpO₂{" "}
-            {currentState.vitals.spo2}% · Smerte {currentState.vitals.painNrs ?? "-"}
+            {currentState.vitals.spo2}% · Smerte{" "}
+            {currentState.vitals.painNrs ?? "-"}
           </Text>
         </View>
 
@@ -186,13 +280,67 @@ export function CaseDetailScreen({
           )}
         </View>
 
+        {/* ✅ NEW: TRIAGE + ASSISTANCE buttons (above ABCDE actions) */}
+        <View style={styles.card}>
+          <Text style={styles.cardTitle}>Hurtig vurdering</Text>
+
+          <View style={[{ gap: 8, marginTop: 8 }, locked && { opacity: 0.45 }]}>
+            <View style={{ flexDirection: "row", gap: 8 }}>
+              <TouchableOpacity
+                style={[styles.button, { flex: 1, backgroundColor: "#ef4444" }]}
+                disabled={locked}
+                onPress={() => {
+                  if (guardLocked()) return;
+                  onLogTriage(true);
+                  flashAck("triage-critical", "✔️");
+                }}
+              >
+                <Text style={styles.buttonText}>Kritisk</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.button, { flex: 1, backgroundColor: "#10b981" }]}
+                disabled={locked}
+                onPress={() => {
+                  if (guardLocked()) return;
+                  onLogTriage(false);
+                  flashAck("triage-noncritical", "✔️");
+                }}
+              >
+                <Text style={styles.buttonText}>Ikke-kritisk</Text>
+              </TouchableOpacity>
+            </View>
+
+            <TouchableOpacity
+              style={[
+                styles.button,
+                { backgroundColor: "#fabc60ff", opacity: locked ? 0.5 : 1 },
+              ]}
+              disabled={locked}
+              onPress={() => {
+                if (guardLocked()) return;
+                setAssistanceModalOpen(true);
+              }}
+            >
+              <Text style={styles.buttonText}>
+                {selectedAssistanceText
+                  ? `Tilkald assistance: ${selectedAssistanceText}`
+                  : "Tilkald assistance"}
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* --- ABCDE actions --- */}
         <View style={styles.card}>
           <TouchableOpacity
             style={styles.dropdownHeader}
             onPress={() => setAbcdeActionsExpanded(!abcdeActionsExpanded)}
           >
             <Text style={styles.dropdownHeaderText}>Handlinger – ABCDE</Text>
-            <Text style={styles.dropdownHeaderText}>{abcdeActionsExpanded ? "▲" : "▼"}</Text>
+            <Text style={styles.dropdownHeaderText}>
+              {abcdeActionsExpanded ? "▲" : "▼"}
+            </Text>
           </TouchableOpacity>
 
           {abcdeActionsExpanded && (
@@ -209,12 +357,16 @@ export function CaseDetailScreen({
                     onPress={() => {
                       if (guardLocked()) return;
                       setSelectedLetter(letter);
+                      flashAck(`abcde-letter-${letter}`, "👍");
                     }}
                   >
                     <Text
                       style={[
                         styles.abcdeButtonText,
-                        selectedLetter === letter && { color: "black", fontWeight: "700" },
+                        selectedLetter === letter && {
+                          color: "black",
+                          fontWeight: "700",
+                        },
                       ]}
                     >
                       {letter}
@@ -223,13 +375,19 @@ export function CaseDetailScreen({
                 ))}
               </View>
 
-              <View style={{ marginTop: 10, gap: 8, opacity: locked ? 0.45 : 1 }}>
+              <View
+                style={{ marginTop: 10, gap: 8, opacity: locked ? 0.45 : 1 }}
+              >
                 {actionsForLetter.map((item) => (
                   <TouchableOpacity
                     key={item.id}
                     style={styles.actionButton}
                     disabled={locked}
-                    onPress={() => onActionPress(item)}
+                    onPress={() => {
+                      if (guardLocked()) return;
+                      onActionPress(item);
+                      flashAck(`abcde-action-${item.id}`, "✔️");
+                    }}
                   >
                     <Text style={styles.actionButtonText}>{item.label}</Text>
                   </TouchableOpacity>
@@ -239,13 +397,16 @@ export function CaseDetailScreen({
           )}
         </View>
 
+        {/* --- SAMPLER --- */}
         <View style={styles.card}>
           <TouchableOpacity
             style={styles.dropdownHeader}
             onPress={() => setSamplerExpanded(!samplerExpanded)}
           >
             <Text style={styles.dropdownHeaderText}>SAMPLER</Text>
-            <Text style={styles.dropdownHeaderText}>{samplerExpanded ? "▲" : "▼"}</Text>
+            <Text style={styles.dropdownHeaderText}>
+              {samplerExpanded ? "▲" : "▼"}
+            </Text>
           </TouchableOpacity>
 
           {samplerExpanded && (
@@ -253,15 +414,25 @@ export function CaseDetailScreen({
               {samplerLetters.map((letter) => (
                 <TouchableOpacity
                   key={letter}
-                  style={[styles.samplerButton, samplerState[letter] && styles.samplerButtonActive]}
+                  style={[
+                    styles.samplerButton,
+                    samplerState[letter] && styles.samplerButtonActive,
+                  ]}
                   disabled={locked}
                   onPress={() => {
                     if (guardLocked()) return;
-                    setSamplerState({ ...samplerState, [letter]: !samplerState[letter] });
+                    setSamplerState({
+                      ...samplerState,
+                      [letter]: !samplerState[letter],
+                    });
+                    flashAck(`sampler-${letter}`, "✔️");
                   }}
                 >
                   <Text
-                    style={[styles.samplerButtonText, samplerState[letter] && { color: "black" }]}
+                    style={[
+                      styles.samplerButtonText,
+                      samplerState[letter] && { color: "black" },
+                    ]}
                   >
                     {letter}
                   </Text>
@@ -271,13 +442,16 @@ export function CaseDetailScreen({
           )}
         </View>
 
+        {/* --- OPQRST --- */}
         <View style={styles.card}>
           <TouchableOpacity
             style={styles.dropdownHeader}
             onPress={() => setOpqrstExpanded(!opqrstExpanded)}
           >
             <Text style={styles.dropdownHeaderText}>OPQRST</Text>
-            <Text style={styles.dropdownHeaderText}>{opqrstExpanded ? "▲" : "▼"}</Text>
+            <Text style={styles.dropdownHeaderText}>
+              {opqrstExpanded ? "▲" : "▼"}
+            </Text>
           </TouchableOpacity>
 
           {opqrstExpanded && (
@@ -285,15 +459,25 @@ export function CaseDetailScreen({
               {opqrstLetters.map((letter) => (
                 <TouchableOpacity
                   key={letter}
-                  style={[styles.samplerButton, opqrstState[letter] && styles.samplerButtonActive]}
+                  style={[
+                    styles.samplerButton,
+                    opqrstState[letter] && styles.samplerButtonActive,
+                  ]}
                   disabled={locked}
                   onPress={() => {
                     if (guardLocked()) return;
-                    setOpqrstState({ ...opqrstState, [letter]: !opqrstState[letter] });
+                    setOpqrstState({
+                      ...opqrstState,
+                      [letter]: !opqrstState[letter],
+                    });
+                    flashAck(`opqrst-${letter}`, "✔️");
                   }}
                 >
                   <Text
-                    style={[styles.samplerButtonText, opqrstState[letter] && { color: "black" }]}
+                    style={[
+                      styles.samplerButtonText,
+                      opqrstState[letter] && { color: "black" },
+                    ]}
                   >
                     {letter}
                   </Text>
@@ -303,13 +487,16 @@ export function CaseDetailScreen({
           )}
         </View>
 
+        {/* --- MIDASHE --- */}
         <View style={styles.card}>
           <TouchableOpacity
             style={styles.dropdownHeader}
             onPress={() => setMidasheExpanded(!midasheExpanded)}
           >
             <Text style={styles.dropdownHeaderText}>MIDASHE</Text>
-            <Text style={styles.dropdownHeaderText}>{midasheExpanded ? "▲" : "▼"}</Text>
+            <Text style={styles.dropdownHeaderText}>
+              {midasheExpanded ? "▲" : "▼"}
+            </Text>
           </TouchableOpacity>
 
           {midasheExpanded && (
@@ -317,15 +504,25 @@ export function CaseDetailScreen({
               {midasheLetters.map((letter) => (
                 <TouchableOpacity
                   key={letter}
-                  style={[styles.samplerButton, midasheState[letter] && styles.samplerButtonActive]}
+                  style={[
+                    styles.samplerButton,
+                    midasheState[letter] && styles.samplerButtonActive,
+                  ]}
                   disabled={locked}
                   onPress={() => {
                     if (guardLocked()) return;
-                    setMidasheState({ ...midasheState, [letter]: !midasheState[letter] });
+                    setMidasheState({
+                      ...midasheState,
+                      [letter]: !midasheState[letter],
+                    });
+                    flashAck(`midashe-${letter}`, "✔️");
                   }}
                 >
                   <Text
-                    style={[styles.samplerButtonText, midasheState[letter] && { color: "black" }]}
+                    style={[
+                      styles.samplerButtonText,
+                      midasheState[letter] && { color: "black" },
+                    ]}
                   >
                     {letter}
                   </Text>
@@ -335,13 +532,16 @@ export function CaseDetailScreen({
           )}
         </View>
 
+        {/* --- MEDS --- */}
         <View style={styles.card}>
           <TouchableOpacity
             style={styles.dropdownHeader}
             onPress={() => setMedExpanded(!medExpanded)}
           >
             <Text style={styles.dropdownHeaderText}>Medicin</Text>
-            <Text style={styles.dropdownHeaderText}>{medExpanded ? "▲" : "▼"}</Text>
+            <Text style={styles.dropdownHeaderText}>
+              {medExpanded ? "▲" : "▼"}
+            </Text>
           </TouchableOpacity>
 
           {medExpanded && (
@@ -349,52 +549,71 @@ export function CaseDetailScreen({
               <Text style={styles.text}>Vælg præparat og dosis.</Text>
 
               <View style={[{ marginTop: 6 }, locked && { opacity: 0.45 }]}>
-                {safeMeds.map((med) => {
-                  const selected = selectedMedication?.id === med.id;
+                <View
+                  style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}
+                >
+                  {safeMeds.map((med) => {
+                    const selected = selectedMedication?.id === med.id;
 
-                  return (
+                    return (
+                      <TouchableOpacity
+                        key={med.id}
+                        style={[
+                          styles.medButton,
+                          { alignSelf: "flex-start" },
+                          selected && styles.medButtonActive,
+                        ]}
+                        disabled={locked}
+                        onPress={() => {
+                          if (guardLocked()) return;
+                          setSelectedMedication(med);
+                          setSelectedDose(null);
+                          setSelectedOxygenFlow(null);
+                          flashAck(`med-${med.id}`, "✔️");
+                        }}
+                      >
+                        <Text
+                          style={[
+                            styles.medButtonText,
+                            selected && { color: "black", fontWeight: "700" },
+                          ]}
+                        >
+                          {med.name}
+                        </Text>
+                      </TouchableOpacity>
+                    );
+                  })}
+                </View>
+              </View>
+
+              {/* DRUG: computed dose options with actual values */}
+              {selectedMedication && selectedMedication.type === "drug" && (
+                <View
+                  style={[
+                    styles.abcdeRow,
+                    { marginTop: 6 },
+                    locked && { opacity: 0.45 },
+                  ]}
+                >
+                  {doseOptions.map((d) => (
                     <TouchableOpacity
-                      key={med.id}
+                      key={String(d.id)}
                       style={[
-                        styles.medButton,
-                        { width: "100%", marginBottom: 6 },
-                        selected && styles.medButtonActive,
+                        styles.doseButton,
+                        selectedDose === d.id && styles.doseButtonActive,
                       ]}
                       disabled={locked}
                       onPress={() => {
                         if (guardLocked()) return;
-                        setSelectedMedication(med);
-                        setSelectedDose(null);
-                        setSelectedOxygenFlow(null);
+                        setSelectedDose(d.id);
+                        flashAck(`dose-${String(d.id)}`, "✔️");
                       }}
                     >
                       <Text
                         style={[
-                          styles.medButtonText,
-                          selected && { color: "black", fontWeight: "700" },
+                          styles.doseButtonText,
+                          selectedDose === d.id && { color: "black" },
                         ]}
-                      >
-                        {med.name}
-                      </Text>
-                    </TouchableOpacity>
-                  );
-                })}
-              </View>
-
-              {selectedMedication && selectedMedication.type === "drug" && (
-                <View style={[styles.abcdeRow, { marginTop: 6 }, locked && { opacity: 0.45 }]}>
-                  {safeDoses.map((d) => (
-                    <TouchableOpacity
-                      key={d.id}
-                      style={[styles.doseButton, selectedDose === d.id && styles.doseButtonActive]}
-                      disabled={locked}
-                      onPress={() => {
-                        if (guardLocked()) return;
-                        setSelectedDose(d.id);
-                      }}
-                    >
-                      <Text
-                        style={[styles.doseButtonText, selectedDose === d.id && { color: "black" }]}
                       >
                         {d.label}
                       </Text>
@@ -403,28 +622,33 @@ export function CaseDetailScreen({
                 </View>
               )}
 
+              {/* OXYGEN: show flow buttons */}
               {selectedMedication && selectedMedication.type === "oxygen" && (
                 <>
-                  <Text style={[styles.text, { marginTop: 6 }]}>Vælg liter/min:</Text>
+                  <Text style={[styles.text, { marginTop: 6 }]}>
+                    Vælg liter/min:
+                  </Text>
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     style={[{ marginTop: 4 }, locked && { opacity: 0.45 }]}
                   >
-                    {(Array.isArray(selectedMedication.oxygenFlows)
-                      ? selectedMedication.oxygenFlows
+                    {(Array.isArray((selectedMedication as any).oxygenFlows)
+                      ? (selectedMedication as any).oxygenFlows
                       : []
-                    ).map((flow) => (
+                    ).map((flow: number) => (
                       <TouchableOpacity
                         key={flow}
                         style={[
                           styles.doseButton,
-                          selectedOxygenFlow === flow && styles.doseButtonActive,
+                          selectedOxygenFlow === flow &&
+                            styles.doseButtonActive,
                         ]}
                         disabled={locked}
                         onPress={() => {
                           if (guardLocked()) return;
                           setSelectedOxygenFlow(flow);
+                          flashAck(`o2-${flow}`, "✔️");
                         }}
                       >
                         <Text
@@ -444,10 +668,18 @@ export function CaseDetailScreen({
               <TouchableOpacity
                 style={[
                   styles.button,
-                  { marginTop: 8, backgroundColor: "#38bdf8", opacity: locked ? 0.5 : 1 },
+                  {
+                    marginTop: 8,
+                    backgroundColor: "#38bdf8",
+                    opacity: locked ? 0.5 : 1,
+                  },
                 ]}
                 disabled={locked}
-                onPress={onRegisterMedication}
+                onPress={() => {
+                  if (guardLocked()) return;
+                  onRegisterMedication();
+                  flashAck("register-med", "✔️");
+                }}
               >
                 <Text style={styles.buttonText}>Registrer medicin</Text>
               </TouchableOpacity>
@@ -456,11 +688,102 @@ export function CaseDetailScreen({
         </View>
 
         {caseStarted && (
-          <TouchableOpacity style={styles.button} onPress={onFinishCaseToSummary}>
+          <TouchableOpacity
+            style={styles.button}
+            onPress={onFinishCaseToSummary}
+          >
             <Text style={styles.buttonText}>Case færdig → summary</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
+
+      {/* ✅ NEW: Assistance modal */}
+      {assistanceModalOpen && (
+        <View
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0,0,0,0.65)",
+            justifyContent: "center",
+            padding: 16,
+            zIndex: 200,
+          }}
+        >
+          <View style={[styles.card, { maxHeight: "80%" }]}>
+            <Text style={styles.cardTitle}>Tilkald assistance</Text>
+
+            <Text style={[styles.text, { marginTop: 6 }]}>Vælg en enhed:</Text>
+
+            <View style={{ marginTop: 10, gap: 8 }}>
+              {(
+                [
+                  { id: "EKSTRA_AMBULANCE", label: "Ekstra ambulance" },
+                  { id: "AKUTBIL", label: "Akutbil" },
+                  { id: "LAEGEBIL", label: "Lægebil" },
+                ] as const
+              ).map((opt) => {
+                const picked = selectedAssistance === opt.id;
+
+                return (
+                  <TouchableOpacity
+                    key={opt.id}
+                    style={[
+                      styles.actionButton,
+                      picked && {
+                        borderColor: "rgba(16,185,129,0.9)",
+                        borderWidth: 2,
+                      },
+                    ]}
+                    onPress={() => {
+                      setSelectedAssistance(opt.id);
+                      flashAck(`assist-pick-${opt.id}`, "✔️");
+                    }}
+                  >
+                    <Text style={styles.actionButtonText}>
+                      {picked ? `✓ ${opt.label}` : opt.label}
+                    </Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </View>
+
+            <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
+              <TouchableOpacity
+                style={[styles.button, { flex: 1, backgroundColor: "#4b5563" }]}
+                onPress={() => setAssistanceModalOpen(false)}
+              >
+                <Text style={styles.buttonText}>Luk</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[
+                  styles.button,
+                  {
+                    flex: 1,
+                    backgroundColor: "#60a5fa",
+                    opacity: selectedAssistance ? 1 : 0.5,
+                  },
+                ]}
+                disabled={!selectedAssistance}
+                onPress={() => {
+                  if (!selectedAssistance) return;
+
+                  onConfirmAssistance(selectedAssistance);
+                  flashAck("assist-confirm", "✔️");
+
+                  setAssistanceModalOpen(false);
+                  // ✅ Keep selectedAssistance so it shows on the main button next time
+                }}
+              >
+                <Text style={styles.buttonText}>Bekræft</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
     </SafeAreaView>
   );
 }

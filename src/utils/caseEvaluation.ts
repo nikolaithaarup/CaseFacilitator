@@ -1,4 +1,8 @@
-import type { ActionLogEntry, CaseScenario, EvaluatedAction } from "../domain/cases/types";
+import type {
+  ActionLogEntry,
+  CaseScenario,
+  EvaluatedAction,
+} from "../domain/cases/types";
 import type { SessionEvent } from "../services/sessionEvents";
 
 export function makeRunId(): string {
@@ -25,7 +29,7 @@ function normalizeId(value: unknown): string {
 
 export function evaluateCase(
   scenario: CaseScenario,
-  log: ActionLogEntry[],
+  log: ActionLogEntry[]
 ): { evaluated: EvaluatedAction[]; extraActions: ActionLogEntry[] } {
   const logByActionId: Record<string, ActionLogEntry[]> = {};
 
@@ -39,15 +43,6 @@ export function evaluateCase(
   }
 
   const evaluated: EvaluatedAction[] = [];
-
-  // Optional debug (helps if Firestore has weird IDs)
-  if (__DEV__) {
-    console.log(
-      "EVAL expected IDs:",
-      scenario.expectedActions.map((e) => normalizeId(e.actionId)),
-    );
-    console.log("EVAL logged IDs:", Object.keys(logByActionId));
-  }
 
   for (const exp of scenario.expectedActions) {
     const expId = normalizeId(exp.actionId);
@@ -90,7 +85,12 @@ export function evaluateCase(
       | { green: number; yellow: number; red: number }
       | undefined;
 
-    if (tt && Number.isFinite(tt.green) && Number.isFinite(tt.yellow) && Number.isFinite(tt.red)) {
+    if (
+      tt &&
+      Number.isFinite(tt.green) &&
+      Number.isFinite(tt.yellow) &&
+      Number.isFinite(tt.red)
+    ) {
       if (timeSec <= tt.green) {
         evaluated.push({
           expected: exp,
@@ -131,7 +131,10 @@ export function evaluateCase(
         status: "RED",
         comment: `Udført for sent (efter ${exp.mustBeforeSec} sek).`,
       });
-    } else if (exp.recommendedBeforeSec != null && timeSec > exp.recommendedBeforeSec) {
+    } else if (
+      exp.recommendedBeforeSec != null &&
+      timeSec > exp.recommendedBeforeSec
+    ) {
       evaluated.push({
         expected: exp,
         logEntry: first,
@@ -149,8 +152,12 @@ export function evaluateCase(
   }
 
   // ✅ FIX: extraActions must compare normalized IDs too
-  const expectedIds = new Set(scenario.expectedActions.map((e) => normalizeId(e.actionId)));
-  const extraActions = log.filter((e) => !expectedIds.has(normalizeId(e.actionId)));
+  const expectedIds = new Set(
+    scenario.expectedActions.map((e) => normalizeId(e.actionId))
+  );
+  const extraActions = log.filter(
+    (e) => !expectedIds.has(normalizeId(e.actionId))
+  );
 
   return { evaluated, extraActions };
 }

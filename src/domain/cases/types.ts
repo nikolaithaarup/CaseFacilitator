@@ -10,7 +10,11 @@ export type SamplerLetter = "S" | "A" | "M" | "P" | "L" | "E" | "R";
 export type OpqrstLetter = "O" | "P" | "Q" | "R" | "S" | "T";
 export type MidasheLetter = "M" | "I" | "D" | "A" | "S" | "H" | "E";
 
-export type ActionImportance = "CRITICAL" | "IMPORTANT" | "OPTIONAL" | "FORBIDDEN";
+export type ActionImportance =
+  | "CRITICAL"
+  | "IMPORTANT"
+  | "OPTIONAL"
+  | "FORBIDDEN";
 
 export type DoseStrength = "HALF" | "NORMAL" | "DOUBLE";
 

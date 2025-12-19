@@ -1,6 +1,13 @@
 import * as Clipboard from "expo-clipboard";
 import { useMemo } from "react";
-import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { AcronymRow } from "../components/AcronymRow";
 import type {
@@ -15,7 +22,11 @@ import { styles } from "../styles/indexStyles";
 import { formatTime, statusColor } from "../utils/format";
 
 function evalTitle(status: "GREEN" | "YELLOW" | "RED") {
-  return status === "GREEN" ? "Godt" : status === "YELLOW" ? "Kan forbedres" : "Kritisk";
+  return status === "GREEN"
+    ? "Godt"
+    : status === "YELLOW"
+    ? "Kan forbedres"
+    : "Kritisk";
 }
 
 // Try to display a nice label for the “mission”
@@ -38,7 +49,6 @@ export function SummaryScreen({
   elapsedMs,
   mergedTimeline,
   evaluated,
-  extraActions,
   samplerState,
   opqrstState,
   midasheState,
@@ -67,7 +77,6 @@ export function SummaryScreen({
 
   mergedTimeline: ActionLogEntry[];
   evaluated: EvaluatedAction[];
-  extraActions: ActionLogEntry[];
 
   samplerState: Record<SamplerLetter, boolean>;
   opqrstState: Record<OpqrstLetter, boolean>;
@@ -104,7 +113,10 @@ export function SummaryScreen({
       <View style={{ marginTop: 8 }}>
         <Text style={styles.sectionTitle}>{title}</Text>
         {items.map((ev, idx) => (
-          <View key={`${ev.expected?.actionId ?? "x"}_${idx}`} style={styles.evalItem}>
+          <View
+            key={`${ev.expected?.actionId ?? "x"}_${idx}`}
+            style={styles.evalItem}
+          >
             <Text style={[styles.evalTitle, { color: statusColor(ev.status) }]}>
               {expectedLabel(ev)}
             </Text>
@@ -138,8 +150,8 @@ export function SummaryScreen({
 
       <Text style={styles.subtitle}>{scenario.title}</Text>
       <Text style={styles.subtitle}>
-        Patient: {scenario.patientInfo.sex === "M" ? "Mand" : "Kvinde"} · {scenario.patientInfo.age}{" "}
-        år
+        Patient: {scenario.patientInfo.sex === "M" ? "Mand" : "Kvinde"} ·{" "}
+        {scenario.patientInfo.age} år
       </Text>
 
       <ScrollView style={{ marginTop: 8, flex: 1 }}>
@@ -156,13 +168,22 @@ export function SummaryScreen({
             letters={["S", "A", "M", "P", "L", "E", "R"]}
             state={samplerState}
           />
-          <AcronymRow<OpqrstLetter> letters={["O", "P", "Q", "R", "S", "T"]} state={opqrstState} />
+          <AcronymRow<OpqrstLetter>
+            letters={["O", "P", "Q", "R", "S", "T"]}
+            state={opqrstState}
+          />
           <AcronymRow<MidasheLetter>
             letters={["M", "I", "D", "A", "S", "H", "E"]}
             state={midasheState}
           />
         </View>
 
+        {/* ---- Evaluation FIRST ---- */}
+        {renderEvalSection("Hvad gik godt", greens)}
+        {renderEvalSection("Kan forbedres", yellows)}
+        {renderEvalSection("Kritisk", reds)}
+
+        {/* ---- Handlinger AFTER evaluation ---- */}
         <Text style={styles.sectionTitle}>Handlinger (inkl. defib events)</Text>
         {mergedTimeline.length === 0 ? (
           <Text style={styles.text}>Ingen handlinger registreret.</Text>
@@ -173,23 +194,6 @@ export function SummaryScreen({
               <Text style={styles.logText}>{entry.description}</Text>
             </View>
           ))
-        )}
-
-        {/* ---- NEW: Bucketed evaluation ---- */}
-        {renderEvalSection("Hvad gik godt", greens)}
-        {renderEvalSection("Kan forbedres", yellows)}
-        {renderEvalSection("Kritisk", reds)}
-
-        {extraActions.length > 0 && (
-          <>
-            <Text style={styles.sectionTitle}>Ekstra handlinger</Text>
-            {extraActions.map((entry) => (
-              <View key={entry.id} style={styles.logItem}>
-                <Text style={styles.logTime}>{formatTime(entry.timeMs)}</Text>
-                <Text style={styles.logText}>{entry.description}</Text>
-              </View>
-            ))}
-          </>
         )}
       </ScrollView>
 
@@ -249,7 +253,10 @@ ${actionsText}
           <Text style={styles.buttonText}>Copy summary</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={onRunAgain}>
+        <TouchableOpacity
+          style={[styles.button, { flex: 1 }]}
+          onPress={onRunAgain}
+        >
           <Text style={styles.buttonText}>Kør igen</Text>
         </TouchableOpacity>
       </View>
@@ -295,7 +302,9 @@ ${actionsText}
 
             {selectedOrgRole === "school" && (
               <>
-                <Text style={[styles.textSmall, { marginTop: 10 }]}>Karakter (valgfri)</Text>
+                <Text style={[styles.textSmall, { marginTop: 10 }]}>
+                  Karakter (valgfri)
+                </Text>
                 <TextInput
                   value={feedbackGrade}
                   onChangeText={onSetFeedbackGrade}
@@ -329,7 +338,9 @@ ${actionsText}
                 disabled={savingFeedback}
                 onPress={onSaveSummaryWithFeedback}
               >
-                <Text style={styles.buttonText}>{savingFeedback ? "Gemmer…" : "Gem"}</Text>
+                <Text style={styles.buttonText}>
+                  {savingFeedback ? "Gemmer…" : "Gem"}
+                </Text>
               </TouchableOpacity>
             </View>
           </View>
