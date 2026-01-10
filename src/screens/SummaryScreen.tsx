@@ -22,16 +22,10 @@ import { styles } from "../styles/indexStyles";
 import { formatTime, statusColor } from "../utils/format";
 
 function evalTitle(status: "GREEN" | "YELLOW" | "RED") {
-  return status === "GREEN"
-    ? "Godt"
-    : status === "YELLOW"
-    ? "Kan forbedres"
-    : "Kritisk";
+  return status === "GREEN" ? "Godt" : status === "YELLOW" ? "Kan forbedres" : "Kritisk";
 }
 
-// Try to display a nice label for the “mission”
 function expectedLabel(ev: EvaluatedAction): string {
-  // If you add `label` to expectedActions in Firestore, this will show it.
   const anyExpected: any = ev.expected as any;
   return (
     anyExpected?.label ||
@@ -53,7 +47,7 @@ export function SummaryScreen({
   opqrstState,
   midasheState,
 
-  selectedOrgRole,
+  allowGrade,
   feedbackOpen,
   feedbackText,
   feedbackGrade,
@@ -82,7 +76,8 @@ export function SummaryScreen({
   opqrstState: Record<OpqrstLetter, boolean>;
   midasheState: Record<MidasheLetter, boolean>;
 
-  selectedOrgRole: "student" | "school" | "enterprise" | null;
+  // replaces selectedOrgRole
+  allowGrade: boolean;
 
   feedbackOpen: boolean;
   feedbackText: string;
@@ -113,10 +108,7 @@ export function SummaryScreen({
       <View style={{ marginTop: 8 }}>
         <Text style={styles.sectionTitle}>{title}</Text>
         {items.map((ev, idx) => (
-          <View
-            key={`${ev.expected?.actionId ?? "x"}_${idx}`}
-            style={styles.evalItem}
-          >
+          <View key={`${ev.expected?.actionId ?? "x"}_${idx}`} style={styles.evalItem}>
             <Text style={[styles.evalTitle, { color: statusColor(ev.status) }]}>
               {expectedLabel(ev)}
             </Text>
@@ -129,9 +121,6 @@ export function SummaryScreen({
             </Text>
 
             <Text style={styles.evalText}>{ev.comment}</Text>
-
-            {/* Optional: show actionId for debugging */}
-            {/* <Text style={styles.textSmall}>({ev.expected.actionId})</Text> */}
           </View>
         ))}
       </View>
@@ -164,26 +153,27 @@ export function SummaryScreen({
           <Text style={styles.cardTitle}>Samlet tid</Text>
           <Text style={styles.text}>{formatTime(elapsedMs)}</Text>
 
-          <AcronymRow<SamplerLetter>
-            letters={["S", "A", "M", "P", "L", "E", "R"]}
-            state={samplerState}
-          />
-          <AcronymRow<OpqrstLetter>
-            letters={["O", "P", "Q", "R", "S", "T"]}
-            state={opqrstState}
-          />
-          <AcronymRow<MidasheLetter>
-            letters={["M", "I", "D", "A", "S", "H", "E"]}
-            state={midasheState}
-          />
+          <AcronymRow
+  letters={["S", "A", "M", "P", "L", "E", "R"] as SamplerLetter[]}
+  state={samplerState}
+/>
+
+<AcronymRow
+  letters={["O", "P", "Q", "R", "S", "T"] as OpqrstLetter[]}
+  state={opqrstState}
+/>
+
+<AcronymRow
+  letters={["M", "I", "D", "A", "S", "H", "E"] as MidasheLetter[]}
+  state={midasheState}
+/>
+
         </View>
 
-        {/* ---- Evaluation FIRST ---- */}
         {renderEvalSection("Hvad gik godt", greens)}
         {renderEvalSection("Kan forbedres", yellows)}
         {renderEvalSection("Kritisk", reds)}
 
-        {/* ---- Handlinger AFTER evaluation ---- */}
         <Text style={styles.sectionTitle}>Handlinger (inkl. defib events)</Text>
         {mergedTimeline.length === 0 ? (
           <Text style={styles.text}>Ingen handlinger registreret.</Text>
@@ -219,9 +209,7 @@ export function SummaryScreen({
             const actionsText =
               mergedTimeline.length === 0
                 ? "Ingen handlinger registreret."
-                : mergedTimeline
-                    .map((e) => `${formatTime(e.timeMs)} – ${e.description}`)
-                    .join("\n");
+                : mergedTimeline.map((e) => `${formatTime(e.timeMs)} – ${e.description}`).join("\n");
 
             const samplerText = Object.entries(samplerState)
               .map(([k, v]) => `${k}:${v ? "✓" : "✗"}`)
@@ -253,10 +241,7 @@ ${actionsText}
           <Text style={styles.buttonText}>Copy summary</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, { flex: 1 }]}
-          onPress={onRunAgain}
-        >
+        <TouchableOpacity style={[styles.button, { flex: 1 }]} onPress={onRunAgain}>
           <Text style={styles.buttonText}>Kør igen</Text>
         </TouchableOpacity>
       </View>
@@ -300,11 +285,9 @@ ${actionsText}
               ]}
             />
 
-            {selectedOrgRole === "school" && (
+            {allowGrade && (
               <>
-                <Text style={[styles.textSmall, { marginTop: 10 }]}>
-                  Karakter (valgfri)
-                </Text>
+                <Text style={[styles.textSmall, { marginTop: 10 }]}>Karakter (valgfri)</Text>
                 <TextInput
                   value={feedbackGrade}
                   onChangeText={onSetFeedbackGrade}
@@ -338,9 +321,7 @@ ${actionsText}
                 disabled={savingFeedback}
                 onPress={onSaveSummaryWithFeedback}
               >
-                <Text style={styles.buttonText}>
-                  {savingFeedback ? "Gemmer…" : "Gem"}
-                </Text>
+                <Text style={styles.buttonText}>{savingFeedback ? "Gemmer…" : "Gem"}</Text>
               </TouchableOpacity>
             </View>
           </View>

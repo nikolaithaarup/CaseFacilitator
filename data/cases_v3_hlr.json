@@ -1,0 +1,856 @@
+[
+  {
+    "id": "HLR_v3_001_VF_SHOCKBAR",
+    "title": "HLR v3 – VF (shockbar) – M 58",
+    "subtitle": "Pludseligt kollaps, bystander CPR, AED: shock advised",
+    "dispatchText": "58-årig mand kollapset i fitnesscenter. Bystanders har startet HLR. AED siger 'shock advised'.",
+    "schoolPeriods": [6, 7, 8],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Hjertestop – VF (shockbar)",
+    "actionDiagnoses": ["Hjertestop", "VF/VT"],
+    "caseType": "HLR VF",
+    "patientInfo": {
+      "age": 58,
+      "sex": "M",
+      "chiefComplaint": "Kollaps",
+      "history": "Ukendt forudgående symptomer. Bystander CPR pågår ved ankomst.",
+      "meds": []
+    },
+    "initialStateId": "S0_ARREST_VF",
+    "states": [
+      {
+        "id": "S0_ARREST_VF",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 2.5, "temp": 36.6, "bs": 6.2, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Ukontaktbar. Luftvej uafklaret.",
+          "B": "Ingen spontan respiration.",
+          "C": "Ingen palpabel puls. Mistanke hjertestop.",
+          "D": "GCS 3.",
+          "E": "Kold/bleg. Ingen synlig større blødning."
+        },
+        "extraInfo": "Rytme: VF (på monitor/defib). EtCO₂ meget lav tidligt."
+      },
+      {
+        "id": "S1_REFRACTORY_VF",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 3.8, "temp": 36.5, "bs": 6.2, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Airway håndteret med basic adjuncts. Risiko for aspiration.",
+          "B": "Ventileres. EtCO₂ stiger let ved bedre kvalitet.",
+          "C": "Fortsat ingen puls. VF persisterer.",
+          "D": "Uændret ukontaktbar.",
+          "E": "Behov for struktur og team-rotation."
+        },
+        "extraInfo": "VF efter første behandlingsblok. Adrenalin/antiarytmika efter algoritme."
+      },
+      {
+        "id": "S2_ROSC",
+        "vitals": { "hr": 92, "rr": 10, "btSys": 118, "btDia": 72, "spo2": 94, "etco2": 5.1, "temp": 36.5, "bs": 6.1, "gcs": 8, "painNrs": 0 },
+        "abcde": {
+          "A": "Spontan vejrtrækning men utilstrækkelig. Luftvej skal sikres/overvåges.",
+          "B": "Respirationsdeprimeret. Sat forbedres med ilt/ventilation.",
+          "C": "Puls tilbage. BT stabiliserer.",
+          "D": "Bevidsthed påvirket post-ROSC.",
+          "E": "Hold varm. Monitorér temperatur."
+        },
+        "extraInfo": "ROSC. EtCO₂ stiger typisk markant ved perfusion + ventilation."
+      },
+      {
+        "id": "S_BAD_PROLONGED_NO_SHOCK",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 1.8, "temp": 36.3, "bs": 6.4, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Ukontaktbar.",
+          "B": "Ventilation utilstrækkelig / forsinket.",
+          "C": "VF persisterer uden effektiv defibrillering.",
+          "D": "Uændret.",
+          "E": "Team udtrættes, kvalitet falder."
+        },
+        "extraInfo": "Forværring: manglende tidlig shock/rytmetjek → lav EtCO₂ og dårlig prognose."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "S0_ARREST_VF", "toStateId": "S1_REFRACTORY_VF", "actionId": "CPR_PADS_ON", "feedbackToFacilitator": "Tidlig pad-placering/defib-klargøring er kritisk ved shockbar rytme." },
+      { "id": "t1", "fromStateId": "S0_ARREST_VF", "toStateId": "S1_REFRACTORY_VF", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Rytmetjek + shock efter algoritme skal ske tidligt og struktureret." },
+      { "id": "t2", "fromStateId": "S1_REFRACTORY_VF", "toStateId": "S2_ROSC", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Ved fortsat VF: fortsæt ALS, kvalitet, shock, og meds efter protokol." },
+      { "id": "t3", "fromStateId": "S1_REFRACTORY_VF", "toStateId": "S2_ROSC", "actionId": "MED_AMIODARON", "feedbackToFacilitator": "Amiodaron ved refraktær VF/VT efter flere shocks iht. algoritme." },
+      { "id": "t4", "fromStateId": "S1_REFRACTORY_VF", "toStateId": "S2_ROSC", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Adrenalin gives efter algoritmen, og IV/IO skal etableres tidligt." },
+      { "id": "t_bad0", "fromStateId": "S0_ARREST_VF", "toStateId": "S_BAD_PROLONGED_NO_SHOCK", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Meds uden rytmetjek/shock ved VF må ikke erstatte tidlig defibrillering." }
+    ],
+    "expectedActions": [
+      { "actionId": "CPR_ARREST_RECOGNIZED", "importance": "CRITICAL", "recommendedBeforeSec": 10, "mustBeforeSec": 20, "title": "Genkend hjertestop" },
+      { "actionId": "CPR_CPR_STARTED", "importance": "CRITICAL", "recommendedBeforeSec": 20, "mustBeforeSec": 40, "title": "Start HLR (kompressioner)" },
+      { "actionId": "CPR_PADS_ON", "importance": "CRITICAL", "recommendedBeforeSec": 45, "mustBeforeSec": 90, "title": "Påsæt defib-/AED-pads" },
+      { "actionId": "CPR_RHYTHM_CHECK", "importance": "CRITICAL", "recommendedBeforeSec": 90, "mustBeforeSec": 150, "title": "Rytmetjek + shock efter algoritme" },
+      { "actionId": "CPR_IV_IO", "importance": "IMPORTANT", "recommendedBeforeSec": 180, "mustBeforeSec": 300, "title": "Etabler IV/IO-adgang" },
+      { "actionId": "MED_ADRENALIN_IV", "importance": "IMPORTANT", "recommendedBeforeSec": 240, "mustBeforeSec": 420, "title": "Adrenalin IV/IO" },
+      { "actionId": "MED_AMIODARON", "importance": "IMPORTANT", "recommendedBeforeSec": 360, "mustBeforeSec": 600, "title": "Amiodaron ved refraktær VF/VT" },
+      { "actionId": "CPR_ROSC", "importance": "IMPORTANT", "recommendedBeforeSec": 900, "title": "ROSC: post-resuscitation care" }
+    ]
+  },
+
+  {
+    "id": "HLR_v3_002_VF_SHOCKBAR_HYPOXIRISIKO",
+    "title": "HLR v3 – VF (shockbar) hypoksi-risiko – K 72",
+    "subtitle": "Hjertestop i hjemmet, sekret/airway-problem",
+    "dispatchText": "72-årig kvinde fundet livløs af ægtefælle. Ambulance ankommer efter 7 min. Gurglen/sekret. Monitor: VF.",
+    "schoolPeriods": [6, 7, 8],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Hjertestop – VF med ventilationsproblem",
+    "actionDiagnoses": ["Hjertestop", "VF/VT", "Hypoksi"],
+    "caseType": "HLR VF",
+    "patientInfo": {
+      "age": 72,
+      "sex": "K",
+      "chiefComplaint": "Fundet livløs",
+      "history": "Ukendt down-time. Mistanke sekret/aspiration før kollaps.",
+      "meds": []
+    },
+    "initialStateId": "S0_ARREST_VF",
+    "states": [
+      {
+        "id": "S0_ARREST_VF",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 1.5, "temp": 36.2, "bs": 7.0, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Ukontaktbar. Gurglen/sekret mistænkes.",
+          "B": "Ingen spontan respiration.",
+          "C": "Ingen puls. VF på monitor.",
+          "D": "GCS 3.",
+          "E": "Bleg/kold. Ingen ydre traumer."
+        },
+        "extraInfo": "Ventilation vanskelig → meget lav EtCO₂."
+      },
+      {
+        "id": "S1_HYPOXIA_RISK",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 2.3, "temp": 36.1, "bs": 7.0, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Luftvej delvist obstrueret – sug/adjuncts nødvendig.",
+          "B": "Ventilation vanskelig → hypoksi-risiko. EtCO₂ lav.",
+          "C": "Fortsat ingen puls. VF/VT kan persistere.",
+          "D": "Uændret.",
+          "E": "Hold varm."
+        },
+        "extraInfo": "Fokus: sug + airway + effektiv ventilation + algoritme."
+      },
+      {
+        "id": "S2_ROSC",
+        "vitals": { "hr": 84, "rr": 12, "btSys": 104, "btDia": 64, "spo2": 93, "etco2": 4.8, "temp": 36.1, "bs": 6.8, "gcs": 7, "painNrs": 0 },
+        "abcde": {
+          "A": "Spontan respiration, stadig truet luftvej.",
+          "B": "Behov for støtteventilation. Sat bedres.",
+          "C": "ROSC, BT borderline.",
+          "D": "Post-ROSC påvirket.",
+          "E": "Forebyg hypotermi."
+        },
+        "extraInfo": "ROSC efter effektiv ventilation + ALS."
+      },
+      {
+        "id": "S_BAD_AIRWAY_NOT_FIXED",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 1.2, "temp": 36.0, "bs": 7.2, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Obstruktion/sekret fortsat – ingen effektiv ventilation.",
+          "B": "Hypoksi dominerer.",
+          "C": "VF persisterer, dårlig perfusion.",
+          "D": "Uændret.",
+          "E": "Forværres uden sug/airway."
+        },
+        "extraInfo": "Manglende airway/sug → meget lav EtCO₂ og dårlig prognose."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "S0_ARREST_VF", "toStateId": "S1_HYPOXIA_RISK", "actionId": "CPR_AIRWAY", "feedbackToFacilitator": "Suction/airway tidligt er afgørende ved sekret/hypoksi." },
+      { "id": "t1", "fromStateId": "S0_ARREST_VF", "toStateId": "S1_HYPOXIA_RISK", "actionId": "MED_MEDICINSK_ILT", "feedbackToFacilitator": "Høj FiO₂ + ventilation forbedrer perfusion/EtCO₂ over tid." },
+      { "id": "t2", "fromStateId": "S1_HYPOXIA_RISK", "toStateId": "S2_ROSC", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Når ventilation/kompressioner er på plads: rytmetjek/shock efter algoritme." },
+      { "id": "t3", "fromStateId": "S1_HYPOXIA_RISK", "toStateId": "S2_ROSC", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Adrenalin efter algoritme – men må ikke erstatte airway/ventilation." },
+      { "id": "t_bad0", "fromStateId": "S0_ARREST_VF", "toStateId": "S_BAD_AIRWAY_NOT_FIXED", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Rytmetjek/shock uden effektiv ventilation ved udtalt sekret/hypoksi giver ringe effekt." }
+    ],
+    "expectedActions": [
+      { "actionId": "CPR_ARREST_RECOGNIZED", "importance": "CRITICAL", "recommendedBeforeSec": 10, "mustBeforeSec": 20, "title": "Genkend hjertestop" },
+      { "actionId": "CPR_CPR_STARTED", "importance": "CRITICAL", "recommendedBeforeSec": 20, "mustBeforeSec": 40, "title": "Start HLR (kompressioner)" },
+      { "actionId": "CPR_AIRWAY", "importance": "CRITICAL", "recommendedBeforeSec": 45, "mustBeforeSec": 120, "title": "Airway + sug/ventilation" },
+      { "actionId": "MED_MEDICINSK_ILT", "importance": "IMPORTANT", "recommendedBeforeSec": 90, "mustBeforeSec": 180, "title": "Ilt (høj flow)" },
+      { "actionId": "CPR_PADS_ON", "importance": "CRITICAL", "recommendedBeforeSec": 60, "mustBeforeSec": 120, "title": "Pads på" },
+      { "actionId": "CPR_RHYTHM_CHECK", "importance": "CRITICAL", "recommendedBeforeSec": 120, "mustBeforeSec": 180, "title": "Rytmetjek/shock" },
+      { "actionId": "MED_ADRENALIN_IV", "importance": "IMPORTANT", "recommendedBeforeSec": 240, "mustBeforeSec": 420, "title": "Adrenalin IV/IO" },
+      { "actionId": "CPR_ROSC", "importance": "IMPORTANT", "recommendedBeforeSec": 900, "title": "ROSC: post-ROSC stabilisering" }
+    ]
+  },
+
+  {
+    "id": "HLR_v3_003_PEA",
+    "title": "HLR v3 – PEA – M 66",
+    "subtitle": "PEA efter brystsmerter, organiseret rytme uden output",
+    "dispatchText": "66-årig mand kollapser efter brystsmerter. Ingen puls. Monitor: organiseret rytme uden output (PEA).",
+    "schoolPeriods": [6, 7, 8],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Hjertestop – PEA",
+    "actionDiagnoses": ["Hjertestop", "PEA", "Reversible årsager"],
+    "caseType": "HLR PEA",
+    "patientInfo": {
+      "age": 66,
+      "sex": "M",
+      "chiefComplaint": "Kollaps",
+      "history": "Forudgående brystsmerter. Mistænk kardiel årsag / reversible årsager.",
+      "meds": []
+    },
+    "initialStateId": "S0_ARREST_PEA",
+    "states": [
+      {
+        "id": "S0_ARREST_PEA",
+        "vitals": { "hr": 30, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 2.8, "temp": 36.7, "bs": 6.0, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Ukontaktbar.",
+          "B": "Ingen spontan respiration.",
+          "C": "Ingen puls. PEA (organiseret rytme).",
+          "D": "GCS 3.",
+          "E": "Kold/bleg."
+        },
+        "extraInfo": "PEA: fokus HLR + reversible årsager. EtCO₂ lav/moderat."
+      },
+      {
+        "id": "S1_PEA_ONGOING",
+        "vitals": { "hr": 40, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 3.6, "temp": 36.6, "bs": 6.0, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Airway håndteret.",
+          "B": "Ventileres. EtCO₂ afspejler kvalitet/perfusion.",
+          "C": "Ingen output. PEA fortsat.",
+          "D": "Uændret.",
+          "E": "Hold varm."
+        },
+        "extraInfo": "Adrenalin efter algoritme. Overvej 4H/4T."
+      },
+      {
+        "id": "S2_ROSC",
+        "vitals": { "hr": 78, "rr": 14, "btSys": 110, "btDia": 70, "spo2": 95, "etco2": 4.9, "temp": 36.6, "bs": 6.1, "gcs": 9, "painNrs": 0 },
+        "abcde": {
+          "A": "Spontan respiration, obs luftvej.",
+          "B": "Stabiliser ventilation, mål SpO₂.",
+          "C": "ROSC. BT acceptabelt.",
+          "D": "Konfus/sløv post-ROSC.",
+          "E": "Normotermi tilstræbes."
+        },
+        "extraInfo": "ROSC: vurder årsag, 12-aflednings EKG, transport."
+      },
+      {
+        "id": "S_BAD_NO_ADRENALIN_ACCESS",
+        "vitals": { "hr": 30, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 2.2, "temp": 36.4, "bs": 6.3, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Ventilation uensartet.",
+          "B": "EtCO₂ falder.",
+          "C": "PEA persisterer. Ingen meds/adgang.",
+          "D": "Uændret.",
+          "E": "Forværret prognose ved forsinket ALS."
+        },
+        "extraInfo": "Manglende IV/IO + adrenalin → lavere EtCO₂ og vedvarende PEA."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "S0_ARREST_PEA", "toStateId": "S1_PEA_ONGOING", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Rytmetjek bekræfter non-shockbar og styrer næste blok." },
+      { "id": "t1", "fromStateId": "S0_ARREST_PEA", "toStateId": "S1_PEA_ONGOING", "actionId": "CPR_IV_IO", "feedbackToFacilitator": "IV/IO tidligt for at kunne give adrenalin og behandle årsager." },
+      { "id": "t2", "fromStateId": "S1_PEA_ONGOING", "toStateId": "S2_ROSC", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Adrenalin efter algoritme kan øge chance for ROSC ved PEA." },
+      { "id": "t3", "fromStateId": "S1_PEA_ONGOING", "toStateId": "S2_ROSC", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Fortsæt HLR og gentag rytmetjek med fokus på 4H/4T." },
+      { "id": "t_bad0", "fromStateId": "S0_ARREST_PEA", "toStateId": "S_BAD_NO_ADRENALIN_ACCESS", "actionId": "CPR_CPR_STARTED", "feedbackToFacilitator": "Godt med kompressioner – men uden IV/IO + adrenalin vedvarer PEA ofte." }
+    ],
+    "expectedActions": [
+      { "actionId": "CPR_ARREST_RECOGNIZED", "importance": "CRITICAL", "recommendedBeforeSec": 10, "mustBeforeSec": 20, "title": "Genkend hjertestop" },
+      { "actionId": "CPR_CPR_STARTED", "importance": "CRITICAL", "recommendedBeforeSec": 20, "mustBeforeSec": 40, "title": "Start HLR" },
+      { "actionId": "CPR_RHYTHM_CHECK", "importance": "CRITICAL", "recommendedBeforeSec": 120, "mustBeforeSec": 180, "title": "Rytmetjek (non-shockbar)" },
+      { "actionId": "CPR_IV_IO", "importance": "IMPORTANT", "recommendedBeforeSec": 180, "mustBeforeSec": 300, "title": "IV/IO-adgang" },
+      { "actionId": "MED_ADRENALIN_IV", "importance": "CRITICAL", "recommendedBeforeSec": 240, "mustBeforeSec": 420, "title": "Adrenalin IV/IO" },
+      { "actionId": "CPR_ROSC", "importance": "IMPORTANT", "recommendedBeforeSec": 900, "title": "ROSC: post-ROSC stabilisering" }
+    ]
+  },
+
+  {
+    "id": "HLR_v3_004_ASYSTOLI",
+    "title": "HLR v3 – Asystoli – K 81",
+    "subtitle": "Lang down-time, kold perifer",
+    "dispatchText": "81-årig kvinde fundet livløs i sengen. Ukendt down-time. Monitor: asystoli.",
+    "schoolPeriods": [6, 7, 8],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Hjertestop – asystoli",
+    "actionDiagnoses": ["Hjertestop", "Asystoli", "Hypotermi?"],
+    "caseType": "HLR Asystole",
+    "patientInfo": {
+      "age": 81,
+      "sex": "K",
+      "chiefComplaint": "Fundet livløs",
+      "history": "Ukendt down-time. Kold perifer. Overvej hypotermi/reversible årsager.",
+      "meds": []
+    },
+    "initialStateId": "S0_ASYSTOLE",
+    "states": [
+      {
+        "id": "S0_ASYSTOLE",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 1.0, "temp": 35.2, "bs": 5.8, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Ukontaktbar.",
+          "B": "Apnø.",
+          "C": "Ingen puls. Asystoli.",
+          "D": "GCS 3. Pupiller svære at vurdere.",
+          "E": "Kold, mulig hypotermi."
+        },
+        "extraInfo": "EtCO₂ meget lav ved lang down-time. Obs hypotermi."
+      },
+      {
+        "id": "S1_ASYSTOLE_ONGOING",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 2.0, "temp": 35.1, "bs": 5.9, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Airway håndteret, ventilation igangsat.",
+          "B": "Ventileres. EtCO₂ stiger lidt ved bedre kvalitet.",
+          "C": "Fortsat asystoli.",
+          "D": "Uændret.",
+          "E": "Hold varm – aktiv opvarmning."
+        },
+        "extraInfo": "Adrenalin efter algoritme + varmebevarende tiltag."
+      },
+      {
+        "id": "S2_TRANSIENT_OUTPUT",
+        "vitals": { "hr": 52, "rr": 6, "btSys": 74, "btDia": 40, "spo2": 88, "etco2": 3.6, "temp": 35.3, "bs": 6.0, "gcs": 5, "painNrs": 0 },
+        "abcde": {
+          "A": "Svag spontan vejrtrækning.",
+          "B": "Behov for støtteventilation.",
+          "C": "Svag puls. Hypotensiv.",
+          "D": "Dybt påvirket.",
+          "E": "Kold – aktiv opvarmning under transport."
+        },
+        "extraInfo": "Kortvarigt output/ROSC-lignende ved effektiv ALS + opvarmning."
+      },
+      {
+        "id": "S_BAD_NO_WARMING_LOW_QUALITY",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 0.7, "temp": 34.9, "bs": 5.6, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Uændret.",
+          "B": "Ventilation svingende.",
+          "C": "Asystoli persisterer.",
+          "D": "Uændret.",
+          "E": "Afkøles yderligere uden varmebevaring."
+        },
+        "extraInfo": "Forværring ved manglende varmebevaring og dårlig HLR-kvalitet."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "S0_ASYSTOLE", "toStateId": "S1_ASYSTOLE_ONGOING", "actionId": "CPR_AIRWAY", "feedbackToFacilitator": "Airway/ventilation tidligt forbedrer EtCO₂ og perfusion." },
+      { "id": "t1", "fromStateId": "S0_ASYSTOLE", "toStateId": "S1_ASYSTOLE_ONGOING", "actionId": "CPR_IV_IO", "feedbackToFacilitator": "IV/IO tidligt for adrenalin og behandling af reversible årsager." },
+      { "id": "t2", "fromStateId": "S1_ASYSTOLE_ONGOING", "toStateId": "S2_TRANSIENT_OUTPUT", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Adrenalin efter algoritme kan give transient output, især hvis årsag behandles." },
+      { "id": "t3", "fromStateId": "S1_ASYSTOLE_ONGOING", "toStateId": "S2_TRANSIENT_OUTPUT", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Gentag rytmetjek og vurder reversible årsager." },
+      { "id": "t_bad0", "fromStateId": "S0_ASYSTOLE", "toStateId": "S_BAD_NO_WARMING_LOW_QUALITY", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Ved hypotermi skal varmebevaring prioriteres; ellers falder EtCO₂ og prognose." }
+    ],
+    "expectedActions": [
+      { "actionId": "CPR_ARREST_RECOGNIZED", "importance": "CRITICAL", "recommendedBeforeSec": 10, "mustBeforeSec": 20, "title": "Genkend hjertestop" },
+      { "actionId": "CPR_CPR_STARTED", "importance": "CRITICAL", "recommendedBeforeSec": 20, "mustBeforeSec": 40, "title": "Start HLR" },
+      { "actionId": "CPR_AIRWAY", "importance": "IMPORTANT", "recommendedBeforeSec": 90, "mustBeforeSec": 180, "title": "Airway + ventilation" },
+      { "actionId": "CPR_IV_IO", "importance": "IMPORTANT", "recommendedBeforeSec": 180, "mustBeforeSec": 360, "title": "IV/IO-adgang" },
+      { "actionId": "MED_ADRENALIN_IV", "importance": "CRITICAL", "recommendedBeforeSec": 240, "mustBeforeSec": 480, "title": "Adrenalin IV/IO" },
+      { "actionId": "CPR_ROSC", "importance": "IMPORTANT", "recommendedBeforeSec": 1200, "title": "ROSC/transient output + transport" }
+    ]
+  },
+
+  {
+    "id": "HLR_v3_005_HYPOGLYKAEMI_ARREST",
+    "title": "HLR v3 – Hypoglykæmi-arrest – M 44",
+    "subtitle": "Diabetes, mistanke hypoglykæmi som årsag",
+    "dispatchText": "44-årig mand med insulinbehandlet diabetes fundet livløs. Mistanke om hypoglykæmi som årsag.",
+    "schoolPeriods": [6, 7, 8],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Hjertestop – mulig hypoglykæmi",
+    "actionDiagnoses": ["Hjertestop", "Hypoglykæmi", "Reversible årsager"],
+    "caseType": "HLR Hypoglycemia",
+    "patientInfo": {
+      "age": 44,
+      "sex": "M",
+      "chiefComplaint": "Fundet livløs",
+      "history": "Insulinbehandlet diabetes. Pårørende nævner lavt blodsukker tidligere på dagen.",
+      "meds": ["Insulin"]
+    },
+    "initialStateId": "S0_ARREST_UNKNOWN",
+    "states": [
+      {
+        "id": "S0_ARREST_UNKNOWN",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 2.2, "temp": 36.7, "bs": 1.8, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Ukontaktbar.",
+          "B": "Apnø.",
+          "C": "Ingen puls. Non-shockbar mistænkes.",
+          "D": "GCS 3. Kendt diabetes.",
+          "E": "Ingen større blødning."
+        },
+        "extraInfo": "BS 1.8 mmol/L → stærk mistanke hypoglykæmi som medvirkende årsag."
+      },
+      {
+        "id": "S1_TREATED_CAUSE",
+        "vitals": { "hr": 38, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 3.4, "temp": 36.6, "bs": 4.2, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Airway håndteret.",
+          "B": "Ventilation igangsat.",
+          "C": "Organiseret rytme men stadig ingen output.",
+          "D": "Årsag behandles (glukose).",
+          "E": "Hold varm."
+        },
+        "extraInfo": "Efter glukose stiger BS, EtCO₂ kan forbedres med kvalitet."
+      },
+      {
+        "id": "S2_ROSC",
+        "vitals": { "hr": 96, "rr": 16, "btSys": 122, "btDia": 78, "spo2": 96, "etco2": 4.9, "temp": 36.6, "bs": 6.1, "gcs": 12, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Spontan respiration.",
+          "C": "ROSC med stabile vitale.",
+          "D": "Vågner gradvist.",
+          "E": "Sekundær gennemgang."
+        },
+        "extraInfo": "ROSC efter HLR + glukose. Overvåg BS for recidiv."
+      },
+      {
+        "id": "S_BAD_NO_GLUCOSE",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 1.6, "temp": 36.4, "bs": 1.4, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Uændret.",
+          "B": "Uændret.",
+          "C": "Vedvarende arrest.",
+          "D": "Hypoglykæmi ubehandlet.",
+          "E": "Forværring."
+        },
+        "extraInfo": "Ubehandlet hypoglykæmi som reversibel årsag → dårligere chance for ROSC."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "S0_ARREST_UNKNOWN", "toStateId": "S1_TREATED_CAUSE", "actionId": "CPR_IV_IO", "feedbackToFacilitator": "IV/IO er nødvendigt for glukose/adrenalin." },
+      { "id": "t1", "fromStateId": "S0_ARREST_UNKNOWN", "toStateId": "S1_TREATED_CAUSE", "actionId": "MED_GLUKOSE_50", "feedbackToFacilitator": "Behandl hypoglykæmi som reversibel årsag (mål/confirm BS hvis muligt)." },
+      { "id": "t2", "fromStateId": "S1_TREATED_CAUSE", "toStateId": "S2_ROSC", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Adrenalin efter algoritme + fortsat HLR." },
+      { "id": "t3", "fromStateId": "S1_TREATED_CAUSE", "toStateId": "S2_ROSC", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Fortsæt HLR og rytmetjek efter protokol." },
+      { "id": "t_bad0", "fromStateId": "S0_ARREST_UNKNOWN", "toStateId": "S_BAD_NO_GLUCOSE", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Adrenalin er korrekt, men ubehandlet hypoglykæmi som årsag kan forhindre ROSC." }
+    ],
+    "expectedActions": [
+      { "actionId": "CPR_ARREST_RECOGNIZED", "importance": "CRITICAL", "recommendedBeforeSec": 10, "mustBeforeSec": 20, "title": "Genkend hjertestop" },
+      { "actionId": "CPR_CPR_STARTED", "importance": "CRITICAL", "recommendedBeforeSec": 20, "mustBeforeSec": 40, "title": "Start HLR" },
+      { "actionId": "CPR_IV_IO", "importance": "IMPORTANT", "recommendedBeforeSec": 180, "mustBeforeSec": 300, "title": "IV/IO-adgang" },
+      { "actionId": "MED_GLUKOSE_50", "importance": "CRITICAL", "recommendedBeforeSec": 240, "mustBeforeSec": 420, "title": "Glukose (behandl hypoglykæmi)" },
+      { "actionId": "MED_ADRENALIN_IV", "importance": "IMPORTANT", "recommendedBeforeSec": 240, "mustBeforeSec": 420, "title": "Adrenalin IV/IO" },
+      { "actionId": "CPR_ROSC", "importance": "IMPORTANT", "recommendedBeforeSec": 900, "title": "ROSC + monitorér BS" }
+    ]
+  },
+
+  {
+    "id": "HLR_v3_006_ANAFYLAKSI_ARREST",
+    "title": "HLR v3 – Anafylaksi-arrest – K 35",
+    "subtitle": "Urticaria/angioødem → kollaps",
+    "dispatchText": "35-årig kvinde med kendt allergi. Udslæt, hævelse, respirationsbesvær → kollaps. Nu ingen puls.",
+    "schoolPeriods": [6, 7, 8],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Hjertestop – anafylaksi som reversibel årsag",
+    "actionDiagnoses": ["Hjertestop", "Anafylaksi", "Airway"],
+    "caseType": "HLR Anaphylaxis",
+    "patientInfo": {
+      "age": 35,
+      "sex": "K",
+      "chiefComplaint": "Kollaps efter allergisk reaktion",
+      "history": "Kendt allergi. Hurtig progression med hævelse og respirationsbesvær før kollaps.",
+      "meds": []
+    },
+    "initialStateId": "S0_ARREST_ANAPHYLAXIS",
+    "states": [
+      {
+        "id": "S0_ARREST_ANAPHYLAXIS",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 1.6, "temp": 36.8, "bs": 5.4, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Mistanke om hævelse i luftvej.",
+          "B": "Apnø (hypoksi før arrest).",
+          "C": "Ingen puls. Arrest.",
+          "D": "Ukontaktbar.",
+          "E": "Urticaria/angioødem ifølge pårørende."
+        },
+        "extraInfo": "Anafylaksi: airway + adrenalin er centralt."
+      },
+      {
+        "id": "S1_AFTER_TREATMENT",
+        "vitals": { "hr": 40, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 2.9, "temp": 36.7, "bs": 5.5, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Airway prioriteres; ventilation svært men muligt.",
+          "B": "Ventileres med høj FiO₂.",
+          "C": "Organiseret rytme men stadig ingen output.",
+          "D": "Uændret.",
+          "E": "Udslæt stadig til stede."
+        },
+        "extraInfo": "Efter relevant behandling kan kredsløb vende gradvist."
+      },
+      {
+        "id": "S2_ROSC",
+        "vitals": { "hr": 118, "rr": 18, "btSys": 106, "btDia": 66, "spo2": 95, "etco2": 4.6, "temp": 36.7, "bs": 5.6, "gcs": 10, "painNrs": 0 },
+        "abcde": {
+          "A": "Luftvej bedre men stadig risiko for hævelse.",
+          "B": "Spontan respiration genkommer.",
+          "C": "ROSC. Takykard.",
+          "D": "Sløv men reagerer.",
+          "E": "Obs biphasisk reaktion."
+        },
+        "extraInfo": "ROSC. Fortsat monitorering og behandling."
+      },
+      {
+        "id": "S_BAD_NO_AIRWAY_SUPPORT",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 1.0, "temp": 36.6, "bs": 5.3, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Svær airway-obstruktion uafhjulpet.",
+          "B": "Hypoksi dominerer.",
+          "C": "Vedvarende arrest.",
+          "D": "Uændret.",
+          "E": "Forværring."
+        },
+        "extraInfo": "Manglende airway/ventilation ved anafylaksi → meget lav EtCO₂."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "S0_ARREST_ANAPHYLAXIS", "toStateId": "S1_AFTER_TREATMENT", "actionId": "CPR_AIRWAY", "feedbackToFacilitator": "Airway/ventilation er helt centralt ved anafylaksi/hypoksi." },
+      { "id": "t1", "fromStateId": "S0_ARREST_ANAPHYLAXIS", "toStateId": "S1_AFTER_TREATMENT", "actionId": "CPR_IV_IO", "feedbackToFacilitator": "IV/IO for adrenalin og evt. væske." },
+      { "id": "t2", "fromStateId": "S1_AFTER_TREATMENT", "toStateId": "S2_ROSC", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Adrenalin er nøglebehandling (efter algoritme i arrest) + fortsat ALS." },
+      { "id": "t3", "fromStateId": "S1_AFTER_TREATMENT", "toStateId": "S2_ROSC", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Fortsæt HLR og rytmetjek efter protokol." },
+      { "id": "t_bad0", "fromStateId": "S0_ARREST_ANAPHYLAXIS", "toStateId": "S_BAD_NO_AIRWAY_SUPPORT", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Uden airway/ventilation ved anafylaksi er sandsynligheden for ROSC lav." }
+    ],
+    "expectedActions": [
+      { "actionId": "CPR_ARREST_RECOGNIZED", "importance": "CRITICAL", "recommendedBeforeSec": 10, "mustBeforeSec": 20, "title": "Genkend hjertestop" },
+      { "actionId": "CPR_CPR_STARTED", "importance": "CRITICAL", "recommendedBeforeSec": 20, "mustBeforeSec": 40, "title": "Start HLR" },
+      { "actionId": "CPR_AIRWAY", "importance": "CRITICAL", "recommendedBeforeSec": 45, "mustBeforeSec": 120, "title": "Airway + ventilation" },
+      { "actionId": "MED_MEDICINSK_ILT", "importance": "IMPORTANT", "recommendedBeforeSec": 90, "mustBeforeSec": 180, "title": "Ilt (høj flow)" },
+      { "actionId": "CPR_IV_IO", "importance": "IMPORTANT", "recommendedBeforeSec": 180, "mustBeforeSec": 300, "title": "IV/IO-adgang" },
+      { "actionId": "MED_ADRENALIN_IV", "importance": "CRITICAL", "recommendedBeforeSec": 240, "mustBeforeSec": 420, "title": "Adrenalin IV/IO" },
+      { "actionId": "CPR_ROSC", "importance": "IMPORTANT", "recommendedBeforeSec": 900, "title": "ROSC + obs biphasisk reaktion" }
+    ]
+  },
+
+  {
+    "id": "HLR_v3_007_OVERDOSIS_ARREST",
+    "title": "HLR v3 – Overdosis-arrest – M 29",
+    "subtitle": "Respirationsdepression → hypoksi → arrest",
+    "dispatchText": "29-årig mand fundet bevidstløs. Mistanke om opioider/benzo. RF faldet før kollaps. Nu ingen puls.",
+    "schoolPeriods": [6, 7, 8],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Hjertestop – hypoksi/overdosis som årsag",
+    "actionDiagnoses": ["Hjertestop", "Overdosis", "Hypoksi"],
+    "caseType": "HLR Overdose",
+    "patientInfo": {
+      "age": 29,
+      "sex": "M",
+      "chiefComplaint": "Fundet bevidstløs",
+      "history": "Mistanke opioider. Pupiller små ifølge bystander. Langsom vejrtrækning før arrest.",
+      "meds": []
+    },
+    "initialStateId": "S0_ARREST_OVERDOSE",
+    "states": [
+      {
+        "id": "S0_ARREST_OVERDOSE",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 0.8, "temp": 36.4, "bs": 5.9, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Risiko for aspiration/obstruktion.",
+          "B": "Apnø (hypoksi før arrest).",
+          "C": "Ingen puls.",
+          "D": "Ukontaktbar. Pupiller små ifølge bystander.",
+          "E": "Ingen traume."
+        },
+        "extraInfo": "Primær problem: hypoksi. EtCO₂ ekstremt lav i starten."
+      },
+      {
+        "id": "S1_VENTILATED",
+        "vitals": { "hr": 44, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 3.2, "temp": 36.3, "bs": 6.0, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Airway åbnet, ventilation pågår.",
+          "B": "Høj FiO₂. EtCO₂ stiger ved effektiv ventilation + kompressioner.",
+          "C": "Organiseret rytme uden output.",
+          "D": "Uændret.",
+          "E": "Hold varm."
+        },
+        "extraInfo": "Fokus: ventilation (capno) + ALS."
+      },
+      {
+        "id": "S2_ROSC",
+        "vitals": { "hr": 102, "rr": 8, "btSys": 116, "btDia": 74, "spo2": 96, "etco2": 6.1, "temp": 36.3, "bs": 6.1, "gcs": 6, "painNrs": 0 },
+        "abcde": {
+          "A": "Luftvej stadig truet pga. nedsat bevidsthed.",
+          "B": "Respiration langsom – støtteventilér.",
+          "C": "ROSC.",
+          "D": "Meget sløv.",
+          "E": "Overvåg temperatur."
+        },
+        "extraInfo": "ROSC. EtCO₂ kan være høj ved hypoventilation → ventilér målrettet."
+      },
+      {
+        "id": "S_BAD_NO_VENTILATION",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 0.5, "temp": 36.1, "bs": 6.2, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Obstruktion/aspiration mistænkes.",
+          "B": "Ventilation utilstrækkelig.",
+          "C": "Vedvarende arrest.",
+          "D": "Uændret.",
+          "E": "Forværres."
+        },
+        "extraInfo": "Uden ventilation ved hypoksi-overdosis er ROSC usandsynlig."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "S0_ARREST_OVERDOSE", "toStateId": "S1_VENTILATED", "actionId": "CPR_AIRWAY", "feedbackToFacilitator": "Airway/ventilation er nøgleintervention ved hypoksi." },
+      { "id": "t1", "fromStateId": "S0_ARREST_OVERDOSE", "toStateId": "S1_VENTILATED", "actionId": "MED_MEDICINSK_ILT", "feedbackToFacilitator": "Høj FiO₂ med effektiv ventilation forbedrer EtCO₂ over tid." },
+      { "id": "t2", "fromStateId": "S1_VENTILATED", "toStateId": "S2_ROSC", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Adrenalin efter algoritme + fortsat HLR." },
+      { "id": "t3", "fromStateId": "S1_VENTILATED", "toStateId": "S2_ROSC", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Rytmetjek styrer næste blok." },
+      { "id": "t_bad0", "fromStateId": "S0_ARREST_OVERDOSE", "toStateId": "S_BAD_NO_VENTILATION", "actionId": "CPR_IV_IO", "feedbackToFacilitator": "IV/IO er fint, men uden ventilation (årsagen) falder EtCO₂ og ROSC-chance." }
+    ],
+    "expectedActions": [
+      { "actionId": "CPR_ARREST_RECOGNIZED", "importance": "CRITICAL", "recommendedBeforeSec": 10, "mustBeforeSec": 20, "title": "Genkend hjertestop" },
+      { "actionId": "CPR_CPR_STARTED", "importance": "CRITICAL", "recommendedBeforeSec": 20, "mustBeforeSec": 40, "title": "Start HLR" },
+      { "actionId": "CPR_AIRWAY", "importance": "CRITICAL", "recommendedBeforeSec": 45, "mustBeforeSec": 90, "title": "Airway + ventilation" },
+      { "actionId": "MED_MEDICINSK_ILT", "importance": "IMPORTANT", "recommendedBeforeSec": 60, "mustBeforeSec": 120, "title": "Ilt (høj flow)" },
+      { "actionId": "CPR_IV_IO", "importance": "IMPORTANT", "recommendedBeforeSec": 180, "mustBeforeSec": 300, "title": "IV/IO-adgang" },
+      { "actionId": "MED_ADRENALIN_IV", "importance": "IMPORTANT", "recommendedBeforeSec": 240, "mustBeforeSec": 420, "title": "Adrenalin IV/IO" },
+      { "actionId": "CPR_ROSC", "importance": "IMPORTANT", "recommendedBeforeSec": 900, "title": "ROSC + ventilationsmål" }
+    ]
+  },
+
+  {
+    "id": "HLR_v3_008_BRADY_TIL_PEA",
+    "title": "HLR v3 – Brady → PEA – K 63",
+    "subtitle": "Peri-arrest: langsom rytme → kollaps",
+    "dispatchText": "63-årig kvinde med svimmelhed og langsom puls. Pludselig bevidstløs. Ingen puls, organiseret langsom rytme.",
+    "schoolPeriods": [6, 7, 8],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Hjertestop – PEA (brady-forløb)",
+    "actionDiagnoses": ["Hjertestop", "Bradykardi", "PEA"],
+    "caseType": "HLR PEA brady",
+    "patientInfo": {
+      "age": 63,
+      "sex": "K",
+      "chiefComplaint": "Kollaps",
+      "history": "Forudgående svimmelhed og langsom puls. Mulig ledningsforstyrrelse.",
+      "meds": []
+    },
+    "initialStateId": "S0_ARREST_BRADY_PEA",
+    "states": [
+      {
+        "id": "S0_ARREST_BRADY_PEA",
+        "vitals": { "hr": 20, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 2.4, "temp": 36.6, "bs": 5.7, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Ukontaktbar.",
+          "B": "Apnø.",
+          "C": "Ingen puls. Organiseret langsom rytme (PEA).",
+          "D": "GCS 3.",
+          "E": "Ingen traume."
+        },
+        "extraInfo": "PEA: non-shockbar. Fokus HLR + adrenalin + reversible årsager."
+      },
+      {
+        "id": "S1_TREATED",
+        "vitals": { "hr": 34, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 3.4, "temp": 36.5, "bs": 5.8, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Airway håndteret.",
+          "B": "Ventilation pågår.",
+          "C": "PEA fortsat men bedre elektrisk aktivitet.",
+          "D": "Uændret.",
+          "E": "Hold varm."
+        },
+        "extraInfo": "Efter adrenalin kan output genkomme."
+      },
+      {
+        "id": "S2_ROSC",
+        "vitals": { "hr": 56, "rr": 10, "btSys": 98, "btDia": 60, "spo2": 94, "etco2": 4.8, "temp": 36.5, "bs": 5.9, "gcs": 10, "painNrs": 0 },
+        "abcde": {
+          "A": "Spontan respiration men træt.",
+          "B": "Behov for støtteventilation.",
+          "C": "ROSC, bradykard men perfunderende.",
+          "D": "Vågner langsomt.",
+          "E": "Monitorér tæt."
+        },
+        "extraInfo": "Efter ROSC: overvej brady-behandling i MEDICAL mode."
+      },
+      {
+        "id": "S_BAD_NO_ADRENALIN",
+        "vitals": { "hr": 18, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 1.9, "temp": 36.4, "bs": 6.0, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Uændret.",
+          "B": "Uændret.",
+          "C": "Vedvarende PEA, lav perfusion.",
+          "D": "Uændret.",
+          "E": "Forværres."
+        },
+        "extraInfo": "Forsinket IV/IO/adrenalin → lavere EtCO₂ og vedvarende PEA."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "S0_ARREST_BRADY_PEA", "toStateId": "S1_TREATED", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Bekræft non-shockbar rytme og fortsæt ALS." },
+      { "id": "t1", "fromStateId": "S0_ARREST_BRADY_PEA", "toStateId": "S1_TREATED", "actionId": "CPR_IV_IO", "feedbackToFacilitator": "IV/IO tidligt for adrenalin." },
+      { "id": "t2", "fromStateId": "S1_TREATED", "toStateId": "S2_ROSC", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Adrenalin efter algoritme." },
+      { "id": "t3", "fromStateId": "S1_TREATED", "toStateId": "S2_ROSC", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Rytmetjek og fortsat HLR." },
+      { "id": "t_bad0", "fromStateId": "S0_ARREST_BRADY_PEA", "toStateId": "S_BAD_NO_ADRENALIN", "actionId": "CPR_CPR_STARTED", "feedbackToFacilitator": "Godt – men uden IV/IO + adrenalin persisterer PEA ofte." }
+    ],
+    "expectedActions": [
+      { "actionId": "CPR_ARREST_RECOGNIZED", "importance": "CRITICAL", "recommendedBeforeSec": 10, "mustBeforeSec": 20, "title": "Genkend hjertestop" },
+      { "actionId": "CPR_CPR_STARTED", "importance": "CRITICAL", "recommendedBeforeSec": 20, "mustBeforeSec": 40, "title": "Start HLR" },
+      { "actionId": "CPR_RHYTHM_CHECK", "importance": "CRITICAL", "recommendedBeforeSec": 120, "mustBeforeSec": 180, "title": "Rytmetjek" },
+      { "actionId": "CPR_IV_IO", "importance": "IMPORTANT", "recommendedBeforeSec": 180, "mustBeforeSec": 300, "title": "IV/IO-adgang" },
+      { "actionId": "MED_ADRENALIN_IV", "importance": "CRITICAL", "recommendedBeforeSec": 240, "mustBeforeSec": 420, "title": "Adrenalin IV/IO" },
+      { "actionId": "CPR_ROSC", "importance": "IMPORTANT", "recommendedBeforeSec": 900, "title": "ROSC" }
+    ]
+  },
+
+  {
+    "id": "HLR_v3_009_VT_SHOCKBAR",
+    "title": "HLR v3 – Pulsløs VT (shockbar) – M 51",
+    "subtitle": "Kramper før kollaps, pulsløs VT",
+    "dispatchText": "51-årig mand kollapser på gaden. Kortvarige kramper set. Nu ingen puls. Rytme: pulsløs VT.",
+    "schoolPeriods": [6, 7, 8],
+    "acuity": "AKUT",
+    "difficulty": 3,
+    "diagnosis": "Hjertestop – pulsløs VT",
+    "actionDiagnoses": ["Hjertestop", "VT", "Shockbar rytme"],
+    "caseType": "HLR VT",
+    "patientInfo": {
+      "age": 51,
+      "sex": "M",
+      "chiefComplaint": "Kollaps",
+      "history": "Kramper set ved kollaps (kan være cerebral hypoperfusion).",
+      "meds": []
+    },
+    "initialStateId": "S0_ARREST_VT",
+    "states": [
+      {
+        "id": "S0_ARREST_VT",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 2.4, "temp": 36.7, "bs": 6.3, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Ukontaktbar.",
+          "B": "Apnø.",
+          "C": "Ingen puls. Pulsløs VT.",
+          "D": "GCS 3.",
+          "E": "Ingen større blødning."
+        },
+        "extraInfo": "Shockbar rytme. Tidlig defib er afgørende."
+      },
+      {
+        "id": "S1_REFRACTORY_VT",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 3.7, "temp": 36.6, "bs": 6.3, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Airway håndteret.",
+          "B": "Ventileres. EtCO₂ moderat ved acceptabel HLR.",
+          "C": "VT persisterer efter første blok.",
+          "D": "Uændret.",
+          "E": "Hold varm."
+        },
+        "extraInfo": "Efter flere shocks: overvej amiodaron + adrenalin efter algoritme."
+      },
+      {
+        "id": "S2_ROSC",
+        "vitals": { "hr": 88, "rr": 12, "btSys": 112, "btDia": 70, "spo2": 95, "etco2": 5.2, "temp": 36.6, "bs": 6.2, "gcs": 8, "painNrs": 0 },
+        "abcde": {
+          "A": "Spontan vejrtrækning, obs luftvej.",
+          "B": "Støtteventilation efter behov.",
+          "C": "ROSC.",
+          "D": "Bevidsthed påvirket post-ROSC.",
+          "E": "Transport."
+        },
+        "extraInfo": "ROSC. Overvej 12-aflednings EKG."
+      },
+      {
+        "id": "S_BAD_DELAYED_SHOCK",
+        "vitals": { "hr": 0, "rr": 0, "btSys": 0, "btDia": 0, "spo2": 0, "etco2": 1.7, "temp": 36.4, "bs": 6.6, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Ukontaktbar.",
+          "B": "Ventilation svingende.",
+          "C": "VT persisterer uden effektiv defib.",
+          "D": "Uændret.",
+          "E": "Forværres."
+        },
+        "extraInfo": "Forværring ved forsinket defibrillering."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "S0_ARREST_VT", "toStateId": "S1_REFRACTORY_VT", "actionId": "CPR_PADS_ON", "feedbackToFacilitator": "Pads på tidligt for at minimere pauses." },
+      { "id": "t1", "fromStateId": "S0_ARREST_VT", "toStateId": "S1_REFRACTORY_VT", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Rytmetjek/shock tidligt ved pulsløs VT." },
+      { "id": "t2", "fromStateId": "S1_REFRACTORY_VT", "toStateId": "S2_ROSC", "actionId": "CPR_RHYTHM_CHECK", "feedbackToFacilitator": "Fortsæt algoritme: shock + HLR + meds." },
+      { "id": "t3", "fromStateId": "S1_REFRACTORY_VT", "toStateId": "S2_ROSC", "actionId": "MED_AMIODARON", "feedbackToFacilitator": "Amiodaron ved refraktær VT/VF efter flere shocks." },
+      { "id": "t4", "fromStateId": "S1_REFRACTORY_VT", "toStateId": "S2_ROSC", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Adrenalin efter algoritme." },
+      { "id": "t_bad0", "fromStateId": "S0_ARREST_VT", "toStateId": "S_BAD_DELAYED_SHOCK", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Meds må ikke erstatte tidlig defibrillering ved shockbar rytme." }
+    ],
+    "expectedActions": [
+      { "actionId": "CPR_ARREST_RECOGNIZED", "importance": "CRITICAL", "recommendedBeforeSec": 10, "mustBeforeSec": 20, "title": "Genkend hjertestop" },
+      { "actionId": "CPR_CPR_STARTED", "importance": "CRITICAL", "recommendedBeforeSec": 20, "mustBeforeSec": 40, "title": "Start HLR" },
+      { "actionId": "CPR_PADS_ON", "importance": "CRITICAL", "recommendedBeforeSec": 45, "mustBeforeSec": 90, "title": "Pads på" },
+      { "actionId": "CPR_RHYTHM_CHECK", "importance": "CRITICAL", "recommendedBeforeSec": 90, "mustBeforeSec": 150, "title": "Rytmetjek/shock" },
+      { "actionId": "CPR_IV_IO", "importance": "IMPORTANT", "recommendedBeforeSec": 180, "mustBeforeSec": 300, "title": "IV/IO-adgang" },
+      { "actionId": "MED_ADRENALIN_IV", "importance": "IMPORTANT", "recommendedBeforeSec": 240, "mustBeforeSec": 420, "title": "Adrenalin IV/IO" },
+      { "actionId": "MED_AMIODARON", "importance": "IMPORTANT", "recommendedBeforeSec": 360, "mustBeforeSec": 600, "title": "Amiodaron" },
+      { "actionId": "CPR_ROSC", "importance": "IMPORTANT", "recommendedBeforeSec": 900, "title": "ROSC" }
+    ]
+  },
+
+  {
+    "id": "HLR_v3_010_POST_ROSC_HYPOTENSION",
+    "title": "HLR v3 – Post-ROSC hypotension – K 47",
+    "subtitle": "ROSC opnået, men ustabil og hypoventilerer",
+    "dispatchText": "47-årig kvinde med hjertestop, ROSC opnået kort før jeres ankomst. Patienten er ustabil.",
+    "schoolPeriods": [6, 7, 8],
+    "acuity": "AKUT",
+    "difficulty": 2,
+    "diagnosis": "Post-ROSC ustabil (hypotension/hypoventilation)",
+    "actionDiagnoses": ["Post-ROSC", "Hypotension", "Airway"],
+    "caseType": "HLR Post-ROSC",
+    "patientInfo": {
+      "age": 47,
+      "sex": "K",
+      "chiefComplaint": "Ustabil efter ROSC",
+      "history": "ROSC opnået. Nedsat bevidsthed og respirationsdepression.",
+      "meds": []
+    },
+    "initialStateId": "S0_ROSC_UNSTABLE",
+    "states": [
+      {
+        "id": "S0_ROSC_UNSTABLE",
+        "vitals": { "hr": 128, "rr": 8, "btSys": 78, "btDia": 46, "spo2": 90, "etco2": 7.0, "temp": 36.2, "bs": 7.4, "gcs": 6, "painNrs": 0 },
+        "abcde": {
+          "A": "Nedsat bevidsthed, airway truet.",
+          "B": "Hypoventilation. Saturation lav.",
+          "C": "ROSC men hypotensiv/takykard.",
+          "D": "Meget sløv.",
+          "E": "Kold/svedende."
+        },
+        "extraInfo": "EtCO₂ høj pga. hypoventilation. Fokus: ventilation + iltning + kredsløb."
+      },
+      {
+        "id": "S1_POST_ROSC_OPTIMIZED",
+        "vitals": { "hr": 106, "rr": 12, "btSys": 92, "btDia": 58, "spo2": 95, "etco2": 5.3, "temp": 36.3, "bs": 7.2, "gcs": 8, "painNrs": 0 },
+        "abcde": {
+          "A": "Airway bedre håndteret.",
+          "B": "Ventilation forbedret, SpO₂ stiger.",
+          "C": "BT bedres, puls falder.",
+          "D": "Stadig sløv, men bedre.",
+          "E": "Hold varm."
+        },
+        "extraInfo": "Optimeret post-ROSC. Overvej 12-aflednings EKG."
+      },
+      {
+        "id": "S2_DETERIORATION_REARREST_RISK",
+        "vitals": { "hr": 140, "rr": 6, "btSys": 60, "btDia": 32, "spo2": 84, "etco2": 2.4, "temp": 36.1, "bs": 7.6, "gcs": 3, "painNrs": 0 },
+        "abcde": {
+          "A": "Airway truet.",
+          "B": "Hypoksi/hypoventilation igen.",
+          "C": "Kredsløb kollapser – risiko for re-arrest.",
+          "D": "Dybere bevidstløshed.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "EtCO₂ falder ved dårlig perfusion (præ-arrest)."
+      }
+    ],
+    "transitions": [
+      { "id": "t0", "fromStateId": "S0_ROSC_UNSTABLE", "toStateId": "S1_POST_ROSC_OPTIMIZED", "actionId": "CPR_AIRWAY", "feedbackToFacilitator": "Post-ROSC airway/ventilation er højt prioriteret ved nedsat bevidsthed." },
+      { "id": "t1", "fromStateId": "S0_ROSC_UNSTABLE", "toStateId": "S1_POST_ROSC_OPTIMIZED", "actionId": "MED_MEDICINSK_ILT", "feedbackToFacilitator": "Iltning/ventilation målrettet (undgå hyperventilation/hypoventilation)." },
+      { "id": "t2", "fromStateId": "S0_ROSC_UNSTABLE", "toStateId": "S2_DETERIORATION_REARREST_RISK", "actionId": "MED_ADRENALIN_IV", "feedbackToFacilitator": "Rutinemæssig adrenalin post-ROSC uden indikation kan forværre takykardi/iskæmi." },
+      { "id": "t3", "fromStateId": "S2_DETERIORATION_REARREST_RISK", "toStateId": "S1_POST_ROSC_OPTIMIZED", "actionId": "CPR_AIRWAY", "feedbackToFacilitator": "Airway/ventilation kan vende præ-arrest forværring." },
+      { "id": "t4", "fromStateId": "S2_DETERIORATION_REARREST_RISK", "toStateId": "S1_POST_ROSC_OPTIMIZED", "actionId": "MED_MEDICINSK_ILT", "feedbackToFacilitator": "Ilt + ventilation forbedrer perfusion og EtCO₂." }
+    ],
+    "expectedActions": [
+      { "actionId": "CPR_ROSC", "importance": "IMPORTANT", "recommendedBeforeSec": 30, "title": "Post-ROSC: overblik + monitorering" },
+      { "actionId": "CPR_AIRWAY", "importance": "CRITICAL", "recommendedBeforeSec": 60, "mustBeforeSec": 180, "title": "Airway + ventilation" },
+      { "actionId": "MED_MEDICINSK_ILT", "importance": "IMPORTANT", "recommendedBeforeSec": 90, "mustBeforeSec": 240, "title": "Ilt (målrettet)" }
+    ]
+  }
+]

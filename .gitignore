@@ -34,6 +34,8 @@ yarn-error.*
 .env*.local
 tools/import/serviceAccountKey.json
 tools/import/*firebase-adminsdk*.json
+seed/users.seed.json
+scripts/serviceAccountKey.json
 
 # typescript
 *.tsbuildinfo

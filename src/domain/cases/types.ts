@@ -30,10 +30,17 @@ export interface PatientVitals {
   btSys: number;
   btDia: number;
   spo2: number;
-  temp?: number;
+
+  // ✅ monitor vitals (always present)
+  etco2: number;   // kPa
+  temp: number;    // °C
+  bs: number;      // mmol/L
+
+  // optional extras
   gcs?: number;
   painNrs?: number;
 }
+
 
 export interface PatientAbcde {
   A: string;

@@ -1,7 +1,8 @@
+// src/screens/CaseSetupScreen.tsx
+import { useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CounterRow } from "../components/CounterRow";
-import type { OrgChoice } from "../data/orgChoices";
 import type { CaseScenario } from "../domain/cases/types";
 import { styles } from "../styles/indexStyles";
 
@@ -11,8 +12,9 @@ export type UnitsRunConfig = {
   laegebil: number;
 };
 
+type HlrLevel = "BLS" | "ALS";
+
 export function CaseSetupScreen({
-  selectedOrg,
   selectedCaseTemplate,
   setupSex,
   setupAge,
@@ -27,7 +29,6 @@ export function CaseSetupScreen({
   onScanQr,
   onCreateSessionInvite,
 }: {
-  selectedOrg: OrgChoice | null;
   selectedCaseTemplate: CaseScenario | null;
 
   setupSex: "M" | "K";
@@ -45,7 +46,7 @@ export function CaseSetupScreen({
   onScanQr: () => void;
   onCreateSessionInvite: () => Promise<void>;
 }) {
-  if (!selectedCaseTemplate || !selectedOrg) {
+  if (!selectedCaseTemplate) {
     return (
       <SafeAreaView style={styles.container}>
         <Text style={styles.text}>Ingen case valgt.</Text>
@@ -56,6 +57,11 @@ export function CaseSetupScreen({
     );
   }
 
+  const isHlr = selectedCaseTemplate.category === "HLR";
+
+  // Only relevant for HLR
+  const [hlrLevel, setHlrLevel] = useState<HlrLevel>("BLS");
+
   const derivedScenario: CaseScenario = {
     ...selectedCaseTemplate,
     patientInfo: {
@@ -63,6 +69,15 @@ export function CaseSetupScreen({
       sex: setupSex,
       age: setupAge,
     },
+    ...(isHlr
+      ? ({
+          // keep it flexible even if CaseScenario doesn't explicitly type "meta"
+          meta: {
+            ...(selectedCaseTemplate as any).meta,
+            hlrLevel, // "BLS" | "ALS"
+          },
+        } as any)
+      : null),
   };
 
   return (
@@ -146,6 +161,36 @@ export function CaseSetupScreen({
           </Text>
         </View>
 
+        {/* ✅ HLR only: BLS/ALS selector */}
+        {isHlr && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>HLR niveau</Text>
+            <Text style={[styles.textSmall, { marginTop: 6 }]}>
+              Vælg BLS eller ALS (styrer hvilke HLR-handlinger der er tilgængelige).
+            </Text>
+
+            <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
+              <TouchableOpacity
+                style={[styles.doseButton, hlrLevel === "BLS" && styles.doseButtonActive, { flex: 1 }]}
+                onPress={() => setHlrLevel("BLS")}
+              >
+                <Text style={[styles.doseButtonText, hlrLevel === "BLS" && { color: "black" }]}>
+                  BLS
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={[styles.doseButton, hlrLevel === "ALS" && styles.doseButtonActive, { flex: 1 }]}
+                onPress={() => setHlrLevel("ALS")}
+              >
+                <Text style={[styles.doseButtonText, hlrLevel === "ALS" && { color: "black" }]}>
+                  ALS
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        )}
+
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Ressourcer / enheder</Text>
           <CounterRow
@@ -214,4 +259,5 @@ export function CaseSetupScreen({
     </SafeAreaView>
   );
 }
+
 export default CaseSetupScreen;

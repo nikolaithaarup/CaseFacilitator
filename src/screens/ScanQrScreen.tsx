@@ -1,5 +1,6 @@
 import { CameraView, type PermissionResponse } from "expo-camera";
 import * as Linking from "expo-linking";
+import { useCallback, useMemo, useState } from "react";
 import { Alert, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "../styles/indexStyles";
@@ -16,7 +17,57 @@ export function ScanQrScreen({
   onBack: () => void;
   onParsedInvite: (args: { sessionId: string; role: "FACILITATOR" | "DEFIB" }) => void;
 }) {
-  const hasPerm = perm?.granted;
+  const hasPerm = !!perm?.granted;
+
+  // ✅ Camera can fire onBarcodeScanned repeatedly; we lock after first scan
+  const [scanLocked, setScanLocked] = useState(false);
+
+  const allowScan = hasPerm && !scanLocked;
+
+  const handleScan = useCallback(
+    (data: string) => {
+      if (!data) return;
+
+      // Lock immediately to avoid duplicate joins / multiple alerts
+      setScanLocked(true);
+
+      try {
+        const parsed = Linking.parse(data);
+
+        if (parsed?.path !== "join") {
+          Alert.alert(
+            "Ikke en CaseFacilitator QR",
+            "Denne QR ser ikke ud til at være en session-invite.",
+            [{ text: "OK", onPress: () => setScanLocked(false) }],
+          );
+          return;
+        }
+
+        const sid = (parsed.queryParams?.sessionId as string) || null;
+        if (!sid) {
+          Alert.alert("Ugyldig invite", "Mangler sessionId i QR.", [
+            { text: "OK", onPress: () => setScanLocked(false) },
+          ]);
+          return;
+        }
+
+        const role = parseJoinRole(parsed.queryParams?.role);
+        onParsedInvite({ sessionId: sid, role });
+      } catch (e) {
+        console.error(e);
+        Alert.alert("Scan fejl", "Kunne ikke læse QR.", [
+          { text: "OK", onPress: () => setScanLocked(false) },
+        ]);
+      }
+    },
+    [onParsedInvite],
+  );
+
+  const subtitle = useMemo(() => {
+    if (!hasPerm) return "Camera permission kræves";
+    if (scanLocked) return "Scannet — klar til at joine";
+    return "Join session (facilitator or defib)";
+  }, [hasPerm, scanLocked]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -26,8 +77,18 @@ export function ScanQrScreen({
         </TouchableOpacity>
         <View style={{ flex: 1 }}>
           <Text style={styles.title}>Scan QR</Text>
-          <Text style={styles.subtitle}>Join session (facilitator or defib)</Text>
+          <Text style={styles.subtitle}>{subtitle}</Text>
         </View>
+
+        {/* ✅ Convenience: reset scan lock */}
+        {hasPerm && (
+          <TouchableOpacity
+            onPress={() => setScanLocked(false)}
+            style={styles.smallButton}
+          >
+            <Text style={styles.smallButtonText}>↻</Text>
+          </TouchableOpacity>
+        )}
       </View>
 
       {!hasPerm ? (
@@ -42,29 +103,23 @@ export function ScanQrScreen({
           <CameraView
             style={{ flex: 1 }}
             barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-            onBarcodeScanned={({ data }) => {
-              try {
-                const parsed = Linking.parse(data);
-                if (parsed?.path !== "join") {
-                  Alert.alert(
-                    "Ikke en CaseFacilitator QR",
-                    "Denne QR ser ikke ud til at være en session-invite.",
-                  );
-                  return;
-                }
-                const sid = (parsed.queryParams?.sessionId as string) || null;
-                if (!sid) {
-                  Alert.alert("Ugyldig invite", "Mangler sessionId i QR.");
-                  return;
-                }
-                const role = parseJoinRole(parsed.queryParams?.role);
-                onParsedInvite({ sessionId: sid, role });
-              } catch (e) {
-                console.error(e);
-                Alert.alert("Scan fejl", "Kunne ikke læse QR.");
-              }
-            }}
+            onBarcodeScanned={
+              allowScan
+                ? ({ data }) => {
+                    handleScan(data);
+                  }
+                : undefined
+            }
           />
+
+          {/* ✅ Small overlay button when locked */}
+          {scanLocked && (
+            <View style={{ position: "absolute", left: 12, right: 12, bottom: 12 }}>
+              <TouchableOpacity style={styles.button} onPress={() => setScanLocked(false)}>
+                <Text style={styles.buttonText}>Scan igen</Text>
+              </TouchableOpacity>
+            </View>
+          )}
         </View>
       )}
     </SafeAreaView>

@@ -1,0 +1,6841 @@
+[
+  {
+    "id": "TRA_v3_001_TENSION_PNEUMOTHORAX",
+    "title": "Tension pneumothorax",
+    "subtitle": "Traume · Knivstik i thorax, svær dyspnø",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Knivstik i brystet. Meget forpustet. Luft/sugelyd ved sår.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 33
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 140,
+          "rr": 36,
+          "btSys": 95,
+          "btDia": 60,
+          "spo2": 84,
+          "etco2": 48,
+          "tempC": 36.2,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Talende i korte sætninger.",
+          "B": "Asymmetrisk thorax, nedsat luftskifte. RF høj.",
+          "C": "Kold/klam. Mistanke obstruktiv shock.",
+          "D": "GCS 14, urolig.",
+          "E": "Penetrerende sår thorax."
+        },
+        "extraInfo": "Hurtig forværring ved forsinkelse."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 110,
+          "rr": 24,
+          "btSys": 110,
+          "btDia": 70,
+          "spo2": 94,
+          "etco2": 40,
+          "tempC": 36.4,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Luftvej fri.",
+          "B": "Bedre ventilation efter dekompression + seal.",
+          "C": "Cirkulation bedres.",
+          "D": "GCS 15, mindre angst.",
+          "E": "Sår forseglet, hold varm."
+        },
+        "extraInfo": "Klinisk bedring."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 160,
+          "rr": 40,
+          "btSys": 70,
+          "btDia": 40,
+          "spo2": 76,
+          "etco2": 22,
+          "tempC": 36,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Sløv, risiko for luftvejstab.",
+          "B": "Svært nedsat ventilation, cyanose.",
+          "C": "Kollaps/obstruktiv shock.",
+          "D": "GCS 10.",
+          "E": "Kold, forværret."
+        },
+        "extraInfo": "Peri-arrest."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "NEEDLE_DECOMPRESSION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "NEEDLE_DECOMPRESSION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "CHEST_SEAL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CHEST_SEAL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "CHEST_SEAL",
+        "recommendedBeforeSec": 90
+      },
+      {
+        "actionId": "NEEDLE_DECOMPRESSION",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 120
+      },
+      {
+        "actionId": "BVM",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 180
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_002_TRAUMATIC_AMPUTATION",
+    "title": "Traumatic amputation",
+    "subtitle": "Traume · Kraftig arteriel blødning (MC)",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Motorcykelulykke. Delvis amputation. Kraftig pulserende blødning.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 24
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 155,
+          "rr": 28,
+          "btSys": 85,
+          "btDia": 55,
+          "spo2": 92,
+          "etco2": 32,
+          "tempC": 36,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Skriger, fri luftvej.",
+          "B": "RF 28, overfladisk.",
+          "C": "Massiv blødning, CRT forlænget.",
+          "D": "GCS 15, panisk.",
+          "E": "Stor læsion, hypotermi-risiko."
+        },
+        "extraInfo": "Stop blødning NU."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 120,
+          "rr": 22,
+          "btSys": 105,
+          "btDia": 65,
+          "spo2": 95,
+          "etco2": 36,
+          "tempC": 36.2,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF falder.",
+          "C": "Blødning kontrolleret, BT stabiliseres.",
+          "D": "Bedre ro, smertedækning.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "TXA + tourniquet + transport."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 170,
+          "rr": 34,
+          "btSys": 65,
+          "btDia": 35,
+          "spo2": 88,
+          "etco2": 25,
+          "tempC": 35.7,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Kvalme/opkast, aspiration risiko.",
+          "B": "Tachypnø, træt.",
+          "C": "Dyb hæmorragisk shock.",
+          "D": "GCS 12, konfus.",
+          "E": "Kold, bleg, klam."
+        },
+        "extraInfo": "Progression mod kollaps."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "TOURNIQUET",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "TOURNIQUET",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IO_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IO_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_ONGOING_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_ONGOING_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "TOURNIQUET",
+        "recommendedBeforeSec": 30,
+        "mustBeBeforeSec": 60
+      },
+      {
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "recommendedBeforeSec": 30,
+        "mustBeBeforeSec": 60
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "IO_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300,
+        "mustBeBeforeSec": 600
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 120
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_003_PELVIC_FRACTURE",
+    "title": "Pelvic fracture",
+    "subtitle": "Traume · Fald fra stige, hypotension",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fald fra ca. 2 meter. Smerter i bækken/hofter. Bleg og klam.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 75
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 130,
+          "rr": 26,
+          "btSys": 90,
+          "btDia": 55,
+          "spo2": 90,
+          "etco2": 33,
+          "tempC": 36,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 26, let dyspnø.",
+          "C": "Mistanke intern blødning. Kold/klam.",
+          "D": "GCS 15.",
+          "E": "Bækkensmerter, hypotermi-risiko."
+        },
+        "extraInfo": "Tænk hæmorragisk shock."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 105,
+          "rr": 20,
+          "btSys": 110,
+          "btDia": 70,
+          "spo2": 95,
+          "etco2": 37,
+          "tempC": 36.2,
+          "painNrs": 5
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre respiration med ilt.",
+          "C": "Binder på, BT bedres.",
+          "D": "GCS 15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Stabiliseret til hurtig transport."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 150,
+          "rr": 30,
+          "btSys": 70,
+          "btDia": 40,
+          "spo2": 84,
+          "etco2": 26,
+          "tempC": 35.7,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Træt, risiko for luftvejstab.",
+          "B": "Tachypnø.",
+          "C": "Forværring af shock.",
+          "D": "GCS 12.",
+          "E": "Kold, bleg."
+        },
+        "extraInfo": "Progression mod irreversibelt shock."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "PELVIC_BINDER",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "PELVIC_BINDER",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "PELVIC_BINDER",
+        "recommendedBeforeSec": 120,
+        "mustBeBeforeSec": 240
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300,
+        "mustBeBeforeSec": 900
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_004_FLAIL_CHEST",
+    "title": "Flail chest",
+    "subtitle": "Traume · Paradox vejrtrækning efter bilulykke",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Frontalt sammenstød. Brystsmerter, paradox bevægelse, svær dyspnø.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 68
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 120,
+          "rr": 32,
+          "btSys": 115,
+          "btDia": 75,
+          "spo2": 86,
+          "etco2": 46,
+          "tempC": 36.3,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Fri luftvej, smertepåvirket.",
+          "B": "Paradox bevægelse, lav SpO₂.",
+          "C": "Takykard pga smerte/stress.",
+          "D": "GCS 15.",
+          "E": "Kontusioner thorax."
+        },
+        "extraInfo": "Overvej ventilationsstøtte + smertelindring."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 105,
+          "rr": 22,
+          "btSys": 120,
+          "btDia": 80,
+          "spo2": 94,
+          "etco2": 40,
+          "tempC": 36.4,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre SpO₂ med O₂/ventilation.",
+          "C": "Stabil cirk.",
+          "D": "GCS 15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Bedring."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 135,
+          "rr": 40,
+          "btSys": 95,
+          "btDia": 60,
+          "spo2": 78,
+          "etco2": 55,
+          "tempC": 36.1,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Udmattet, risiko for luftvejstab.",
+          "B": "Respirationssvigt, cyanose.",
+          "C": "Beg. hypotension.",
+          "D": "GCS 13, konfus.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Ubehandlet → respirationssvigt."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "BVM",
+        "recommendedBeforeSec": 180,
+        "mustBeBeforeSec": 420
+      },
+      {
+        "actionId": "CSPINE_STABILIZATION",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_005_TBI_WITH_VOMITING",
+    "title": "Traumatic brain injury with vomiting",
+    "subtitle": "Traume · Hovedtraume med opkast, konfus",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Cyklist ramt af bil. Kortvarigt bevidsthedstab. Opkast.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 16
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 105,
+          "rr": 24,
+          "btSys": 135,
+          "btDia": 85,
+          "spo2": 92,
+          "etco2": 45,
+          "tempC": 36.6,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Gurglen/opkast. Aspiration risiko.",
+          "B": "RF 24, SpO₂ 92%.",
+          "C": "Puls 105, BT ok.",
+          "D": "GCS 12. Pupiller monitor.",
+          "E": "Skrammer, hold varm."
+        },
+        "extraInfo": "Fokus: airway + C-spine + undgå hypoxi."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 95,
+          "rr": 18,
+          "btSys": 130,
+          "btDia": 82,
+          "spo2": 96,
+          "etco2": 40,
+          "tempC": 36.6,
+          "painNrs": 4
+        },
+        "abcde": {
+          "A": "Suction/sideleje. Luftvej stabil.",
+          "B": "SpO₂ forbedret med O₂.",
+          "C": "Stabil.",
+          "D": "GCS 13-14.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Transport til traumecenter."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 120,
+          "rr": 30,
+          "btSys": 150,
+          "btDia": 95,
+          "spo2": 85,
+          "etco2": 55,
+          "tempC": 36.4,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Tiltagende obstruktion/aspiration.",
+          "B": "Hypoxi, uregelmæssig respiration.",
+          "C": "Stressrespons.",
+          "D": "GCS 9-10, forværring.",
+          "E": "Kold."
+        },
+        "extraInfo": "Sekundær hjerneskade pga hypoxi."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "SUCTION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "SUCTION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "PUPILS_CHECK",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "PUPILS_CHECK",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S2"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "CSPINE_STABILIZATION",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "SUCTION",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 120
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "PUPILS_CHECK",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_006_SPINAL_CORD_INJURY_SUSPECTED",
+    "title": "Spinal cord injury suspected",
+    "subtitle": "Traume · Fald fra hest, paræstesier i ben",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fald fra hest. Nakkesmerter og prikken/nedsat kraft i ben.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 41
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 95,
+          "rr": 20,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "etco2": 38,
+          "tempC": 36.5,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 20.",
+          "C": "Stabil.",
+          "D": "GCS 15. Paræstesier/nedsat kraft.",
+          "E": "Nakkesmerter. Hold varm."
+        },
+        "extraInfo": "Immobilisér og undgå unødig bevægelse."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 88,
+          "rr": 18,
+          "btSys": 120,
+          "btDia": 78,
+          "spo2": 96,
+          "etco2": 38,
+          "tempC": 36.6,
+          "painNrs": 5
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "God respiration.",
+          "C": "Stabil.",
+          "D": "Uændret neurostatus, roligere.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "God immobilisering + smertedækning."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 110,
+          "rr": 26,
+          "btSys": 115,
+          "btDia": 75,
+          "spo2": 90,
+          "etco2": 32,
+          "tempC": 36.3,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Fri luftvej men stresset.",
+          "B": "Hyperventilerer.",
+          "C": "Stabil men smerte/stress.",
+          "D": "Tiltagende neurologiske udfald.",
+          "E": "Kold, urolig."
+        },
+        "extraInfo": "Uhensigtsmæssig håndtering → forværring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "CSPINE_STABILIZATION",
+        "recommendedBeforeSec": 120,
+        "mustBeBeforeSec": 600
+      },
+      {
+        "actionId": "EXPOSE_EXAMINE",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_007_BURNS_2ND_3RD_DEGREE",
+    "title": "Burns (2nd–3rd degree)",
+    "subtitle": "Traume · Forbrænding (10-15% TBSA)",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Køkkenulykke. Forbrændinger på overkrop/arme. Smertepåvirket.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 29
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 115,
+          "rr": 26,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 93,
+          "etco2": 36,
+          "tempC": 36,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 26. Røg-exponering mulig.",
+          "C": "Takykard, væsketabs-risiko.",
+          "D": "GCS 15.",
+          "E": "Forbrændinger, hypotermi-risiko."
+        },
+        "extraInfo": "O₂ + varme + IV."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 95,
+          "rr": 18,
+          "btSys": 125,
+          "btDia": 82,
+          "spo2": 97,
+          "etco2": 38,
+          "tempC": 36.3,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre SpO₂ med ilt.",
+          "C": "IV etableret, væske efter behov.",
+          "D": "GCS 15.",
+          "E": "Forbinding/varme."
+        },
+        "extraInfo": "Stabiliseret."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 135,
+          "rr": 32,
+          "btSys": 95,
+          "btDia": 60,
+          "spo2": 88,
+          "etco2": 42,
+          "tempC": 35.6,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Hæshed/ødem mistanke.",
+          "B": "Forværret dyspnø.",
+          "C": "Takykard, beg. hypotension.",
+          "D": "GCS 14, urolig.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → forværring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "EXPOSE_EXAMINE",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 180
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_008_CRUSH_INJURY",
+    "title": "Crush injury",
+    "subtitle": "Traume · Crush (risiko shock/rhabdo)",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Industrieuheld. Ben i klemme i 30 min. Smerter og hævelse.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 52
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 120,
+          "rr": 24,
+          "btSys": 110,
+          "btDia": 70,
+          "spo2": 93,
+          "etco2": 36,
+          "tempC": 36.2,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 24.",
+          "C": "Tachy. Risiko shock.",
+          "D": "GCS 15.",
+          "E": "Hævet ben. Hold varm."
+        },
+        "extraInfo": "Tidlig væske kan være vigtig."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 105,
+          "rr": 18,
+          "btSys": 120,
+          "btDia": 78,
+          "spo2": 96,
+          "etco2": 38,
+          "tempC": 36.4,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre respiration.",
+          "C": "Perfusion bedres med væske/O₂.",
+          "D": "GCS 15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Stabiliseret."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 135,
+          "rr": 28,
+          "btSys": 90,
+          "btDia": 55,
+          "spo2": 90,
+          "etco2": 32,
+          "tempC": 35.9,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej men udmattet.",
+          "B": "Tachypnø.",
+          "C": "Hypotension, shock.",
+          "D": "GCS 14.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → forværring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_009_OPEN_FOREARM_FRACTURE",
+    "title": "Open forearm fracture",
+    "subtitle": "Traume · Åben fraktur",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fald på skateboard. Knogle synlig. Moderat blødning. Kraftige smerter.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 19
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 110,
+          "rr": 22,
+          "btSys": 120,
+          "btDia": 78,
+          "spo2": 93,
+          "etco2": 36,
+          "tempC": 36.4,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 22.",
+          "C": "Smerte/takykardi, blødning.",
+          "D": "GCS 15.",
+          "E": "Åben fraktur, hypotermi-risiko."
+        },
+        "extraInfo": "Kontrollér blødning + smertelindring."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 95,
+          "rr": 18,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 97,
+          "etco2": 38,
+          "tempC": 36.5,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 18.",
+          "C": "Stabil, blødning kontrolleret.",
+          "D": "GCS 15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Stabiliseret og klar til transport."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 130,
+          "rr": 28,
+          "btSys": 95,
+          "btDia": 60,
+          "spo2": 88,
+          "etco2": 32,
+          "tempC": 36.1,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Træt.",
+          "B": "RF 28.",
+          "C": "Beg. hypotension.",
+          "D": "GCS 14.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → forværring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "EXPOSE_EXAMINE",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 600
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_010_BLUNT_ABDOMINAL_TRAUMA",
+    "title": "Blunt abdominal trauma",
+    "subtitle": "Traume · Intern blødning mistanke",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Slagsmål. Spark i maven. Tiltagende mavesmerter og svimmel.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 40
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 125,
+          "rr": 26,
+          "btSys": 95,
+          "btDia": 60,
+          "spo2": 92,
+          "etco2": 33,
+          "tempC": 36.1,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 26.",
+          "C": "Bleg/klam, mistanke intern blødning.",
+          "D": "GCS 15, svimmel.",
+          "E": "Hold varm."
+        },
+        "extraInfo": "Prioritér transport."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 105,
+          "rr": 20,
+          "btSys": 110,
+          "btDia": 70,
+          "spo2": 95,
+          "etco2": 36,
+          "tempC": 36.2,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre respiration med O₂.",
+          "C": "IV + TXA. BT bedres.",
+          "D": "GCS 15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Hurtig transport."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 145,
+          "rr": 30,
+          "btSys": 70,
+          "btDia": 40,
+          "spo2": 85,
+          "etco2": 26,
+          "tempC": 35.7,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Træt.",
+          "B": "Tachypnø.",
+          "C": "Shock.",
+          "D": "GCS 13-14.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → kollaps."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 120,
+        "mustBeBeforeSec": 300
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300,
+        "mustBeBeforeSec": 900
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 180
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_011_PENETRATING_ABDOMINAL_TRAUMA",
+    "title": "Penetrating abdominal trauma",
+    "subtitle": "Traume · Knivstik abdomen",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Knivstik i abdomen. Blødning fra sår. Bleg og smertepåvirket.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 31
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 135,
+          "rr": 28,
+          "btSys": 95,
+          "btDia": 60,
+          "spo2": 91,
+          "etco2": 33,
+          "tempC": 36,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 28.",
+          "C": "Blødning, bleg/klam.",
+          "D": "GCS 15.",
+          "E": "Penetrerende sår, hold varm."
+        },
+        "extraInfo": "Stop blødning + load&go."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 115,
+          "rr": 22,
+          "btSys": 105,
+          "btDia": 65,
+          "spo2": 95,
+          "etco2": 36,
+          "tempC": 36.2,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre med O₂.",
+          "C": "Trykforbinding/TXA/IV.",
+          "D": "GCS 15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Stabiliseret til transport."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 155,
+          "rr": 34,
+          "btSys": 75,
+          "btDia": 45,
+          "spo2": 86,
+          "etco2": 26,
+          "tempC": 35.7,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Træt.",
+          "B": "Tachypnø.",
+          "C": "Shock.",
+          "D": "GCS 13-14.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → kollaps."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 120
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 120,
+        "mustBeBeforeSec": 300
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300,
+        "mustBeBeforeSec": 900
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 180
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_012_NEAR_DROWNING_HYPOTHERMIA",
+    "title": "Near drowning with hypothermia",
+    "subtitle": "Traume · Nærdrukning + hypotermi",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fundet i havn. Trukket op. Hoste, kold og våd.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 27
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 110,
+          "rr": 30,
+          "btSys": 120,
+          "btDia": 75,
+          "spo2": 86,
+          "etco2": 44,
+          "tempC": 35,
+          "painNrs": 2
+        },
+        "abcde": {
+          "A": "Fri luftvej, hoster vand.",
+          "B": "RF 30, lav SpO₂.",
+          "C": "Stabil BT.",
+          "D": "GCS 15, ryster.",
+          "E": "Våd/kold, hypotermi-risiko."
+        },
+        "extraInfo": "O₂ + varme + evt. ventilation."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 120,
+          "btDia": 78,
+          "spo2": 94,
+          "etco2": 38,
+          "tempC": 35.6,
+          "painNrs": 2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "SpO₂ bedres med O₂.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Tørres/varmes."
+        },
+        "extraInfo": "Stabiliseret."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 120,
+          "rr": 38,
+          "btSys": 105,
+          "btDia": 65,
+          "spo2": 78,
+          "etco2": 55,
+          "tempC": 34.6,
+          "painNrs": 2
+        },
+        "abcde": {
+          "A": "Tiltagende sekret/obstruktion.",
+          "B": "Respirationssvigt.",
+          "C": "Beg. hypotension.",
+          "D": "GCS 14, træt.",
+          "E": "Kold."
+        },
+        "extraInfo": "Forsinkelse → svigt."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "BVM",
+        "recommendedBeforeSec": 120,
+        "mustBeBeforeSec": 420
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "EXPOSE_EXAMINE",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_013_FALL_FROM_HEIGHT_MULTITRAUMA",
+    "title": "Fall from height (multitrauma)",
+    "subtitle": "Traume · Multitraume",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fald fra 4. sal. Flere smerter, stønner, kold og klam.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 58
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 140,
+          "rr": 32,
+          "btSys": 85,
+          "btDia": 55,
+          "spo2": 88,
+          "etco2": 34,
+          "tempC": 35.9,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Fri luftvej, men smertepåvirket.",
+          "B": "RF 32, lav SpO₂.",
+          "C": "Shock-tegn.",
+          "D": "GCS 13, konfus.",
+          "E": "Multitraume, hypotermi-risiko."
+        },
+        "extraInfo": "Load & go + hæmostase."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 115,
+          "rr": 24,
+          "btSys": 100,
+          "btDia": 65,
+          "spo2": 93,
+          "etco2": 36,
+          "tempC": 36.1,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Stabiliseret.",
+          "B": "Bedre med O₂.",
+          "C": "IV + TXA. Stabiliseres.",
+          "D": "GCS 14.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Stabiliseret til transport."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 160,
+          "rr": 38,
+          "btSys": 65,
+          "btDia": 40,
+          "spo2": 78,
+          "etco2": 24,
+          "tempC": 35.5,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Træt, risiko for luftvejstab.",
+          "B": "Respirationssvigt.",
+          "C": "Dyb shock.",
+          "D": "GCS 10-11.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → kollaps."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "PELVIC_BINDER",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "PELVIC_BINDER",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "CSPINE_STABILIZATION",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "PELVIC_BINDER",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300,
+        "mustBeBeforeSec": 900
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 120
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_014_FACIAL_TRAUMA_BLEEDING_AIRWAY_RISK",
+    "title": "Facial trauma with bleeding (airway risk)",
+    "subtitle": "Traume · Blod i mund, luftvejsrisiko",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fald på cykel. Næseblødning, blod i mund. Åndenød.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 70
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 115,
+          "rr": 28,
+          "btSys": 130,
+          "btDia": 80,
+          "spo2": 90,
+          "etco2": 44,
+          "tempC": 36.2,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Blod i mund/svælg, gurglen.",
+          "B": "RF 28, SpO₂ 90%.",
+          "C": "Stabil BT.",
+          "D": "GCS 15.",
+          "E": "Ansigtsskader, hold varm."
+        },
+        "extraInfo": "Suction + O₂."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 100,
+          "rr": 20,
+          "btSys": 125,
+          "btDia": 78,
+          "spo2": 95,
+          "etco2": 38,
+          "tempC": 36.3,
+          "painNrs": 5
+        },
+        "abcde": {
+          "A": "Luftvej renset.",
+          "B": "SpO₂ bedres.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Stabiliseret."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 125,
+          "rr": 34,
+          "btSys": 110,
+          "btDia": 70,
+          "spo2": 82,
+          "etco2": 55,
+          "tempC": 36,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Tiltagende obstruktion.",
+          "B": "Hypoxi.",
+          "C": "Stressrespons.",
+          "D": "GCS 14.",
+          "E": "Kold."
+        },
+        "extraInfo": "Forsinkelse → aspiration/hypoxi."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "SUCTION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "SUCTION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "SUCTION",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 120
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "CSPINE_STABILIZATION",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_015_OPEN_PNEUMOTHORAX",
+    "title": "Open pneumothorax",
+    "subtitle": "Traume · Åbent pneumothorax",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Stiksår i venstre thorax. Luftbobler/blod ved sår. Åndenød.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 45
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 125,
+          "rr": 34,
+          "btSys": 105,
+          "btDia": 70,
+          "spo2": 86,
+          "etco2": 46,
+          "tempC": 36.3,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Suge-sår, lav SpO₂.",
+          "C": "Takykard.",
+          "D": "GCS 15, angst.",
+          "E": "Penetrerende thorax."
+        },
+        "extraInfo": "Chest seal + O₂."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 105,
+          "rr": 22,
+          "btSys": 115,
+          "btDia": 75,
+          "spo2": 94,
+          "etco2": 40,
+          "tempC": 36.4,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre ventilation efter seal/O₂.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Hold varm."
+        },
+        "extraInfo": "Bedring."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 145,
+          "rr": 40,
+          "btSys": 85,
+          "btDia": 55,
+          "spo2": 78,
+          "etco2": 55,
+          "tempC": 36.1,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Træt.",
+          "B": "Respirationssvigt.",
+          "C": "Beg. hypotension.",
+          "D": "GCS 13-14.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → forværring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CHEST_SEAL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CHEST_SEAL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "CHEST_SEAL",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 120
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "BVM",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_016_SCALP_LACERATION_MAJOR_BLEED",
+    "title": "Scalp laceration with major bleeding",
+    "subtitle": "Traume · Ydre blødning (scalp)",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fald og slået hovedet. Stor hovedbundslæsion med kraftig blødning.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 60
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 125,
+          "rr": 24,
+          "btSys": 100,
+          "btDia": 65,
+          "spo2": 93,
+          "etco2": 36,
+          "tempC": 36.1,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 24.",
+          "C": "Bløder kraftigt, bleg/klam.",
+          "D": "GCS 14-15.",
+          "E": "Scalplæsion, hold varm."
+        },
+        "extraInfo": "Tryk/forbinding."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 105,
+          "rr": 18,
+          "btSys": 115,
+          "btDia": 75,
+          "spo2": 96,
+          "etco2": 38,
+          "tempC": 36.3,
+          "painNrs": 4
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre.",
+          "C": "Blødning kontrolleret.",
+          "D": "GCS 15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Stabiliseret."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 140,
+          "rr": 30,
+          "btSys": 80,
+          "btDia": 50,
+          "spo2": 90,
+          "etco2": 32,
+          "tempC": 35.8,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Træt.",
+          "B": "Tachypnø.",
+          "C": "Shock-tegn.",
+          "D": "GCS 13-14.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → forværring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "CSPINE_STABILIZATION",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 600
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_017_HAND_LACERATION",
+    "title": "Hand laceration",
+    "subtitle": "Traume · Håndlæsion",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Sav-ulykke. Dybt snit i hånd. Bløder moderat, store smerter.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 50
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 105,
+          "rr": 20,
+          "btSys": 135,
+          "btDia": 85,
+          "spo2": 96,
+          "etco2": 36,
+          "tempC": 36.6,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 20.",
+          "C": "Moderat blødning.",
+          "D": "GCS 15.",
+          "E": "Dybt sår i hånd."
+        },
+        "extraInfo": "Trykforbinding + smertelindring."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 92,
+          "rr": 16,
+          "btSys": 130,
+          "btDia": 82,
+          "spo2": 97,
+          "etco2": 38,
+          "tempC": 36.6,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 16.",
+          "C": "Blødning kontrolleret.",
+          "D": "GCS 15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Stabiliseret."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 120,
+          "rr": 24,
+          "btSys": 110,
+          "btDia": 70,
+          "spo2": 94,
+          "etco2": 34,
+          "tempC": 36.4,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Stress/tachypnø.",
+          "C": "Forværring pga smerte/blødning.",
+          "D": "GCS 15.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → forværring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 900
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_018_COMPARTMENT_SYNDROME_SUSPECTED",
+    "title": "Compartment syndrome suspected",
+    "subtitle": "Traume · Kompartmentsyndrom mistanke",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Skiulykke. Spændt hævelse i underben. Smerte ude af proportion.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 34
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 115,
+          "rr": 22,
+          "btSys": 130,
+          "btDia": 85,
+          "spo2": 96,
+          "etco2": 36,
+          "tempC": 36.6,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 22.",
+          "C": "Stabil BT.",
+          "D": "GCS 15.",
+          "E": "Spændt hævelse, kraftig smerte."
+        },
+        "extraInfo": "Hurtig transport, smertelindring."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 100,
+          "rr": 18,
+          "btSys": 125,
+          "btDia": 82,
+          "spo2": 97,
+          "etco2": 38,
+          "tempC": 36.6,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 18.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Smertedækning forbedrer vitaler."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 130,
+          "rr": 26,
+          "btSys": 115,
+          "btDia": 75,
+          "spo2": 95,
+          "etco2": 34,
+          "tempC": 36.4,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Stress.",
+          "C": "Stabil men forpint.",
+          "D": "GCS 15.",
+          "E": "Tiltagende smerte/iskæmi mistanke."
+        },
+        "extraInfo": "Forsinkelse → vævsskade."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "EXPOSE_EXAMINE",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 600
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_019_EYE_INJURY",
+    "title": "Eye injury",
+    "subtitle": "Traume · Øjenskade (slag/fremmedlegeme)",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Værksted. Slag/fremmedlegeme i øje. Smerter, tåreflåd.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 26
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 100,
+          "rr": 18,
+          "btSys": 130,
+          "btDia": 85,
+          "spo2": 98,
+          "etco2": 38,
+          "tempC": 36.7,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 18.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Smertefuldt øje, kan ikke åbne."
+        },
+        "extraInfo": "Skånsom håndtering, smertelindring."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 88,
+          "rr": 16,
+          "btSys": 125,
+          "btDia": 82,
+          "spo2": 98,
+          "etco2": 38,
+          "tempC": 36.7,
+          "painNrs": 5
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 16.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Ro/varme."
+        },
+        "extraInfo": "Bedring."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 110,
+          "rr": 22,
+          "btSys": 135,
+          "btDia": 88,
+          "spo2": 98,
+          "etco2": 34,
+          "tempC": 36.6,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Stress.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Tiltagende smerte."
+        },
+        "extraInfo": "Forsinkelse → mere smerte."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "EXPOSE_EXAMINE",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 600
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 900
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_020_SIMPLE_PNEUMOTHORAX",
+    "title": "Simple pneumothorax",
+    "subtitle": "Traume · Lukket pneumothorax",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fald på trappe. Brystsmerter og let dyspnø. Stabil men smertepåvirket.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 37
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 110,
+          "rr": 24,
+          "btSys": 130,
+          "btDia": 85,
+          "spo2": 92,
+          "etco2": 40,
+          "tempC": 36.5,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let dyspnø, RF 24.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Brystsmerter."
+        },
+        "extraInfo": "O₂ + smertelindring."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 95,
+          "rr": 18,
+          "btSys": 125,
+          "btDia": 82,
+          "spo2": 96,
+          "etco2": 38,
+          "tempC": 36.6,
+          "painNrs": 5
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "SpO₂ bedres.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Ro/varme."
+        },
+        "extraInfo": "Bedring."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 125,
+          "rr": 30,
+          "btSys": 115,
+          "btDia": 75,
+          "spo2": 86,
+          "etco2": 46,
+          "tempC": 36.4,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Forværret dyspnø.",
+          "C": "Beg. påvirkning.",
+          "D": "GCS 15.",
+          "E": "Smerter."
+        },
+        "extraInfo": "Forsinkelse → forværring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 600
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_021_HIP_DISLOCATION",
+    "title": "Hip dislocation",
+    "subtitle": "Traume · Fald/vrid, stærke hoftesmerter",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fald i hjemmet. Hoften står forkortet/udadroteret. Smerter, kan ikke støtte.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 75
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 110,
+          "rr": 20,
+          "btSys": 150,
+          "btDia": 90,
+          "spo2": 95,
+          "etco2": 36,
+          "tempC": 36.4,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 20.",
+          "C": "BT høj pga smerte.",
+          "D": "GCS 15.",
+          "E": "Forkortet ben, udadroteret, stærke smerter."
+        },
+        "extraInfo": "Skånsom håndtering. Smertelindring før flyt."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 90,
+          "rr": 16,
+          "btSys": 140,
+          "btDia": 85,
+          "spo2": 97,
+          "etco2": 38,
+          "tempC": 36.5,
+          "painNrs": 5
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 16.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre smertekontrol, immobiliseret."
+        },
+        "extraInfo": "Transport til ortopædkirurgi."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 125,
+          "rr": 26,
+          "btSys": 160,
+          "btDia": 95,
+          "spo2": 94,
+          "etco2": 34,
+          "tempC": 36.3,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Stress/tachypnø.",
+          "C": "Smerteinduceret sympatikus.",
+          "D": "GCS 15 men urolig.",
+          "E": "Tiltagende smerter/spasmer."
+        },
+        "extraInfo": "Forværres hvis der flyttes uden smertelindring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 600
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 900
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_022_FEMUR_FRACTURE",
+    "title": "Femur fracture",
+    "subtitle": "Traume · Højenergitraume, stor smerte, blødningsrisiko",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Sport/MC ulykke. Deformitet på lår. Kan ikke rejse sig. Bleg og klam.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 22
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 135,
+          "rr": 26,
+          "btSys": 105,
+          "btDia": 65,
+          "spo2": 94,
+          "etco2": 34,
+          "tempC": 36.2,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 26.",
+          "C": "Tachy. Risiko intern blødning i lår.",
+          "D": "GCS 15.",
+          "E": "Deformitet femur, stærk smerte."
+        },
+        "extraInfo": "Smertelindring + stabilisering + varme."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 110,
+          "rr": 18,
+          "btSys": 120,
+          "btDia": 75,
+          "spo2": 97,
+          "etco2": 38,
+          "tempC": 36.3,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 18.",
+          "C": "Bedre perfusion efter stabilisering/væske.",
+          "D": "GCS 15.",
+          "E": "Immobiliseret, varmetiltag."
+        },
+        "extraInfo": "Stabiliseret til transport."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 155,
+          "rr": 32,
+          "btSys": 85,
+          "btDia": 50,
+          "spo2": 90,
+          "etco2": 28,
+          "tempC": 35.8,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Tachypnø.",
+          "C": "Shock-tegn, BT falder.",
+          "D": "GCS 14, konfus.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → hæmorragisk shock."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 120,
+        "mustBeBeforeSec": 600
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 600
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_023_SHOULDER_DISLOCATION",
+    "title": "Shoulder dislocation",
+    "subtitle": "Traume · Skulder ude af led, neurovaskulær vurdering",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Sportsskade. Skulderen 'poppede ud'. Kraftig smerte, holder armen ind til kroppen.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 28
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 105,
+          "rr": 18,
+          "btSys": 145,
+          "btDia": 90,
+          "spo2": 98,
+          "etco2": 36,
+          "tempC": 36.7,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 18.",
+          "C": "BT høj pga smerte.",
+          "D": "GCS 15.",
+          "E": "Skulder deformitet, smerte, tjek puls/sens."
+        },
+        "extraInfo": "Immobilisér i slynge, smertelindring."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 88,
+          "rr": 16,
+          "btSys": 135,
+          "btDia": 85,
+          "spo2": 98,
+          "etco2": 38,
+          "tempC": 36.7,
+          "painNrs": 5
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 16.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Slynge/immobilisering. Neurovask ok."
+        },
+        "extraInfo": "Transport til vurdering."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 120,
+          "rr": 22,
+          "btSys": 150,
+          "btDia": 95,
+          "spo2": 98,
+          "etco2": 34,
+          "tempC": 36.6,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Stress.",
+          "C": "Smerteinduceret.",
+          "D": "GCS 15, urolig.",
+          "E": "Tiltagende smerte/spasme."
+        },
+        "extraInfo": "Forværres ved hårdhændet håndtering."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "EXPOSE_EXAMINE",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 900
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_024_ANKLE_FRACTURE_DISLOCATION",
+    "title": "Ankle fracture/dislocation",
+    "subtitle": "Traume · Deformitet, smerte, hævelse",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fald på is. Anklen står skæv. Kan ikke støtte. Stærke smerter.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 33
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 105,
+          "rr": 20,
+          "btSys": 135,
+          "btDia": 85,
+          "spo2": 98,
+          "etco2": 36,
+          "tempC": 36.7,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 20.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Ankel deformitet/hævelse. Tjek distal puls/sens."
+        },
+        "extraInfo": "Immobilisér. Smertelindring før flyt."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 90,
+          "rr": 16,
+          "btSys": 130,
+          "btDia": 82,
+          "spo2": 98,
+          "etco2": 38,
+          "tempC": 36.7,
+          "painNrs": 5
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 16.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Immobiliseret, bedre smerte."
+        },
+        "extraInfo": "Transport."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 120,
+          "rr": 24,
+          "btSys": 140,
+          "btDia": 90,
+          "spo2": 98,
+          "etco2": 34,
+          "tempC": 36.6,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Stress.",
+          "C": "Smerteinduceret respons.",
+          "D": "GCS 15.",
+          "E": "Tiltagende smerte/hævelse."
+        },
+        "extraInfo": "Forværres ved manglende immobilisering."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "EXPOSE_EXAMINE",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 600
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 900
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_025_PENETRATING_NECK_TRAUMA",
+    "title": "Penetrating neck trauma",
+    "subtitle": "Traume · Blødning + luftvejsrisiko",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Stikskade på hals. Bløder. Hæs stemme, angst, synkebesvær.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 38
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 130,
+          "rr": 30,
+          "btSys": 100,
+          "btDia": 65,
+          "spo2": 90,
+          "etco2": 42,
+          "tempC": 36.1,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Hæshed, synkebesvær. Luftvejsrisiko.",
+          "B": "RF 30, SpO₂ 90%.",
+          "C": "Blødning, bleg/klam.",
+          "D": "GCS 15, panisk.",
+          "E": "Penetrerende hals sår."
+        },
+        "extraInfo": "Kontrollér blødning uden at okkludere luftvej. Hurtig transport."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 110,
+          "rr": 22,
+          "btSys": 115,
+          "btDia": 75,
+          "spo2": 95,
+          "etco2": 38,
+          "tempC": 36.3,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Luftvej bedre, tæt monitorering.",
+          "B": "SpO₂ bedre med O₂.",
+          "C": "Blødning kontrolleret så vidt muligt.",
+          "D": "GCS 15, roligere.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Load & go."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 150,
+          "rr": 38,
+          "btSys": 75,
+          "btDia": 45,
+          "spo2": 80,
+          "etco2": 28,
+          "tempC": 35.8,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Tiltagende luftvejsobstruktion.",
+          "B": "Hypoxi, respirationssvigt.",
+          "C": "Shock.",
+          "D": "GCS 12-13.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → luftvejssvigt + kollaps."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 120
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_026_SPLENIC_RUPTURE_SUSPECTED",
+    "title": "Splenic rupture suspected",
+    "subtitle": "Traume · Stump abdominaltraume, shock-tegn",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Cykelstyrt. Smerter i venstre øvre abdomen/skulder. Bliver mere svimmel.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 46
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 125,
+          "rr": 24,
+          "btSys": 95,
+          "btDia": 60,
+          "spo2": 93,
+          "etco2": 34,
+          "tempC": 36.1,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 24.",
+          "C": "Bleg/klam, mistanke intern blødning.",
+          "D": "GCS 15, svimmel.",
+          "E": "Smerter LUQ, evt. referred pain til skulder."
+        },
+        "extraInfo": "TXA + varme + hurtig transport."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 105,
+          "rr": 18,
+          "btSys": 110,
+          "btDia": 70,
+          "spo2": 96,
+          "etco2": 36,
+          "tempC": 36.3,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre med O₂.",
+          "C": "IV/TXA, BT bedres.",
+          "D": "GCS 15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Load & go."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 150,
+          "rr": 30,
+          "btSys": 70,
+          "btDia": 40,
+          "spo2": 88,
+          "etco2": 26,
+          "tempC": 35.7,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Træt.",
+          "B": "Tachypnø.",
+          "C": "Shock.",
+          "D": "GCS 13-14.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → kollaps."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 120,
+        "mustBeBeforeSec": 300
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300,
+        "mustBeBeforeSec": 900
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 180
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_027_FACIAL_TRAUMA_AIRWAY_RISK",
+    "title": "Facial trauma (airway risk)",
+    "subtitle": "Traume · Blod/knoglefragmenter i mund, aspiration risiko",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Slagsmål. Kæbesmerter, blod i mund, svært ved at tale tydeligt.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 23
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 120,
+          "rr": 28,
+          "btSys": 135,
+          "btDia": 85,
+          "spo2": 90,
+          "etco2": 44,
+          "tempC": 36.5,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Blod i mund/svælg, gurglen.",
+          "B": "RF 28, SpO₂ 90%.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Ansigt/kæbe skade."
+        },
+        "extraInfo": "Suction + O₂ + skånsom håndtering."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 100,
+          "rr": 18,
+          "btSys": 130,
+          "btDia": 82,
+          "spo2": 96,
+          "etco2": 38,
+          "tempC": 36.6,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Luftvej renset og stabil.",
+          "B": "SpO₂ bedres.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Stabiliseret."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 135,
+          "rr": 34,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 82,
+          "etco2": 55,
+          "tempC": 36.2,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Tiltagende obstruktion/aspiration.",
+          "B": "Hypoxi.",
+          "C": "Stabil.",
+          "D": "GCS 14.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → hypoxi."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "SUCTION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "SUCTION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "SUCTION",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 120
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 60
+      },
+      {
+        "actionId": "CSPINE_STABILIZATION",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_028_EL_ULYKKE",
+    "title": "El-ulykke",
+    "subtitle": "Traume · Elektrisk skade, overvågning nødvendig",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Arbejdsskade. El-stød. Brændmærker på hånd. Svimmel og utilpas.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 44
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 115,
+          "rr": 20,
+          "btSys": 140,
+          "btDia": 90,
+          "spo2": 96,
+          "etco2": 34,
+          "tempC": 36.8,
+          "gcs": 15,
+          "painNrs": 4
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 20.",
+          "C": "Takykardi, monitorér rytme.",
+          "D": "GCS 15, svimmel.",
+          "E": "Ind/udgangsforbrænding."
+        },
+        "extraInfo": "O₂ efter behov + IV + overvåg (arytmi-risiko)."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 95,
+          "rr": 16,
+          "btSys": 135,
+          "btDia": 85,
+          "spo2": 98,
+          "etco2": 36,
+          "tempC": 36.7,
+          "gcs": 15,
+          "painNrs": 3
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 16.",
+          "C": "Stabil, monitoreret.",
+          "D": "GCS 15.",
+          "E": "Forbinding/varme."
+        },
+        "extraInfo": "Stabiliseret."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 140,
+          "rr": 26,
+          "btSys": 110,
+          "btDia": 70,
+          "spo2": 92,
+          "etco2": 30,
+          "tempC": 36.6,
+          "gcs": 15,
+          "painNrs": 5
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Stress/hyperventilation.",
+          "C": "Forværret ubehag/tachy (mulig dysrytmi).",
+          "D": "GCS 15 men urolig.",
+          "E": "Tiltagende symptomer."
+        },
+        "extraInfo": "Forsinkelse → forværring/komplikationer."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "EXPOSE_EXAMINE",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "recommendedBeforeSec": 240
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 600
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_029_IMPALEMENT_LAAR",
+    "title": "Impalement i lår",
+    "subtitle": "Traume · Fremmedlegeme må ikke fjernes",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fald på byggeplads. Metalstang i lår. Bløder, smertepåvirket.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 39
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 130,
+          "rr": 24,
+          "btSys": 100,
+          "btDia": 65,
+          "spo2": 95,
+          "etco2": 32,
+          "tempC": 36.4,
+          "gcs": 15,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 24.",
+          "C": "Blødning omkring genstand, tachy.",
+          "D": "GCS 15.",
+          "E": "Impalement i lår, stabilisér genstand."
+        },
+        "extraInfo": "Stabilisér genstand + kontrollér blødning + TXA. Load & go."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 110,
+          "rr": 18,
+          "btSys": 115,
+          "btDia": 75,
+          "spo2": 97,
+          "etco2": 35,
+          "tempC": 36.6,
+          "gcs": 15,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 18.",
+          "C": "Blødning bedre kontrolleret.",
+          "D": "GCS 15.",
+          "E": "Genstand stabiliseret, varmetiltag."
+        },
+        "extraInfo": "Load & go."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 155,
+          "rr": 30,
+          "btSys": 75,
+          "btDia": 45,
+          "spo2": 92,
+          "etco2": 26,
+          "tempC": 36.1,
+          "gcs": 14,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Træt.",
+          "B": "Tachypnø.",
+          "C": "Shock.",
+          "D": "GCS 13-14.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → hæmorragisk shock."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300,
+        "mustBeBeforeSec": 900
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 180,
+        "mustBeBeforeSec": 420
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_030_CSPINE_TRAUME",
+    "title": "Traume mod rygsøjle",
+    "subtitle": "Traume · Høj risiko, nakkesmerter + neurologiske symptomer",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Dykkerulykke i lavt vand. Nakkesmerter, prikken i hænder/fødder.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 16
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 98,
+          "rr": 18,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 96,
+          "etco2": 36,
+          "tempC": 36.7,
+          "gcs": 15,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 18.",
+          "C": "Stabil.",
+          "D": "GCS 15. Paræstesier.",
+          "E": "Nakkesmerter, høj risiko mekanisme."
+        },
+        "extraInfo": "Stram C-spine kontrol og skånsom ekstrikation."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 88,
+          "rr": 16,
+          "btSys": 120,
+          "btDia": 78,
+          "spo2": 97,
+          "etco2": 37,
+          "tempC": 36.8,
+          "gcs": 15,
+          "painNrs": 5
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 16.",
+          "C": "Stabil.",
+          "D": "Uændret neuro, roligere.",
+          "E": "Immobiliseret og varm."
+        },
+        "extraInfo": "Transport."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 115,
+          "rr": 22,
+          "btSys": 120,
+          "btDia": 75,
+          "spo2": 94,
+          "etco2": 33,
+          "tempC": 36.6,
+          "gcs": 15,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Stress.",
+          "C": "Stabil.",
+          "D": "Tiltagende neurologiske symptomer.",
+          "E": "Urolig."
+        },
+        "extraInfo": "Dårlig håndtering/rotation → forværring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "CSPINE_STABILIZATION",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 300
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_031_TRAUME_HYPOTERMI",
+    "title": "Traume + hypotermi",
+    "subtitle": "Traume · Kold patient, koagulopati-risiko",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fald udendørs, ligget i kulden. Ryster, kold perifert, småskrammer men utilpas.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 62
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 110,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 93,
+          "etco2": 33,
+          "tempC": 34.8,
+          "gcs": 15,
+          "painNrs": 4
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 22.",
+          "C": "Kold perifert, CRT forlænget.",
+          "D": "GCS 15, kulderystelser.",
+          "E": "Våd/kold, risiko hypotermi."
+        },
+        "extraInfo": "Varme er behandling (og det er undervurderet)."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 95,
+          "rr": 18,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 96,
+          "etco2": 35,
+          "tempC": 35.8,
+          "gcs": 15,
+          "painNrs": 3
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre.",
+          "C": "Perfusion bedres med varme.",
+          "D": "GCS 15.",
+          "E": "Tørret/isolering."
+        },
+        "extraInfo": "Stabiliseret."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 120,
+          "rr": 26,
+          "btSys": 115,
+          "btDia": 75,
+          "spo2": 90,
+          "etco2": 31,
+          "tempC": 34.4,
+          "gcs": 14,
+          "painNrs": 4
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Stress.",
+          "C": "Kulde-stress respons.",
+          "D": "GCS 14-15, træt.",
+          "E": "Kold, fortsat."
+        },
+        "extraInfo": "Forsinkelse uden varme → forværring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 600
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_032_MISTANKE_TAMPONADE",
+    "title": "Mistanke tamponade",
+    "subtitle": "Traume · Stump thoraxtraume, hypotension + halsvenestase",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "MC-ulykke. Brystsmerter, åndenød. Bleg/klam. Svært at få kontakt i perioder.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 34
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 128,
+          "rr": 30,
+          "btSys": 85,
+          "btDia": 55,
+          "spo2": 90,
+          "etco2": 30,
+          "tempC": 36.4,
+          "gcs": 15,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 30, dyspnø. SpO₂ 90%.",
+          "C": "Hypotension, kold/klam. Halsvenestase muligt.",
+          "D": "GCS 14-15, urolig.",
+          "E": "Thoraxkontusioner. Hold varm."
+        },
+        "extraInfo": "Overvej obstruktiv shock (tamponade/pneumo). Fokus: oxygen, varme, hurtig transport."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 110,
+          "rr": 22,
+          "btSys": 100,
+          "btDia": 65,
+          "spo2": 95,
+          "etco2": 34,
+          "tempC": 36.6,
+          "gcs": 15,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre SpO₂ med O₂/ventilation.",
+          "C": "Perfusion bedres. IV etableret.",
+          "D": "GCS 15, roligere.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Stabiliseret nok til load & go."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 145,
+          "rr": 36,
+          "btSys": 65,
+          "btDia": 40,
+          "spo2": 82,
+          "etco2": 22,
+          "tempC": 36.2,
+          "gcs": 12,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Træt, risiko for luftvejstab.",
+          "B": "Tiltagende respirationssvigt.",
+          "C": "Progressivt shock.",
+          "D": "GCS 11-12.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → kollaps."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "BVM",
+        "recommendedBeforeSec": 120,
+        "mustBeBeforeSec": 420
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "recommendedBeforeSec": 240
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 180,
+        "mustBeBeforeSec": 420
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_033_PEDS_HOVEDTRAUME",
+    "title": "Hovedtraume (pædiatri)",
+    "subtitle": "Traume · Pædiatri, risiko sekundær hjerneskade",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Barn faldet fra klatrestativ. Græder, bliver sløv og kaster op.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 8
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 120,
+          "rr": 26,
+          "btSys": 110,
+          "btDia": 70,
+          "spo2": 92,
+          "etco2": 33,
+          "tempC": 36.8,
+          "gcs": 13,
+          "painNrs": 5
+        },
+        "abcde": {
+          "A": "Opkast/sekret. Aspiration risiko.",
+          "B": "RF 26. SpO₂ 92%.",
+          "C": "Puls 120, BT ok.",
+          "D": "GCS 12-13. Græder/konfus.",
+          "E": "Hævelse/hematom. Hold varm."
+        },
+        "extraInfo": "Airway først: suction/sideleje. Undgå hypoxi."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 105,
+          "rr": 20,
+          "btSys": 110,
+          "btDia": 70,
+          "spo2": 96,
+          "etco2": 35,
+          "tempC": 36.9,
+          "gcs": 14,
+          "painNrs": 4
+        },
+        "abcde": {
+          "A": "Luftvej renset. Stabil.",
+          "B": "SpO₂ bedres med O₂.",
+          "C": "Stabil.",
+          "D": "GCS 13-14, roligere.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Transport til vurdering."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 135,
+          "rr": 32,
+          "btSys": 120,
+          "btDia": 75,
+          "spo2": 84,
+          "etco2": 28,
+          "tempC": 36.7,
+          "gcs": 10,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Tiltagende obstruktion/aspiration.",
+          "B": "Hypoxi, uregelmæssig respiration.",
+          "C": "Stressrespons.",
+          "D": "GCS 9-10, forværret.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → hypoxi → forværring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "SUCTION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "SUCTION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "PUPILS_CHECK",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "PUPILS_CHECK",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S2"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "SUCTION",
+        "recommendedBeforeSec": 45,
+        "mustBeBeforeSec": 120
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "CSPINE_STABILIZATION",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "PUPILS_CHECK",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 300
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_034_AABEN_UNDERBENSFRAKTUR",
+    "title": "Åben underbensfraktur",
+    "subtitle": "Traume · Åben fraktur, smerte + blødning",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "MC-ulykke. Åben fraktur crus. Moderat blødning, store smerter.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 31
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 125,
+          "rr": 24,
+          "btSys": 115,
+          "btDia": 75,
+          "spo2": 95,
+          "etco2": 34,
+          "tempC": 36.5,
+          "gcs": 15,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 24.",
+          "C": "Blødning + sympatikus. Distal puls/sens tjek.",
+          "D": "GCS 15.",
+          "E": "Åben fraktur, kontamination, hypotermi-risiko."
+        },
+        "extraInfo": "Kontrollér blødning, afdæk sår, smertelindring før flyt."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 100,
+          "rr": 18,
+          "btSys": 125,
+          "btDia": 82,
+          "spo2": 97,
+          "etco2": 36,
+          "tempC": 36.7,
+          "gcs": 15,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 18.",
+          "C": "Blødning kontrolleret. Perfusion ok.",
+          "D": "GCS 15, roligere.",
+          "E": "Varmetiltag, sår afdækket."
+        },
+        "extraInfo": "Stabiliseret til transport."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 145,
+          "rr": 30,
+          "btSys": 95,
+          "btDia": 60,
+          "spo2": 92,
+          "etco2": 29,
+          "tempC": 36.2,
+          "gcs": 15,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Stress/tachypnø.",
+          "C": "Forværring pga smerte/blødning.",
+          "D": "GCS 15, urolig.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Manglende hæmostase/smertedækning → forværring."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "EXPOSE_EXAMINE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_FENTANYL",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "EXPOSE_EXAMINE",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 600
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_035_BRONKOSPASME_VED_THORAXTRAUME",
+    "title": "Thoraxtraume + bronkospasme",
+    "subtitle": "Traume · Kontusion + kendt astma, dyspnø",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Cyklist ramt. Brystsmerter, pibende vejrtrækning, bliver mere forpustet.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 29
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 118,
+          "rr": 34,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 86,
+          "etco2": 28,
+          "tempC": 36.7,
+          "gcs": 15,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Pibende, RF 34, SpO₂ 86%.",
+          "C": "Takykardi pga stress/hypoxi.",
+          "D": "GCS 15, angst.",
+          "E": "Kontusion thorax. Hold varm."
+        },
+        "extraInfo": "O₂ og ventilationsstøtte ved behov. Overvåg for forværring."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "etco2": 34,
+          "tempC": 36.8,
+          "gcs": 15,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre SpO₂ med O₂/ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15, roligere.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Bedring på understøttende behandling."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 130,
+          "rr": 40,
+          "btSys": 115,
+          "btDia": 75,
+          "spo2": 78,
+          "etco2": 22,
+          "tempC": 36.6,
+          "gcs": 14,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Træt, risiko for luftvejstab.",
+          "B": "Udmattelse, respirationssvigt.",
+          "C": "Beg. påvirkning.",
+          "D": "GCS 13-14, konfus.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → respirationssvigt."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 45,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 45,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "BVM",
+        "recommendedBeforeSec": 120,
+        "mustBeBeforeSec": 420
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 600
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_036_EVISERATION",
+    "title": "Evisceration",
+    "subtitle": "Traume · Organprolaps, høj infektions-/shockrisiko",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Fald på skarp genstand. Åbent sår i abdomen med væv synligt. Bleg og smertepåvirket.",
+    "patientInfo": {
+      "sex": "K",
+      "age": 36
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 140,
+          "rr": 28,
+          "btSys": 95,
+          "btDia": 60,
+          "spo2": 93,
+          "etco2": 31,
+          "tempC": 36.3,
+          "gcs": 15,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 28.",
+          "C": "Bleg/klam, mulig intern blødning.",
+          "D": "GCS 15, panisk.",
+          "E": "Åbent abdominalt sår. Hold varm."
+        },
+        "extraInfo": "Dæk med steril/fugtig forbinding, TXA/IV, load & go."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 115,
+          "rr": 22,
+          "btSys": 110,
+          "btDia": 70,
+          "spo2": 96,
+          "etco2": 34,
+          "tempC": 36.6,
+          "gcs": 15,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre med O₂.",
+          "C": "IV/TXA, bedre perfusion.",
+          "D": "GCS 15, roligere.",
+          "E": "Sår dækket, varmetiltag."
+        },
+        "extraInfo": "Stabiliseret til hurtig transport."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 160,
+          "rr": 34,
+          "btSys": 70,
+          "btDia": 45,
+          "spo2": 88,
+          "etco2": 24,
+          "tempC": 36,
+          "gcs": 14,
+          "painNrs": 10
+        },
+        "abcde": {
+          "A": "Træt.",
+          "B": "Tachypnø.",
+          "C": "Shock.",
+          "D": "GCS 13-14.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → kollaps."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_DECISION_FOCUSED_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "CONTROL_MAJOR_BLEEDING",
+        "recommendedBeforeSec": 90,
+        "mustBeBeforeSec": 240
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300,
+        "mustBeBeforeSec": 900
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 180,
+        "mustBeBeforeSec": 420
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_037_LUNGEKONTUSION_SKUM",
+    "title": "Lungekontusion (skummende ekspektorat)",
+    "subtitle": "Traume · Stump thoraxtraume, hypoxi",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Bilulykke. Brystsmerter, hoster lyserødt skum. Tiltagende dyspnø.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 71
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 122,
+          "rr": 32,
+          "btSys": 140,
+          "btDia": 85,
+          "spo2": 82,
+          "etco2": 29,
+          "tempC": 36.6,
+          "gcs": 15,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Fri luftvej, hoster.",
+          "B": "RF 32, SpO₂ 82%. Rallelyde muligt.",
+          "C": "BT forhøjet pga stress/hypoxi.",
+          "D": "GCS 15, angst.",
+          "E": "Thoraxkontusioner, hold varm."
+        },
+        "extraInfo": "Primært respiratorisk problem: O₂/ventilation."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 105,
+          "rr": 22,
+          "btSys": 135,
+          "btDia": 82,
+          "spo2": 92,
+          "etco2": 34,
+          "tempC": 36.7,
+          "gcs": 15,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre SpO₂ med O₂/ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15, roligere.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Bedring, men fortsat tæt monitorering."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 135,
+          "rr": 40,
+          "btSys": 120,
+          "btDia": 75,
+          "spo2": 74,
+          "etco2": 22,
+          "tempC": 36.4,
+          "gcs": 14,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Træt, risiko for luftvejstab.",
+          "B": "Respirationssvigt, cyanose.",
+          "C": "Beg. påvirkning.",
+          "D": "GCS 13-14, konfus.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → svigt."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "BVM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 45,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 45,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "BVM",
+        "recommendedBeforeSec": 120,
+        "mustBeBeforeSec": 420
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 600
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_038_MULTITRAUME_BUSULYKKE",
+    "title": "Multitraume (busulykke)",
+    "subtitle": "Traume · Flere fund, prioriter ABC og hurtig transport",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Busulykke. Patienten fundet siddende, bleg og klam. Klager over mavesmerter og åndenød.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 43
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 145,
+          "rr": 30,
+          "btSys": 90,
+          "btDia": 55,
+          "spo2": 88,
+          "etco2": 28,
+          "tempC": 36.2,
+          "gcs": 14,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "RF 30, lav SpO₂.",
+          "C": "Shock-tegn, bleg/klam.",
+          "D": "GCS 14, konfus.",
+          "E": "Flere smerter, hypotermi-risiko."
+        },
+        "extraInfo": "ABCDE + hæmostase + load & go."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 120,
+          "rr": 22,
+          "btSys": 105,
+          "btDia": 65,
+          "spo2": 94,
+          "etco2": 33,
+          "tempC": 36.5,
+          "gcs": 14,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Stabil.",
+          "B": "Bedre med O₂.",
+          "C": "IV/TXA, perfusion bedres.",
+          "D": "GCS 14-15.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Stabiliseret til transport."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 165,
+          "rr": 36,
+          "btSys": 65,
+          "btDia": 40,
+          "spo2": 78,
+          "etco2": 20,
+          "tempC": 36,
+          "gcs": 11,
+          "painNrs": 9
+        },
+        "abcde": {
+          "A": "Træt, risiko for luftvejstab.",
+          "B": "Respirationssvigt.",
+          "C": "Dyb shock.",
+          "D": "GCS 10-11.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → kollaps."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "IV_ACCESS",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "KEEP_WARM",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_LOAD_AND_GO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_ONGOING_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_ONGOING_EXAM",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_NACL_ISO",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "toStateId": "S2"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 90,
+        "mustBeBeforeSec": 240
+      },
+      {
+        "actionId": "CSPINE_STABILIZATION",
+        "recommendedBeforeSec": 120
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "IV_ACCESS",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "recommendedBeforeSec": 300,
+        "mustBeBeforeSec": 900
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "recommendedBeforeSec": 300
+      },
+      {
+        "actionId": "KEEP_WARM",
+        "recommendedBeforeSec": 180
+      }
+    ]
+  },
+  {
+    "id": "TRA_v3_039_ANSIGTSTRAUME_BLOD_I_SVAELG",
+    "title": "Tand/ansigtstraume (blod i svælg)",
+    "subtitle": "Traume · Luftvejsrisiko pga blødning/fragmenter",
+    "caseType": "TRAUMA",
+    "category": "TRAUMA",
+    "dispatchText": "Skaterstyrt. Slået tænder ud. Blødning i mund, synkebesvær, hoster blod.",
+    "patientInfo": {
+      "sex": "M",
+      "age": 17
+    },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": {
+          "hr": 115,
+          "rr": 28,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 90,
+          "etco2": 32,
+          "tempC": 36.7,
+          "gcs": 15,
+          "painNrs": 7
+        },
+        "abcde": {
+          "A": "Blod i mund/svælg, gurglen.",
+          "B": "RF 28, SpO₂ 90%.",
+          "C": "Stabil.",
+          "D": "GCS 15, urolig.",
+          "E": "Ansigtsskade, hold varm."
+        },
+        "extraInfo": "Suction + O₂. Overvej C-spine afh. mekanisme."
+      },
+      {
+        "id": "S1",
+        "vitals": {
+          "hr": 100,
+          "rr": 18,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 96,
+          "etco2": 36,
+          "tempC": 36.8,
+          "gcs": 15,
+          "painNrs": 6
+        },
+        "abcde": {
+          "A": "Luftvej renset og stabil.",
+          "B": "SpO₂ bedres.",
+          "C": "Stabil.",
+          "D": "GCS 15, roligere.",
+          "E": "Varmetiltag."
+        },
+        "extraInfo": "Stabiliseret."
+      },
+      {
+        "id": "S2",
+        "vitals": {
+          "hr": 130,
+          "rr": 34,
+          "btSys": 120,
+          "btDia": 75,
+          "spo2": 82,
+          "etco2": 27,
+          "tempC": 36.6,
+          "gcs": 14,
+          "painNrs": 8
+        },
+        "abcde": {
+          "A": "Tiltagende obstruktion/aspiration.",
+          "B": "Hypoxi.",
+          "C": "Stressrespons.",
+          "D": "GCS 14.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forsinkelse → hypoxi."
+      }
+    ],
+    "transitions": [
+      {
+        "fromStateId": "S0",
+        "actionId": "SUCTION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "SUCTION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "OXYGEN_APPLIED",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "CSPINE_STABILIZATION",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "ITLS_SECONDARY_SURVEY",
+        "toStateId": "S2"
+      },
+      {
+        "fromStateId": "S0",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      },
+      {
+        "fromStateId": "S1",
+        "actionId": "MED_MEDICINSK_ILT",
+        "toStateId": "S1"
+      }
+    ],
+    "expectedActions": [
+      {
+        "actionId": "SUCTION",
+        "recommendedBeforeSec": 45,
+        "mustBeBeforeSec": 120
+      },
+      {
+        "actionId": "OXYGEN_APPLIED",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "MED_MEDICINSK_ILT",
+        "recommendedBeforeSec": 60,
+        "mustBeBeforeSec": 180
+      },
+      {
+        "actionId": "CSPINE_STABILIZATION",
+        "recommendedBeforeSec": 180
+      },
+      {
+        "actionId": "ITLS_LOAD_AND_GO",
+        "recommendedBeforeSec": 600
+      }
+    ]
+  }
+]

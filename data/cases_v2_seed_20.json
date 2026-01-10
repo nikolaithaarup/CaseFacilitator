@@ -1,0 +1,2586 @@
+[
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Anafylaksi",
+      "Åndenød"
+    ],
+    "acuity": "AKUT",
+    "caseType": "Anafylaksi",
+    "diagnosis": "Anafylaksi",
+    "difficulty": 3,
+    "dispatchText": "34-årig. Efter nødder. Kløe, nældefeber, hævelse, tiltagende åndenød.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 30,
+        "title": "Triage: Kritisk"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 60,
+        "title": "Lejring + frie luftveje"
+      },
+      {
+        "actionId": "B_HUDSON",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Ilt 10-15 L/min maske"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "IV-adgang"
+      },
+      {
+        "actionId": "MED_ADRENALIN_IM",
+        "importance": "CRITICAL",
+        "mustBeforeSec": 180,
+        "recommendedBeforeSec": 90,
+        "title": "Adrenalin IM"
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "Væskebolus ved kredsløbspåvirkning"
+      },
+      {
+        "actionId": "MED_SALBUTAMOL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 300,
+        "title": "Salbutamol ved bronkospasme"
+      },
+      {
+        "actionId": "MED_CLEMASTIN",
+        "importance": "OPTIONAL",
+        "recommendedBeforeSec": 600,
+        "title": "Clemastin (må ikke forsinke adrenalin)"
+      }
+    ],
+    "id": "case_v2_anaphylaxis_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 34,
+      "sex": "K",
+      "chiefComplaint": "Hævelse og åndenød",
+      "history": "Kendt nøddeallergi. Ingen EpiPen ved hånden. Symptomer progredierer over minutter.",
+      "meds": [
+        "Cetirizin (ikke taget)"
+      ]
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 128,
+          "rr": 28,
+          "btSys": 95,
+          "btDia": 60,
+          "spo2": 90,
+          "painNrs": 0,
+          "temp": 37.1
+        },
+        "abcde": {
+          "A": "Hæs stemme, hævelse i læber/tunge (truet luftvej).",
+          "B": "RF 28, SpO₂ 90%, stridor/bronchospasme.",
+          "C": "Hypotensiv, tachycard, varm hud.",
+          "D": "GCS 15, angst.",
+          "E": "Urticaria over thorax/arme."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 115,
+          "rr": 22,
+          "btSys": 105,
+          "btDia": 65,
+          "spo2": 94,
+          "painNrs": 0,
+          "temp": 37.1
+        },
+        "abcde": {
+          "A": "Mindre hæshed, luftvej mere fri.",
+          "B": "Bedre luftskifte. SpO₂ stiger på ilt.",
+          "C": "BT stiger, stadig tachycard.",
+          "D": "GCS 15, roligere.",
+          "E": "Urticaria aftager langsomt."
+        },
+        "extraInfo": "Efter adrenalin + ilt virker hun mindre forpustet."
+      },
+      {
+        "id": "s_bad",
+        "vitals": {
+          "hr": 140,
+          "rr": 34,
+          "btSys": 80,
+          "btDia": 45,
+          "spo2": 86,
+          "painNrs": 0,
+          "temp": 37.1
+        },
+        "abcde": {
+          "A": "Tiltagende hævelse og hæshed.",
+          "B": "Kraftig stridor/bronchospasme, SpO₂ falder.",
+          "C": "Tiltagende hypotension.",
+          "D": "Urolig, konfus tiltagende.",
+          "E": "Udbredt urticaria."
+        },
+        "extraInfo": "Forværring pga. forsinket adrenalin / utilstrækkelig behandling."
+      }
+    ],
+    "subtitle": "(kvinde 34 år, urticaria og hævelse i ansigt)",
+    "title": "SKP 4 – Anafylaksi – K 34 – hævelse/åndenød",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_ADRENALIN_IM",
+        "feedbackToFacilitator": "Adrenalin IM er primær behandling og bør ikke forsinkes."
+      },
+      {
+        "id": "t1",
+        "fromStateId": "s0",
+        "toStateId": "s_bad",
+        "actionId": "MED_FENTANYL",
+        "feedbackToFacilitator": "Opioid kan forværre respirationspåvirkning og mudre klinikken. Fokusér på anafylaksi-behandling."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Brystsmerter",
+      "STEMI"
+    ],
+    "acuity": "AKUT",
+    "caseType": "STEMI",
+    "diagnosis": "Mistanke om STEMI (inferior)",
+    "difficulty": 3,
+    "dispatchText": "62-årig mand med trykkende brystsmerter, kvalme og koldsved. Smerte 8/10.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 60,
+        "title": "Triage: Kritisk"
+      },
+      {
+        "actionId": "C_EKG12",
+        "importance": "CRITICAL",
+        "mustBeforeSec": 240,
+        "recommendedBeforeSec": 120,
+        "title": "12-aflednings EKG"
+      },
+      {
+        "actionId": "MED_ACETYLSALICYLSYRE",
+        "importance": "CRITICAL",
+        "mustBeforeSec": 300,
+        "recommendedBeforeSec": 180,
+        "title": "ASA"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 300,
+        "title": "IV-adgang"
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 360,
+        "title": "Smertelindring (titrér)"
+      }
+    ],
+    "id": "case_v2_stemi_inferior_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 62,
+      "sex": "M",
+      "chiefComplaint": "Brystsmerter",
+      "history": "Hypertension. Ingen kendt allergi. Debut for 45 min siden. Ingen PDE5-hæmmere.",
+      "meds": [
+        "Amlodipin"
+      ]
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 96,
+          "rr": 20,
+          "btSys": 138,
+          "btDia": 86,
+          "spo2": 96,
+          "painNrs": 8,
+          "temp": 36.8
+        },
+        "abcde": {
+          "A": "Fri luftvej, kan tale.",
+          "B": "Let dyspnø, normale lungelyde.",
+          "C": "Koldsvedende, brystsmerter. Puls regelmæssig.",
+          "D": "GCS 15.",
+          "E": "Ingen traumer."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 88,
+          "rr": 18,
+          "btSys": 130,
+          "btDia": 80,
+          "spo2": 97,
+          "painNrs": 4,
+          "temp": 36.8
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Uændret.",
+          "C": "Smerte faldet efter analgesi.",
+          "D": "GCS 15.",
+          "E": "Uændret."
+        },
+        "extraInfo": "Efter titreret analgesi virker patienten roligere."
+      },
+      {
+        "id": "s_bad",
+        "vitals": {
+          "hr": 110,
+          "rr": 24,
+          "btSys": 80,
+          "btDia": 50,
+          "spo2": 93,
+          "painNrs": 8,
+          "temp": 36.8
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Tiltagende dyspnø, SpO₂ falder.",
+          "C": "Hypotension efter vasodilatation; mistænk RV-involvering.",
+          "D": "Svimmel.",
+          "E": "Kold, klam."
+        },
+        "extraInfo": "Forværring efter nitrat ved inferior/RV STEMI."
+      }
+    ],
+    "subtitle": "(mand 62 år, brystsmerter, kvalme, koldsved)",
+    "title": "SKP 5 – Inferior STEMI – M 62 – brystsmerter",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_FENTANYL",
+        "feedbackToFacilitator": "Titrér analgesi og monitorér respiration/cirkulation."
+      },
+      {
+        "id": "t1",
+        "fromStateId": "s0",
+        "toStateId": "s_bad",
+        "actionId": "MED_GLYCERYLNITRAT",
+        "feedbackToFacilitator": "Nitrat kan give markant BT-fald ved inferior/RV STEMI—vær forsigtig og vurder kontraindikationer."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Hjertebanken",
+      "SVT"
+    ],
+    "acuity": "AKUT",
+    "caseType": "SVT",
+    "diagnosis": "Supraventrikulær takykardi (SVT)",
+    "difficulty": 2,
+    "dispatchText": "28-årig med pludselig hjertebanken, svimmelhed. Ingen brystsmerter.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "C_EKG4",
+        "importance": "CRITICAL",
+        "mustBeforeSec": 180,
+        "recommendedBeforeSec": 90,
+        "title": "Monitor/rytme"
+      },
+      {
+        "actionId": "ACTION_VALSALVA",
+        "importance": "CRITICAL",
+        "mustBeforeSec": 300,
+        "recommendedBeforeSec": 180,
+        "title": "Valsalva manøvre"
+      }
+    ],
+    "id": "case_v2_svt_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 28,
+      "sex": "K",
+      "chiefComplaint": "Hjertebanken",
+      "history": "Tidligere korte episoder. Ingen hjertesygdom kendt. Debut for 15 min siden.",
+      "meds": []
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 190,
+          "rr": 22,
+          "btSys": 120,
+          "btDia": 75,
+          "spo2": 97,
+          "painNrs": 0,
+          "temp": 36.9
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Let hyperventilation.",
+          "C": "Meget hurtig regelmæssig puls.",
+          "D": "Let svimmel, GCS 15.",
+          "E": "Uændret."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 16,
+          "btSys": 118,
+          "btDia": 74,
+          "spo2": 98,
+          "painNrs": 0,
+          "temp": 36.9
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Normaliseret vejrtrækning.",
+          "C": "Sinusrytme, symptomer aftager.",
+          "D": "GCS 15, frisk.",
+          "E": "Uændret."
+        },
+        "extraInfo": "Konverteret efter valsalva."
+      }
+    ],
+    "subtitle": "(kvinde 28 år, pludselig hjertebanken)",
+    "title": "SKP 2 – SVT – K 28 – hjertebanken",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "ACTION_VALSALVA",
+        "feedbackToFacilitator": "Ved stabil SVT kan vagale manøvrer forsøges først."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Åndenød",
+      "Astma"
+    ],
+    "acuity": "AKUT",
+    "caseType": "Astma",
+    "diagnosis": "Svær astma-exacerbation",
+    "difficulty": 3,
+    "dispatchText": "19-årig med hvæsende vejrtrækning og åndenød efter anstrengelse.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_SALBUTAMOL",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_asthma_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 19,
+      "sex": "M",
+      "chiefComplaint": "Åndenød",
+      "history": "Astma kendt. Ingen infektionstegn.",
+      "meds": "Ventoline hjemme"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(mand 19 år)",
+    "title": "SKP 3 – Svær astma – M 19",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_SALBUTAMOL",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Åndenød",
+      "KOL"
+    ],
+    "acuity": "AKUT",
+    "caseType": "KOL",
+    "diagnosis": "KOL-exacerbation",
+    "difficulty": 2,
+    "dispatchText": "74-årig med tiltagende åndenød og hoste gennem 3 dage.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_BERODUAL",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_copd_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 74,
+      "sex": "K",
+      "chiefComplaint": "Åndenød",
+      "history": "KOL GOLD 3. Hjemmeilt.",
+      "meds": "LAMA/LABA"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(kvinde 74 år)",
+    "title": "SKP 6 – KOL-exacerbation – K 74",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_BERODUAL",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Bevidsthedspåvirkning",
+      "Hypoglykæmi"
+    ],
+    "acuity": "AKUT",
+    "caseType": "Hypoglykæmi",
+    "diagnosis": "Hypoglykæmi",
+    "difficulty": 2,
+    "dispatchText": "55-årig diabetiker, konfus og svedende. BS lav.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_GLUKOSE_50",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_hypoglycemia_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 55,
+      "sex": "M",
+      "chiefComplaint": "Konfusion",
+      "history": "Insulinbehandlet DM. Ikke spist.",
+      "meds": "Insulin"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(mand 55 år)",
+    "title": "SKP 2 – Hypoglykæmi – M 55",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_GLUKOSE_50",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Bevidsthedspåvirkning",
+      "Overdosis"
+    ],
+    "acuity": "AKUT",
+    "caseType": "Overdosis",
+    "diagnosis": "Mistanke om opioid overdosis",
+    "difficulty": 3,
+    "dispatchText": "31-årig fundet somnolent med langsom vejrtrækning.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_NALOXON",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_opioid_overdose_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 31,
+      "sex": "M",
+      "chiefComplaint": "Somnolens",
+      "history": "Misbrug. Kanyler i nærheden.",
+      "meds": "-"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(mand 31 år)",
+    "title": "SKP 4 – Opioid overdosis – M 31",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_NALOXON",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Shock",
+      "Endokrin"
+    ],
+    "acuity": "AKUT",
+    "caseType": "Addison",
+    "diagnosis": "Akut binyrebarkinsufficiens",
+    "difficulty": 3,
+    "dispatchText": "42-årig med Addison. Opkast, svag, hypotensiv.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_SOLU_CORTEF",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_adrenal_crisis_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 42,
+      "sex": "K",
+      "chiefComplaint": "Svimmelhed/weakness",
+      "history": "Addison kendt. Har ikke taget steroid.",
+      "meds": "Hydrocortison hjemme"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(kvinde 42 år)",
+    "title": "SKP 5 – Akut binyrebarkinsufficiens – K 42",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_SOLU_CORTEF",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Blødning",
+      "Luftvej"
+    ],
+    "acuity": "AKUT",
+    "caseType": "ENT",
+    "diagnosis": "Tonsillektomi efterblødning",
+    "difficulty": 3,
+    "dispatchText": "17-årig med frisk blødning fra svælg efter tonsillektomi.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "A_SUCTION",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_post_tonsil_bleed_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 17,
+      "sex": "K",
+      "chiefComplaint": "Blødning",
+      "history": "Opereret for 7 dage siden. Synker blod.",
+      "meds": "-"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(kvinde 17 år)",
+    "title": "SKP 4 – Tonsillektomi efterblødning – K 17",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "A_SUCTION",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Mavesmerter"
+    ],
+    "acuity": "SUBAKUT",
+    "caseType": "Abdomen",
+    "diagnosis": "Akut abdomen (uklar årsag)",
+    "difficulty": 2,
+    "dispatchText": "47-årig med pludselige mavesmerter, ømhed, kvalme.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_NONCRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_FENTANYL",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_acute_abdomen_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 47,
+      "sex": "M",
+      "chiefComplaint": "Mavesmerter",
+      "history": "Ingen tidligere kirurgi.",
+      "meds": "-"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(mand 47 år)",
+    "title": "SKP 3 – Akut abdomen – M 47",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_FENTANYL",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Blødning",
+      "Obstetrik"
+    ],
+    "acuity": "AKUT",
+    "caseType": "Obstetrik",
+    "diagnosis": "Postpartum blødning",
+    "difficulty": 3,
+    "dispatchText": "29-årig efter fødsel hjemme. Kraftig vaginal blødning.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_OXYTOCIN",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_postpartum_hem_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 29,
+      "sex": "K",
+      "chiefComplaint": "Blødning",
+      "history": "Fødsel for 30 min siden. Placenta usikker.",
+      "meds": "-"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(kvinde 29 år)",
+    "title": "SKP 6 – Postpartum blødning – K 29",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_OXYTOCIN",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Traume",
+      "Blødning"
+    ],
+    "acuity": "AKUT",
+    "caseType": "Traume",
+    "diagnosis": "Større trauma",
+    "difficulty": 3,
+    "dispatchText": "Trafikuheld. 33-årig med smerter, mulig bækkenfraktur.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_TRANEXAMSYRE",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_major_trauma_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 33,
+      "sex": "M",
+      "chiefComplaint": "Traume",
+      "history": "Højenergi. Hypotension mistænkt.",
+      "meds": "-"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(mand 33 år)",
+    "title": "SKP 7 – Stumpt trauma – M 33",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_TRANEXAMSYRE",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Åndenød",
+      "Hjertesvigt"
+    ],
+    "acuity": "AKUT",
+    "caseType": "Lungeødem",
+    "diagnosis": "Kardiogent lungeødem",
+    "difficulty": 3,
+    "dispatchText": "81-årig med akut åndenød, rallelyde, skummende ekspektorat.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_FUROSEMID",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_pulmonary_edema_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 81,
+      "sex": "K",
+      "chiefComplaint": "Åndenød",
+      "history": "Kendt hjertesvigt.",
+      "meds": "Furosemid hjemme"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(kvinde 81 år)",
+    "title": "SKP 6 – Lungeødem – K 81",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_FUROSEMID",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Infektion",
+      "Shock"
+    ],
+    "acuity": "AKUT",
+    "caseType": "Sepsis",
+    "diagnosis": "Sepsis",
+    "difficulty": 3,
+    "dispatchText": "68-årig med feber, kulderystelser, konfus. Mistanke sepsis.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_sepsis_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 68,
+      "sex": "M",
+      "chiefComplaint": "Feber/konfusion",
+      "history": "UVI symptomer. Hurtig forværring.",
+      "meds": "-"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(mand 68 år)",
+    "title": "SKP 5 – Sepsis – M 68",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_NACL_ISO",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Kramper"
+    ],
+    "acuity": "AKUT",
+    "caseType": "Kramper",
+    "diagnosis": "Status epilepticus",
+    "difficulty": 3,
+    "dispatchText": "24-årig med generaliserede kramper >5 min.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_MIDAZOLAM",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_status_epilepticus_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 24,
+      "sex": "K",
+      "chiefComplaint": "Kramper",
+      "history": "Epilepsi kendt. Har ikke taget medicin.",
+      "meds": "-"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(kvinde 24 år)",
+    "title": "SKP 4 – Kramper – K 24",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_MIDAZOLAM",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Åndenød",
+      "Angst"
+    ],
+    "acuity": "SUBAKUT",
+    "caseType": "Angst",
+    "diagnosis": "Hyperventilation/angstanfald",
+    "difficulty": 1,
+    "dispatchText": "22-årig med prikken i hænder, hurtig vejrtrækning, angst.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_NONCRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "D_REASSURE",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_anxiety_hypervent_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 22,
+      "sex": "K",
+      "chiefComplaint": "Åndenød/angst",
+      "history": "Stress. Ingen smerter.",
+      "meds": "-"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(kvinde 22 år)",
+    "title": "SKP 1 – Hyperventilation – K 22",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "D_REASSURE",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Metabolisk",
+      "Diabetes"
+    ],
+    "acuity": "AKUT",
+    "caseType": "DKA",
+    "diagnosis": "Mistanke DKA",
+    "difficulty": 3,
+    "dispatchText": "27-årig med tørst, kvalme, dyb vejrtrækning. Høj BS.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_NACL_ISO",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_dka_mild_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 27,
+      "sex": "M",
+      "chiefComplaint": "Kvalme",
+      "history": "Type 1 DM. Har været syg.",
+      "meds": "Insulin"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(mand 27 år)",
+    "title": "SKP 6 – DKA (mild) – M 27",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_NACL_ISO",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Anafylaksi"
+    ],
+    "acuity": "AKUT",
+    "caseType": "Anafylaksi",
+    "diagnosis": "Anafylaksi",
+    "difficulty": 3,
+    "dispatchText": "6-årig efter insektstik. Urticaria, hoste, hæshed.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_CRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_ADRENALIN_IM",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_anaphylaxis_child_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 6,
+      "sex": "K",
+      "chiefComplaint": "Hævelse/hoste",
+      "history": "Ingen tidligere reaktioner. Hurtig progression.",
+      "meds": "-"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(kvinde 6 år)",
+    "title": "SKP 4 – Anafylaksi – barn 6 år",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_ADRENALIN_IM",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Brystsmerter"
+    ],
+    "acuity": "SUBAKUT",
+    "caseType": "ACS",
+    "diagnosis": "Brystsmerter (lav risiko)",
+    "difficulty": 1,
+    "dispatchText": "45-årig med atypiske brystsmerter. Stabil.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_NONCRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "C_EKG12",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_acs_lowrisk_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 45,
+      "sex": "M",
+      "chiefComplaint": "Brystsmerter",
+      "history": "Smerter ved bevægelse. Ingen risikofaktorer.",
+      "meds": "-"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(mand 45 år)",
+    "title": "SKP 3 – Brystsmerter (lav risiko) – M 45",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "C_EKG12",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  },
+  {
+    "access": {
+      "allowedOrgIds": [],
+      "allowedRoles": [
+        "student",
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "allowedUserUids": [],
+      "isPublic": true,
+      "editorRoles": [
+        "school",
+        "enterprise",
+        "admin"
+      ],
+      "adminRoles": [
+        "admin"
+      ]
+    },
+    "actionDiagnoses": [
+      "Forgiftning"
+    ],
+    "acuity": "SUBAKUT",
+    "caseType": "Forgiftning",
+    "diagnosis": "Mistanke paracetamol forgiftning",
+    "difficulty": 2,
+    "dispatchText": "19-årig efter mulig paracetamol overdose. Stabil.",
+    "expectedActions": [
+      {
+        "actionId": "PATIENT_TRIAGE_NONCRITICAL",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 90,
+        "title": "Triage"
+      },
+      {
+        "actionId": "A_POSITION",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 120,
+        "title": "Lejring/airway"
+      },
+      {
+        "actionId": "B_NASAL_O2",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 180,
+        "title": "Ilt ved behov"
+      },
+      {
+        "actionId": "C_IV",
+        "importance": "IMPORTANT",
+        "recommendedBeforeSec": 240,
+        "title": "IV adgang"
+      },
+      {
+        "actionId": "MED_N_ACETYLCYSTEIN",
+        "importance": "CRITICAL",
+        "recommendedBeforeSec": 300,
+        "title": "Nøglebehandling"
+      }
+    ],
+    "id": "case_v2_poisoning_paracetamol_01",
+    "initialStateId": "s0",
+    "patientInfo": {
+      "age": 19,
+      "sex": "K",
+      "chiefComplaint": "Intoksikation",
+      "history": "Indtog tabletter for 2 timer siden.",
+      "meds": "-"
+    },
+    "schoolPeriods": [
+      4
+    ],
+    "states": [
+      {
+        "id": "s0",
+        "vitals": {
+          "hr": 100,
+          "rr": 22,
+          "btSys": 125,
+          "btDia": 80,
+          "spo2": 94,
+          "painNrs": 4,
+          "temp": 37.2
+        },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let påvirket respiration.",
+          "C": "Let påvirket kredsløb.",
+          "D": "GCS 15.",
+          "E": "Ingen store fund."
+        }
+      },
+      {
+        "id": "s1",
+        "vitals": {
+          "hr": 92,
+          "rr": 18,
+          "btSys": 128,
+          "btDia": 82,
+          "spo2": 97,
+          "painNrs": 2,
+          "temp": 37.0
+        },
+        "abcde": {
+          "A": "Fri.",
+          "B": "Bedre ventilation.",
+          "C": "Stabil.",
+          "D": "GCS 15.",
+          "E": "Bedre."
+        },
+        "extraInfo": "Bedring efter relevant behandling."
+      }
+    ],
+    "subtitle": "(kvinde 19 år)",
+    "title": "SKP 5 – Forgiftning – K 19",
+    "transitions": [
+      {
+        "id": "t0",
+        "fromStateId": "s0",
+        "toStateId": "s1",
+        "actionId": "MED_N_ACETYLCYSTEIN",
+        "feedbackToFacilitator": "Relevant behandling giver forventet bedring."
+      }
+    ]
+  }
+]

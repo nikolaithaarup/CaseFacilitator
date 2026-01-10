@@ -3,8 +3,6 @@ import { useMemo, useState } from "react";
 import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// ✅ named imports
-import { ABCDE_ACTIONS } from "../data/abcdeActions";
 import { MEDICATIONS, getDoseOptionsForMedication } from "../data/medications";
 
 import type {
@@ -22,23 +20,109 @@ import type {
 import { styles } from "../styles/indexStyles";
 import { formatTime } from "../utils/format";
 
-// --- Local types for the new feature ---
-export type AssistanceChoice = "EKSTRA_AMBULANCE" | "AKUTBIL" | "LAEGEBIL";
+export type CaseCategory = "MEDICAL" | "TRAUMA" | "HLR";
 
-type AckState = {
-  key: string;
-  icon: string;
-} | null;
+type AckState = { key: string; icon: string } | null;
 
-function assistanceLabel(choice: AssistanceChoice): string {
-  return choice === "EKSTRA_AMBULANCE"
-    ? "Ekstra ambulance"
-    : choice === "AKUTBIL"
-    ? "Akutbil"
-    : "Lægebil";
+// ------------------------
+// MEDICAL actions (curated)
+// ------------------------
+
+const MEDICAL_ACTIONS: AbcdeAction[] = [
+  { id: "A_AVPU_GCS_ASSESS", label: "AVPU", letter: "A" },
+  { id: "A_SE_LYT_FOEL_AIRWAY", label: "Se–lyt–føl", letter: "A" },
+  { id: "A_LOOK_FOR_STRIDOR_SWELLING", label: "Inspicér mund", letter: "A" },
+  { id: "A_JAW_CHIN_LIFT", label: "Kæbeløft", letter: "A" },
+  { id: "A_SUCTION_OR_FINGERSWEEP", label: "Sug / fingersweep", letter: "A" },
+  { id: "A_OPA", label: "OPA", letter: "A" },
+  { id: "A_NPA", label: "NPA", letter: "A" },
+  { id: "A_HEIMLICH_BACKBLOWS", label: "Heimlich", letter: "A" },
+
+  { id: "B_RESP_RATE_QUALITY", label: "Vurdér RF", letter: "B" },
+  { id: "B_AUSCULTATE_LUNGS", label: "Auskultér lunger", letter: "B" },
+  { id: "B_POSITIONING", label: "Lejring", letter: "B" },
+  { id: "B_PSYCHOLOGICAL_FIRST_AID", label: "Psykisk førstehjælp", letter: "B" },
+  { id: "B_OXYGEN_TITRATE", label: "Næsebrille / hudsonmaske", letter: "B" },
+  { id: "B_BVM_SUPPORT", label: "Ventilér / støtteventilér", letter: "B" },
+  { id: "B_NEBULIZED_SALBUTAMOL", label: "Nebulisator", letter: "B" },
+
+  { id: "C_LOOK_FEEL_BLEEDING", label: "Se & føl: større blødning / hård abdomen", letter: "C" },
+  { id: "C_SKIN_TEMP_COLOR_SWEAT", label: "Hud: farve/temperatur/klamtsved", letter: "C" },
+  { id: "C_CRT_MEASURE", label: "Kapillærrespons", letter: "C" },
+  { id: "C_PULSE_ASSESS", label: "Puls", letter: "C" },
+  { id: "C_POSITION_LEGS_UP", label: "Lejring", letter: "C" },
+  { id: "C_IV_ACCESS", label: "PVK", letter: "C" },
+  { id: "C_STOP_BLEEDING", label: "Stands blødning", letter: "C" },
+
+  { id: "D_GCS", label: "GCS", letter: "D" },
+  { id: "D_NEURO_EXAM_STROKE", label: "Neurologisk undersøgelse", letter: "D" },
+  { id: "D_PUPILS", label: "Pupiller", letter: "D" },
+
+  { id: "E_TOP_TO_TOE", label: "Top-til-tå undersøgelse", letter: "E" },
+  { id: "E_PREVENT_HYPOTHERMIA", label: "Tæpper", letter: "E" },
+  { id: "E_COOLING_HYPERTHERMIA", label: "Afkøl", letter: "E" },
+  { id: "E_BURNS_COOLING", label: "Skyl med saltvand", letter: "E" },
+  { id: "E_SPLINT_STABILIZE", label: "Stabiliser brud/luksation", letter: "E" },
+];
+
+// ------------------------
+// ITLS (Trauma) catalogs
+// ------------------------
+
+const ITLS_EXAM_ACTIONS: AbcdeAction[] = [
+  { id: "ITLS_SCENE_SIZEUP", label: "Scene size-up", letter: "A" },
+  { id: "ITLS_INITIAL_ASSESSMENT", label: "Initial assessment", letter: "A" },
+  { id: "ITLS_DECISION_RAPID_TRAUMA_SURVEY", label: "Rapid trauma survey (general/ukendt MOI)", letter: "A" },
+  { id: "ITLS_DECISION_FOCUSED_EXAM", label: "Focused exam (lokaliseret MOI)", letter: "A" },
+  { id: "ITLS_LOAD_AND_GO", label: "Load & Go / Stay & Play", letter: "A" },
+  { id: "ITLS_SECONDARY_SURVEY", label: "Secondary survey", letter: "D" },
+  { id: "ITLS_ONGOING_EXAM", label: "Reevaluering", letter: "D" },
+];
+
+const ITLS_TREATMENTS: AbcdeAction[] = [
+  { id: "CSPINE_STABILIZATION", label: "C-spine stabilisering", letter: "A" },
+  { id: "JAW_THRUST", label: "Kæbeløft", letter: "A" },
+  { id: "SUCTION", label: "Sug", letter: "A" },
+  { id: "OPA", label: "OPA", letter: "A" },
+  { id: "NPA", label: "NPA", letter: "A" },
+  { id: "LARYNX_MASK", label: "Larynxmaske (LMA)", letter: "A" },
+
+  { id: "OXYGEN_APPLIED", label: "Ilt", letter: "B" },
+  { id: "BVM", label: "Ventiler", letter: "B" },
+  { id: "NEEDLE_DECOMPRESSION", label: "Nåledekompression", letter: "B" },
+  { id: "CHEST_SEAL", label: "Chest seal", letter: "B" },
+
+  { id: "CONTROL_MAJOR_BLEEDING", label: "Stop større blødning", letter: "C" },
+  { id: "TOURNIQUET", label: "Tourniquet", letter: "C" },
+  { id: "IV_ACCESS", label: "IV adgang", letter: "C" },
+  { id: "IO_ACCESS", label: "IO adgang", letter: "C" },
+  { id: "PELVIC_BINDER", label: "Bækkenslynge / bækkenbælte", letter: "C" },
+
+  { id: "PUPILS_CHECK", label: "Pupiller / neurologisk undersøgelse", letter: "D" },
+
+  { id: "EXPOSE_EXAMINE", label: "Top-til-tå", letter: "E" },
+  { id: "KEEP_WARM", label: "Forebyg hypotermi", letter: "E" },
+];
+
+// HLR meds (base allowlist)
+const HLR_MED_IDS = new Set([
+  "MED_ADRENALIN_IV",
+  "MED_AMIODARON",
+  "MED_ATROPIN",
+  "MED_GLUKOSE_50",
+  "MED_MEDICINSK_ILT",
+]);
+
+type ItlsTab = "UNDERSOEGELSE" | "BEHANDLING";
+type HlrLevel = "BLS" | "ALS";
+
+function getScenarioHlrLevel(scenario: any, fallback: HlrLevel): HlrLevel {
+  const v = scenario?.meta?.hlrLevel;
+  return v === "ALS" ? "ALS" : v === "BLS" ? "BLS" : fallback;
 }
 
 export function CaseDetailScreen({
+  mode = "MEDICAL",
   scenario,
   currentState,
   elapsedMs,
@@ -50,12 +134,15 @@ export function CaseDetailScreen({
 
   abcdeActionsExpanded,
   setAbcdeActionsExpanded,
+
+  // still passed in, but acronyms are always visible now
   samplerExpanded,
   setSamplerExpanded,
   opqrstExpanded,
   setOpqrstExpanded,
   midasheExpanded,
   setMidasheExpanded,
+
   medExpanded,
   setMedExpanded,
 
@@ -73,13 +160,14 @@ export function CaseDetailScreen({
   selectedOxygenFlow,
   setSelectedOxygenFlow,
 
-  // ✅ NEW: triage + assistance
   onLogTriage,
-  assistanceModalOpen,
-  setAssistanceModalOpen,
-  selectedAssistance,
-  setSelectedAssistance,
-  onConfirmAssistance,
+
+  // kept for compatibility, but HLR level is now read from scenario.meta when available
+  cprLevel,
+  onLogCprCallout,
+
+  // ✅ NEW: single registration button (no modal / no choice)
+  onRegisterAssistance,
 
   onBackToSetup,
   onStartTimer,
@@ -87,6 +175,8 @@ export function CaseDetailScreen({
   onRegisterMedication,
   onFinishCaseToSummary,
 }: {
+  mode?: CaseCategory;
+
   scenario: CaseScenario;
   currentState: PatientState;
 
@@ -99,12 +189,14 @@ export function CaseDetailScreen({
 
   abcdeActionsExpanded: boolean;
   setAbcdeActionsExpanded: (v: boolean) => void;
+
   samplerExpanded: boolean;
   setSamplerExpanded: (v: boolean) => void;
   opqrstExpanded: boolean;
   setOpqrstExpanded: (v: boolean) => void;
   midasheExpanded: boolean;
   setMidasheExpanded: (v: boolean) => void;
+
   medExpanded: boolean;
   setMedExpanded: (v: boolean) => void;
 
@@ -122,16 +214,22 @@ export function CaseDetailScreen({
   selectedOxygenFlow: number | null;
   setSelectedOxygenFlow: (n: number | null) => void;
 
-  // ✅ NEW: triage + assistance
   onLogTriage: (isCritical: boolean) => void;
 
-  assistanceModalOpen: boolean;
-  setAssistanceModalOpen: (v: boolean) => void;
+  cprLevel: HlrLevel;
+  onLogCprCallout: (
+    type:
+      | "ARREST_RECOGNIZED"
+      | "CPR_STARTED"
+      | "PADS_ON"
+      | "RHYTHM_CHECK"
+      | "AIRWAY"
+      | "IV_IO"
+      | "ROSC",
+    extra?: any
+  ) => void;
 
-  selectedAssistance: AssistanceChoice | null;
-  setSelectedAssistance: (v: AssistanceChoice | null) => void;
-
-  onConfirmAssistance: (choice: AssistanceChoice) => void;
+  onRegisterAssistance: () => void;
 
   onBackToSetup: () => void;
   onStartTimer: () => Promise<void>;
@@ -139,13 +237,52 @@ export function CaseDetailScreen({
   onRegisterMedication: () => void;
   onFinishCaseToSummary: () => void;
 }) {
-  // ✅ HARD GUARDS
-  const safeActions = Array.isArray(ABCDE_ACTIONS) ? ABCDE_ACTIONS : [];
-  const safeMeds = Array.isArray(MEDICATIONS) ? MEDICATIONS : [];
+  const isMedical = mode === "MEDICAL";
+  const isTrauma = mode === "TRAUMA";
+  const isHlr = mode === "HLR";
 
-  const actionsForLetter = useMemo(
-    () => safeActions.filter((a) => a.letter === selectedLetter),
-    [safeActions, selectedLetter]
+  const showAcronyms = isMedical || isTrauma;
+  const showMedicalHandlinger = isMedical;
+  const showItlsPanel = isTrauma;
+  const showHlrPanel = isHlr;
+
+  const hlrLevel = getScenarioHlrLevel(scenario as any, cprLevel);
+
+  // Local ITLS UI state
+  const [itlsExpanded, setItlsExpanded] = useState(true);
+  const [itlsTab, setItlsTab] = useState<ItlsTab>("UNDERSOEGELSE");
+  const [traumaTreatLetter, setTraumaTreatLetter] = useState<AbcdeLetter>("A");
+
+  const fmt1 = (n: unknown) => {
+    const v = Number(n);
+    return Number.isFinite(v) ? v.toFixed(1) : "—";
+  };
+
+  // Choose meds by mode
+  const medCatalog: Medication[] = useMemo(() => {
+    const meds = Array.isArray(MEDICATIONS) ? MEDICATIONS : [];
+
+    if (!isHlr) return meds;
+
+    // HLR: allowlist + oxygen
+    const base = meds.filter((m: any) => HLR_MED_IDS.has(String(m.id)) || m.type === "oxygen");
+
+    // BLS: typically no IV/IO drugs — keep oxygen only (and any "MED_MEDICINSK_ILT" if it's a drug in your catalog)
+    if (hlrLevel === "BLS") {
+      return base.filter((m: any) => m.type === "oxygen" || String(m.id) === "MED_MEDICINSK_ILT");
+    }
+
+    // ALS: full HLR allowlist
+    return base;
+  }, [isHlr, hlrLevel]);
+
+  const actionsForLetter = useMemo(() => {
+    return MEDICAL_ACTIONS.filter((a) => a.letter === selectedLetter);
+  }, [selectedLetter]);
+
+  const itlsTreatForLetter = useMemo(
+    () => ITLS_TREATMENTS.filter((a) => a.letter === traumaTreatLetter),
+    [traumaTreatLetter]
   );
 
   const caseStarted = running || elapsedMs > 0;
@@ -157,37 +294,89 @@ export function CaseDetailScreen({
 
   const guardLocked = () => {
     if (locked) {
-      Alert.alert(
-        "Start casen først",
-        "Tryk på 'GO – start timer' før du bruger funktionerne."
-      );
+      Alert.alert("Start casen først", "Tryk på 'GO – start timer' før du bruger funktionerne.");
       return true;
     }
     return false;
   };
 
-  // ✅ computed options: "½ dosis: X unit" etc
   const doseOptions = getDoseOptionsForMedication(selectedMedication);
 
-  // ✅ Ack “tick” overlay
   const [ack, setAck] = useState<AckState>(null);
-
   const flashAck = (key: string, icon: string) => {
     setAck({ key, icon });
     setTimeout(() => setAck(null), 650);
   };
 
-  // If modal opens and nothing is chosen yet, don’t force a choice.
-  // But if you WANT a default preselect, uncomment below:
-  // useEffect(() => {
-  //   if (assistanceModalOpen && selectedAssistance == null) {
-  //     setSelectedAssistance("EKSTRA_AMBULANCE");
-  //   }
-  // }, [assistanceModalOpen, selectedAssistance, setSelectedAssistance]);
+  const handleBackPress = () => {
+    if (!caseStarted) {
+      onBackToSetup();
+      return;
+    }
 
-  const selectedAssistanceText = selectedAssistance
-    ? assistanceLabel(selectedAssistance)
-    : null;
+    Alert.alert(
+      "Forlad case?",
+      "Casen er i gang. Hvis du går tilbage nu, mister du den igangværende session (timer og handlinger).",
+      [
+        { text: "Bliv", style: "cancel" },
+        { text: "Forlad", style: "destructive", onPress: onBackToSetup },
+      ]
+    );
+  };
+
+  const GAP = 8;
+  const gridItemStyle = (cols: number) => ({
+    width: `${100 / cols}%`,
+    paddingRight: GAP,
+    marginBottom: GAP,
+  });
+
+  const gridRowStyle = {
+    flexDirection: "row" as const,
+    flexWrap: "wrap" as const,
+    marginRight: -GAP,
+  };
+
+  const SmallTabButton = ({
+    active,
+    label,
+    onPress,
+  }: {
+    active: boolean;
+    label: string;
+    onPress: () => void;
+  }) => (
+    <TouchableOpacity
+      onPress={onPress}
+      disabled={locked}
+      style={[
+        styles.button,
+        {
+          flex: 1,
+          paddingVertical: 10,
+          backgroundColor: active ? "#60a5fa" : "#4b5563",
+          opacity: locked ? 0.5 : 1,
+        },
+      ]}
+    >
+      <Text style={styles.buttonText}>{label}</Text>
+    </TouchableOpacity>
+  );
+
+  // ✅ HLR actions: BLS hides IV/IO button
+  const hlrButtons = useMemo(() => {
+    const base: { id: Parameters<typeof onLogCprCallout>[0]; label: string }[] = [
+      { id: "ARREST_RECOGNIZED", label: "Arrest erkendt" },
+      { id: "CPR_STARTED", label: "HLR startet" },
+      { id: "PADS_ON", label: "Pads påsat" },
+      { id: "RHYTHM_CHECK", label: "Rytmetjek" },
+      { id: "AIRWAY", label: "Luftvej håndteret" },
+      // IV/IO only for ALS
+      ...(hlrLevel === "ALS" ? [{ id: "IV_IO" as const, label: "IV/IO etableret" }] : []),
+      { id: "ROSC", label: "ROSC" },
+    ];
+    return base;
+  }, [hlrLevel, onLogCprCallout]);
 
   return (
     <SafeAreaView style={styles.container}>
@@ -197,7 +386,6 @@ export function CaseDetailScreen({
         </View>
       )}
 
-      {/* ✅ Ack overlay (place near top-right) */}
       {ack && (
         <View
           style={{
@@ -211,60 +399,48 @@ export function CaseDetailScreen({
             zIndex: 100,
           }}
         >
-          <Text style={{ color: "black", fontWeight: "700", fontSize: 16 }}>
-            {ack.icon}
-          </Text>
+          <Text style={{ color: "black", fontWeight: "700", fontSize: 16 }}>{ack.icon}</Text>
         </View>
       )}
 
       <View style={styles.headerRow}>
-        <TouchableOpacity onPress={onBackToSetup} style={styles.smallButton}>
+        <TouchableOpacity onPress={handleBackPress} style={styles.smallButton}>
           <Text style={styles.smallButtonText}>←</Text>
         </TouchableOpacity>
 
         <View style={{ flex: 1 }}>
-          <Text style={styles.title}>{scenario.title}</Text>
+          <Text style={styles.title}>
+            {scenario.title} {isTrauma ? "· (Traume)" : isHlr ? "· (HLR)" : ""}
+          </Text>
           <Text style={styles.subtitle}>
-            Patient: {scenario.patientInfo.sex === "M" ? "Mand" : "Kvinde"} ·{" "}
-            {scenario.patientInfo.age} år
+            Patient: {scenario.patientInfo.sex === "M" ? "Mand" : "Kvinde"} · {scenario.patientInfo.age} år
           </Text>
         </View>
 
         <Text style={styles.timerText}>{formatTime(elapsedMs)}</Text>
       </View>
 
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={{ paddingBottom: 24 }}
-      >
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={{ paddingBottom: 24 }}>
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Alarmtekst</Text>
           <Text style={styles.text}>{scenario.dispatchText}</Text>
         </View>
 
         <TouchableOpacity
-          style={[
-            styles.button,
-            {
-              backgroundColor: running ? "#4b5563" : "#10b981",
-              marginBottom: 8,
-            },
-          ]}
+          style={[styles.button, { backgroundColor: running ? "#4b5563" : "#10b981", marginBottom: 8 }]}
           disabled={running}
           onPress={() => onStartTimer()}
         >
-          <Text style={styles.buttonText}>
-            {running ? "Case i gang" : "GO – start timer"}
-          </Text>
+          <Text style={styles.buttonText}>{running ? "Case i gang" : "GO – start timer"}</Text>
         </TouchableOpacity>
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Vitale parametre</Text>
           <Text style={styles.text}>
-            HR {currentState.vitals.hr} · RF {currentState.vitals.rr} · BT{" "}
-            {currentState.vitals.btSys}/{currentState.vitals.btDia} · SpO₂{" "}
-            {currentState.vitals.spo2}% · Smerte{" "}
-            {currentState.vitals.painNrs ?? "-"}
+            HR {currentState.vitals.hr} · RF {currentState.vitals.rr} · BT {currentState.vitals.btSys}/
+            {currentState.vitals.btDia} · SpO₂ {currentState.vitals.spo2}% · EtCO₂{" "}
+            {fmt1((currentState.vitals as any).etco2)} kPa · Temp {fmt1((currentState.vitals as any).temp)} °C · BS{" "}
+            {fmt1((currentState.vitals as any).bs)} mmol/L · Smerte {currentState.vitals.painNrs ?? "-"}
           </Text>
         </View>
 
@@ -275,12 +451,10 @@ export function CaseDetailScreen({
           <Text style={styles.text}>C: {currentState.abcde.C}</Text>
           <Text style={styles.text}>D: {currentState.abcde.D}</Text>
           <Text style={styles.text}>E: {currentState.abcde.E}</Text>
-          {currentState.extraInfo && (
-            <Text style={styles.text}>Ekstra: {currentState.extraInfo}</Text>
-          )}
+          {currentState.extraInfo && <Text style={styles.text}>Ekstra: {currentState.extraInfo}</Text>}
         </View>
 
-        {/* ✅ NEW: TRIAGE + ASSISTANCE buttons (above ABCDE actions) */}
+        {/* TRIAGE + ASSISTANCE (all modes) */}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Hurtig vurdering</Text>
 
@@ -311,237 +485,278 @@ export function CaseDetailScreen({
               </TouchableOpacity>
             </View>
 
+            {/* ✅ Single registration button (no modal / no choice) */}
             <TouchableOpacity
-              style={[
-                styles.button,
-                { backgroundColor: "#fabc60ff", opacity: locked ? 0.5 : 1 },
-              ]}
+              style={[styles.button, { backgroundColor: "#fabc60ff", opacity: locked ? 0.5 : 1 }]}
               disabled={locked}
               onPress={() => {
                 if (guardLocked()) return;
-                setAssistanceModalOpen(true);
+                onRegisterAssistance();
+                flashAck("assist-registered", "📟");
               }}
             >
-              <Text style={styles.buttonText}>
-                {selectedAssistanceText
-                  ? `Tilkald assistance: ${selectedAssistanceText}`
-                  : "Tilkald assistance"}
-              </Text>
+              <Text style={styles.buttonText}>Registrer assistance</Text>
             </TouchableOpacity>
           </View>
         </View>
 
-        {/* --- ABCDE actions --- */}
-        <View style={styles.card}>
-          <TouchableOpacity
-            style={styles.dropdownHeader}
-            onPress={() => setAbcdeActionsExpanded(!abcdeActionsExpanded)}
-          >
-            <Text style={styles.dropdownHeaderText}>Handlinger – ABCDE</Text>
-            <Text style={styles.dropdownHeaderText}>
-              {abcdeActionsExpanded ? "▲" : "▼"}
-            </Text>
-          </TouchableOpacity>
+        {/* HLR PANEL */}
+        {showHlrPanel && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>HLR handlinger</Text>
 
-          {abcdeActionsExpanded && (
-            <>
+            <View style={[{ gap: 8, marginTop: 8 }, locked && { opacity: 0.45 }]}>
+              {hlrButtons.map((x) => (
+                <TouchableOpacity
+                  key={x.id}
+                  style={styles.actionButton}
+                  disabled={locked}
+                  onPress={() => {
+                    if (guardLocked()) return;
+                    onLogCprCallout(x.id);
+                    flashAck(`cpr-${x.id}`, "✔️");
+                  }}
+                >
+                  <Text style={styles.actionButtonText}>{x.label}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <Text style={[styles.textSmall, { marginTop: 10 }]}>Niveau: {hlrLevel}</Text>
+          </View>
+        )}
+
+        {/* TRAUMA: ITLS PANEL */}
+        {showItlsPanel && (
+          <View style={styles.card}>
+            <TouchableOpacity style={styles.dropdownHeader} onPress={() => setItlsExpanded((p) => !p)}>
+              <Text style={styles.dropdownHeaderText}>ITLS</Text>
+              <Text style={styles.dropdownHeaderText}>{itlsExpanded ? "▲" : "▼"}</Text>
+            </TouchableOpacity>
+
+            {itlsExpanded && (
+              <>
+                <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
+                  <SmallTabButton
+                    active={itlsTab === "UNDERSOEGELSE"}
+                    label="Undersøgelse"
+                    onPress={() => setItlsTab("UNDERSOEGELSE")}
+                  />
+                  <SmallTabButton
+                    active={itlsTab === "BEHANDLING"}
+                    label="Behandling"
+                    onPress={() => setItlsTab("BEHANDLING")}
+                  />
+                </View>
+
+                {itlsTab === "UNDERSOEGELSE" && (
+                  <View style={[{ marginTop: 12 }, locked && { opacity: 0.45 }]}>
+                    <View style={gridRowStyle}>
+                      {ITLS_EXAM_ACTIONS.map((item) => (
+                        <View key={item.id} style={gridItemStyle(2)}>
+                          <TouchableOpacity
+                            style={styles.actionButton}
+                            disabled={locked}
+                            onPress={() => {
+                              if (guardLocked()) return;
+                              onActionPress(item);
+                              flashAck(`itls-exam-${item.id}`, "✔️");
+                            }}
+                          >
+                            <Text style={styles.actionButtonText}>{item.label}</Text>
+                          </TouchableOpacity>
+                        </View>
+                      ))}
+                    </View>
+                  </View>
+                )}
+
+                {itlsTab === "BEHANDLING" && (
+                  <>
+                    <View style={[styles.abcdeRow, { marginTop: 12 }, locked && { opacity: 0.45 }]}>
+                      {(["A", "B", "C", "D", "E"] as AbcdeLetter[]).map((letter) => (
+                        <TouchableOpacity
+                          key={letter}
+                          style={[styles.abcdeButton, traumaTreatLetter === letter && styles.abcdeButtonActive]}
+                          disabled={locked}
+                          onPress={() => {
+                            if (guardLocked()) return;
+                            setTraumaTreatLetter(letter);
+                            flashAck(`itls-treat-letter-${letter}`, "👍");
+                          }}
+                        >
+                          <Text
+                            style={[
+                              styles.abcdeButtonText,
+                              traumaTreatLetter === letter && { color: "black", fontWeight: "700" },
+                            ]}
+                          >
+                            {letter}
+                          </Text>
+                        </TouchableOpacity>
+                      ))}
+                    </View>
+
+                    <View style={[{ marginTop: 10 }, locked && { opacity: 0.45 }]}>
+                      <View style={gridRowStyle}>
+                        {itlsTreatForLetter.map((item) => (
+                          <View key={item.id} style={gridItemStyle(2)}>
+                            <TouchableOpacity
+                              style={styles.actionButton}
+                              disabled={locked}
+                              onPress={() => {
+                                if (guardLocked()) return;
+                                onActionPress(item);
+                                flashAck(`itls-treat-${item.id}`, "✔️");
+                              }}
+                            >
+                              <Text style={styles.actionButtonText}>{item.label}</Text>
+                            </TouchableOpacity>
+                          </View>
+                        ))}
+                      </View>
+                    </View>
+                  </>
+                )}
+              </>
+            )}
+          </View>
+        )}
+
+        {/* MEDICAL: Handlinger – ABCDE (curated) */}
+        {showMedicalHandlinger && (
+          <View style={styles.card}>
+            <TouchableOpacity
+              style={styles.dropdownHeader}
+              onPress={() => setAbcdeActionsExpanded(!abcdeActionsExpanded)}
+            >
+              <Text style={styles.dropdownHeaderText}>Handlinger – ABCDE</Text>
+              <Text style={styles.dropdownHeaderText}>{abcdeActionsExpanded ? "▲" : "▼"}</Text>
+            </TouchableOpacity>
+
+            {abcdeActionsExpanded && (
+              <>
+                <View style={[styles.abcdeRow, locked && { opacity: 0.45 }]}>
+                  {(["A", "B", "C", "D", "E"] as AbcdeLetter[]).map((letter) => (
+                    <TouchableOpacity
+                      key={letter}
+                      style={[styles.abcdeButton, selectedLetter === letter && styles.abcdeButtonActive]}
+                      disabled={locked}
+                      onPress={() => {
+                        if (guardLocked()) return;
+                        setSelectedLetter(letter);
+                        flashAck(`abcde-letter-${letter}`, "👍");
+                      }}
+                    >
+                      <Text
+                        style={[
+                          styles.abcdeButtonText,
+                          selectedLetter === letter && { color: "black", fontWeight: "700" },
+                        ]}
+                      >
+                        {letter}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+
+                <View style={[{ marginTop: 10 }, locked && { opacity: 0.45 }]}>
+                  <View style={gridRowStyle}>
+                    {actionsForLetter.map((item) => (
+                      <View key={item.id} style={gridItemStyle(2)}>
+                        <TouchableOpacity
+                          style={styles.actionButton}
+                          disabled={locked}
+                          onPress={() => {
+                            if (guardLocked()) return;
+                            onActionPress(item);
+                            flashAck(`action-${item.id}`, "✔️");
+                          }}
+                        >
+                          <Text style={styles.actionButtonText}>{item.label}</Text>
+                        </TouchableOpacity>
+                      </View>
+                    ))}
+                  </View>
+                </View>
+              </>
+            )}
+          </View>
+        )}
+
+        {/* ACRONYMS (always visible) */}
+        {showAcronyms && (
+          <>
+            <View style={styles.card}>
               <View style={[styles.abcdeRow, locked && { opacity: 0.45 }]}>
-                {(["A", "B", "C", "D", "E"] as AbcdeLetter[]).map((letter) => (
+                {samplerLetters.map((letter) => (
                   <TouchableOpacity
                     key={letter}
-                    style={[
-                      styles.abcdeButton,
-                      selectedLetter === letter && styles.abcdeButtonActive,
-                    ]}
+                    style={[styles.samplerButton, samplerState[letter] && styles.samplerButtonActive]}
                     disabled={locked}
                     onPress={() => {
                       if (guardLocked()) return;
-                      setSelectedLetter(letter);
-                      flashAck(`abcde-letter-${letter}`, "👍");
+                      setSamplerState({ ...samplerState, [letter]: !samplerState[letter] });
+                      flashAck(`sampler-${letter}`, "✔️");
                     }}
                   >
-                    <Text
-                      style={[
-                        styles.abcdeButtonText,
-                        selectedLetter === letter && {
-                          color: "black",
-                          fontWeight: "700",
-                        },
-                      ]}
-                    >
+                    <Text style={[styles.samplerButtonText, samplerState[letter] && { color: "black" }]}>
                       {letter}
                     </Text>
                   </TouchableOpacity>
                 ))}
               </View>
+            </View>
 
-              <View
-                style={{ marginTop: 10, gap: 8, opacity: locked ? 0.45 : 1 }}
-              >
-                {actionsForLetter.map((item) => (
+            <View style={styles.card}>
+              <View style={[styles.abcdeRow, locked && { opacity: 0.45 }]}>
+                {opqrstLetters.map((letter) => (
                   <TouchableOpacity
-                    key={item.id}
-                    style={styles.actionButton}
+                    key={letter}
+                    style={[styles.samplerButton, opqrstState[letter] && styles.samplerButtonActive]}
                     disabled={locked}
                     onPress={() => {
                       if (guardLocked()) return;
-                      onActionPress(item);
-                      flashAck(`abcde-action-${item.id}`, "✔️");
+                      setOpqrstState({ ...opqrstState, [letter]: !opqrstState[letter] });
+                      flashAck(`opqrst-${letter}`, "✔️");
                     }}
                   >
-                    <Text style={styles.actionButtonText}>{item.label}</Text>
+                    <Text style={[styles.samplerButtonText, opqrstState[letter] && { color: "black" }]}>
+                      {letter}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </View>
-            </>
-          )}
-        </View>
-
-        {/* --- SAMPLER --- */}
-        <View style={styles.card}>
-          <TouchableOpacity
-            style={styles.dropdownHeader}
-            onPress={() => setSamplerExpanded(!samplerExpanded)}
-          >
-            <Text style={styles.dropdownHeaderText}>SAMPLER</Text>
-            <Text style={styles.dropdownHeaderText}>
-              {samplerExpanded ? "▲" : "▼"}
-            </Text>
-          </TouchableOpacity>
-
-          {samplerExpanded && (
-            <View style={[styles.abcdeRow, locked && { opacity: 0.45 }]}>
-              {samplerLetters.map((letter) => (
-                <TouchableOpacity
-                  key={letter}
-                  style={[
-                    styles.samplerButton,
-                    samplerState[letter] && styles.samplerButtonActive,
-                  ]}
-                  disabled={locked}
-                  onPress={() => {
-                    if (guardLocked()) return;
-                    setSamplerState({
-                      ...samplerState,
-                      [letter]: !samplerState[letter],
-                    });
-                    flashAck(`sampler-${letter}`, "✔️");
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.samplerButtonText,
-                      samplerState[letter] && { color: "black" },
-                    ]}
-                  >
-                    {letter}
-                  </Text>
-                </TouchableOpacity>
-              ))}
             </View>
-          )}
-        </View>
 
-        {/* --- OPQRST --- */}
-        <View style={styles.card}>
-          <TouchableOpacity
-            style={styles.dropdownHeader}
-            onPress={() => setOpqrstExpanded(!opqrstExpanded)}
-          >
-            <Text style={styles.dropdownHeaderText}>OPQRST</Text>
-            <Text style={styles.dropdownHeaderText}>
-              {opqrstExpanded ? "▲" : "▼"}
-            </Text>
-          </TouchableOpacity>
-
-          {opqrstExpanded && (
-            <View style={[styles.abcdeRow, locked && { opacity: 0.45 }]}>
-              {opqrstLetters.map((letter) => (
-                <TouchableOpacity
-                  key={letter}
-                  style={[
-                    styles.samplerButton,
-                    opqrstState[letter] && styles.samplerButtonActive,
-                  ]}
-                  disabled={locked}
-                  onPress={() => {
-                    if (guardLocked()) return;
-                    setOpqrstState({
-                      ...opqrstState,
-                      [letter]: !opqrstState[letter],
-                    });
-                    flashAck(`opqrst-${letter}`, "✔️");
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.samplerButtonText,
-                      opqrstState[letter] && { color: "black" },
-                    ]}
+            <View style={styles.card}>
+              <View style={[styles.abcdeRow, locked && { opacity: 0.45 }]}>
+                {midasheLetters.map((letter) => (
+                  <TouchableOpacity
+                    key={letter}
+                    style={[styles.samplerButton, midasheState[letter] && styles.samplerButtonActive]}
+                    disabled={locked}
+                    onPress={() => {
+                      if (guardLocked()) return;
+                      setMidasheState({ ...midasheState, [letter]: !midasheState[letter] });
+                      flashAck(`midashe-${letter}`, "✔️");
+                    }}
                   >
-                    {letter}
-                  </Text>
-                </TouchableOpacity>
-              ))}
+                    <Text style={[styles.samplerButtonText, midasheState[letter] && { color: "black" }]}>
+                      {letter}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
-          )}
-        </View>
+          </>
+        )}
 
-        {/* --- MIDASHE --- */}
+        {/* MEDS */}
         <View style={styles.card}>
-          <TouchableOpacity
-            style={styles.dropdownHeader}
-            onPress={() => setMidasheExpanded(!midasheExpanded)}
-          >
-            <Text style={styles.dropdownHeaderText}>MIDASHE</Text>
-            <Text style={styles.dropdownHeaderText}>
-              {midasheExpanded ? "▲" : "▼"}
-            </Text>
-          </TouchableOpacity>
-
-          {midasheExpanded && (
-            <View style={[styles.abcdeRow, locked && { opacity: 0.45 }]}>
-              {midasheLetters.map((letter) => (
-                <TouchableOpacity
-                  key={letter}
-                  style={[
-                    styles.samplerButton,
-                    midasheState[letter] && styles.samplerButtonActive,
-                  ]}
-                  disabled={locked}
-                  onPress={() => {
-                    if (guardLocked()) return;
-                    setMidasheState({
-                      ...midasheState,
-                      [letter]: !midasheState[letter],
-                    });
-                    flashAck(`midashe-${letter}`, "✔️");
-                  }}
-                >
-                  <Text
-                    style={[
-                      styles.samplerButtonText,
-                      midasheState[letter] && { color: "black" },
-                    ]}
-                  >
-                    {letter}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          )}
-        </View>
-
-        {/* --- MEDS --- */}
-        <View style={styles.card}>
-          <TouchableOpacity
-            style={styles.dropdownHeader}
-            onPress={() => setMedExpanded(!medExpanded)}
-          >
+          <TouchableOpacity style={styles.dropdownHeader} onPress={() => setMedExpanded(!medExpanded)}>
             <Text style={styles.dropdownHeaderText}>Medicin</Text>
-            <Text style={styles.dropdownHeaderText}>
-              {medExpanded ? "▲" : "▼"}
-            </Text>
+            <Text style={styles.dropdownHeaderText}>{medExpanded ? "▲" : "▼"}</Text>
           </TouchableOpacity>
 
           {medExpanded && (
@@ -549,59 +764,45 @@ export function CaseDetailScreen({
               <Text style={styles.text}>Vælg præparat og dosis.</Text>
 
               <View style={[{ marginTop: 6 }, locked && { opacity: 0.45 }]}>
-                <View
-                  style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}
-                >
-                  {safeMeds.map((med) => {
+                <View style={gridRowStyle}>
+                  {medCatalog.map((med) => {
                     const selected = selectedMedication?.id === med.id;
 
                     return (
-                      <TouchableOpacity
-                        key={med.id}
-                        style={[
-                          styles.medButton,
-                          { alignSelf: "flex-start" },
-                          selected && styles.medButtonActive,
-                        ]}
-                        disabled={locked}
-                        onPress={() => {
-                          if (guardLocked()) return;
-                          setSelectedMedication(med);
-                          setSelectedDose(null);
-                          setSelectedOxygenFlow(null);
-                          flashAck(`med-${med.id}`, "✔️");
-                        }}
-                      >
-                        <Text
-                          style={[
-                            styles.medButtonText,
-                            selected && { color: "black", fontWeight: "700" },
-                          ]}
+                      <View key={med.id} style={gridItemStyle(3)}>
+                        <TouchableOpacity
+                          style={[styles.medButton, selected && styles.medButtonActive]}
+                          disabled={locked}
+                          onPress={() => {
+                            if (guardLocked()) return;
+                            setSelectedMedication(med);
+                            setSelectedDose(null);
+                            setSelectedOxygenFlow(null);
+                            flashAck(`med-${med.id}`, "✔️");
+                          }}
                         >
-                          {med.name}
-                        </Text>
-                      </TouchableOpacity>
+                          <Text
+                            style={[
+                              styles.medButtonText,
+                              selected && { color: "black", fontWeight: "700" },
+                            ]}
+                            numberOfLines={2}
+                          >
+                            {med.name}
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
                     );
                   })}
                 </View>
               </View>
 
-              {/* DRUG: computed dose options with actual values */}
               {selectedMedication && selectedMedication.type === "drug" && (
-                <View
-                  style={[
-                    styles.abcdeRow,
-                    { marginTop: 6 },
-                    locked && { opacity: 0.45 },
-                  ]}
-                >
+                <View style={[styles.abcdeRow, { marginTop: 6 }, locked && { opacity: 0.45 }]}>
                   {doseOptions.map((d) => (
                     <TouchableOpacity
                       key={String(d.id)}
-                      style={[
-                        styles.doseButton,
-                        selectedDose === d.id && styles.doseButtonActive,
-                      ]}
+                      style={[styles.doseButton, selectedDose === d.id && styles.doseButtonActive]}
                       disabled={locked}
                       onPress={() => {
                         if (guardLocked()) return;
@@ -609,12 +810,7 @@ export function CaseDetailScreen({
                         flashAck(`dose-${String(d.id)}`, "✔️");
                       }}
                     >
-                      <Text
-                        style={[
-                          styles.doseButtonText,
-                          selectedDose === d.id && { color: "black" },
-                        ]}
-                      >
+                      <Text style={[styles.doseButtonText, selectedDose === d.id && { color: "black" }]}>
                         {d.label}
                       </Text>
                     </TouchableOpacity>
@@ -622,12 +818,9 @@ export function CaseDetailScreen({
                 </View>
               )}
 
-              {/* OXYGEN: show flow buttons */}
               {selectedMedication && selectedMedication.type === "oxygen" && (
                 <>
-                  <Text style={[styles.text, { marginTop: 6 }]}>
-                    Vælg liter/min:
-                  </Text>
+                  <Text style={[styles.text, { marginTop: 6 }]}>Vælg liter/min:</Text>
                   <ScrollView
                     horizontal
                     showsHorizontalScrollIndicator={false}
@@ -639,11 +832,7 @@ export function CaseDetailScreen({
                     ).map((flow: number) => (
                       <TouchableOpacity
                         key={flow}
-                        style={[
-                          styles.doseButton,
-                          selectedOxygenFlow === flow &&
-                            styles.doseButtonActive,
-                        ]}
+                        style={[styles.doseButton, selectedOxygenFlow === flow && styles.doseButtonActive]}
                         disabled={locked}
                         onPress={() => {
                           if (guardLocked()) return;
@@ -651,12 +840,7 @@ export function CaseDetailScreen({
                           flashAck(`o2-${flow}`, "✔️");
                         }}
                       >
-                        <Text
-                          style={[
-                            styles.doseButtonText,
-                            selectedOxygenFlow === flow && { color: "black" },
-                          ]}
-                        >
+                        <Text style={[styles.doseButtonText, selectedOxygenFlow === flow && { color: "black" }]}>
                           {flow} L/min
                         </Text>
                       </TouchableOpacity>
@@ -666,14 +850,7 @@ export function CaseDetailScreen({
               )}
 
               <TouchableOpacity
-                style={[
-                  styles.button,
-                  {
-                    marginTop: 8,
-                    backgroundColor: "#38bdf8",
-                    opacity: locked ? 0.5 : 1,
-                  },
-                ]}
+                style={[styles.button, { marginTop: 8, backgroundColor: "#38bdf8", opacity: locked ? 0.5 : 1 }]}
                 disabled={locked}
                 onPress={() => {
                   if (guardLocked()) return;
@@ -688,102 +865,13 @@ export function CaseDetailScreen({
         </View>
 
         {caseStarted && (
-          <TouchableOpacity
-            style={styles.button}
-            onPress={onFinishCaseToSummary}
-          >
+          <TouchableOpacity style={styles.button} onPress={onFinishCaseToSummary}>
             <Text style={styles.buttonText}>Case færdig → summary</Text>
           </TouchableOpacity>
         )}
       </ScrollView>
-
-      {/* ✅ NEW: Assistance modal */}
-      {assistanceModalOpen && (
-        <View
-          style={{
-            position: "absolute",
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundColor: "rgba(0,0,0,0.65)",
-            justifyContent: "center",
-            padding: 16,
-            zIndex: 200,
-          }}
-        >
-          <View style={[styles.card, { maxHeight: "80%" }]}>
-            <Text style={styles.cardTitle}>Tilkald assistance</Text>
-
-            <Text style={[styles.text, { marginTop: 6 }]}>Vælg en enhed:</Text>
-
-            <View style={{ marginTop: 10, gap: 8 }}>
-              {(
-                [
-                  { id: "EKSTRA_AMBULANCE", label: "Ekstra ambulance" },
-                  { id: "AKUTBIL", label: "Akutbil" },
-                  { id: "LAEGEBIL", label: "Lægebil" },
-                ] as const
-              ).map((opt) => {
-                const picked = selectedAssistance === opt.id;
-
-                return (
-                  <TouchableOpacity
-                    key={opt.id}
-                    style={[
-                      styles.actionButton,
-                      picked && {
-                        borderColor: "rgba(16,185,129,0.9)",
-                        borderWidth: 2,
-                      },
-                    ]}
-                    onPress={() => {
-                      setSelectedAssistance(opt.id);
-                      flashAck(`assist-pick-${opt.id}`, "✔️");
-                    }}
-                  >
-                    <Text style={styles.actionButtonText}>
-                      {picked ? `✓ ${opt.label}` : opt.label}
-                    </Text>
-                  </TouchableOpacity>
-                );
-              })}
-            </View>
-
-            <View style={{ flexDirection: "row", gap: 8, marginTop: 14 }}>
-              <TouchableOpacity
-                style={[styles.button, { flex: 1, backgroundColor: "#4b5563" }]}
-                onPress={() => setAssistanceModalOpen(false)}
-              >
-                <Text style={styles.buttonText}>Luk</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity
-                style={[
-                  styles.button,
-                  {
-                    flex: 1,
-                    backgroundColor: "#60a5fa",
-                    opacity: selectedAssistance ? 1 : 0.5,
-                  },
-                ]}
-                disabled={!selectedAssistance}
-                onPress={() => {
-                  if (!selectedAssistance) return;
-
-                  onConfirmAssistance(selectedAssistance);
-                  flashAck("assist-confirm", "✔️");
-
-                  setAssistanceModalOpen(false);
-                  // ✅ Keep selectedAssistance so it shows on the main button next time
-                }}
-              >
-                <Text style={styles.buttonText}>Bekræft</Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        </View>
-      )}
     </SafeAreaView>
   );
 }
+
+export default CaseDetailScreen;

@@ -152,6 +152,20 @@ export const styles = StyleSheet.create({
     color: "#e5e7eb",
     fontSize: 13,
   },
+    landingLogo: {
+    width: 92,
+    height: 92,
+    borderRadius: 22,
+  },
+  textInput: {
+    backgroundColor: "#111827",
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 10,
+    color: "white",
+    borderWidth: 1,
+    borderColor: "rgba(255,255,255,0.12)",
+  },
   evalItem: {
     backgroundColor: "#111827",
     padding: 8,

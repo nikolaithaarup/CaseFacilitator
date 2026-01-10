@@ -4,25 +4,41 @@ import { ORG_CHOICES, type OrgChoice } from "../data/orgChoices";
 import { styles } from "../styles/indexStyles";
 
 export function LoginScreen({
-  authReady,
+  canPickOrg,
   loadingCases,
   onPickOrg,
   onScanQr,
+  onLogout,
 }: {
-  authReady: boolean;
+  canPickOrg: boolean; // ✅ clearer name: signed in + firebase ready
   loadingCases: boolean;
   onPickOrg: (org: OrgChoice) => Promise<void>;
   onScanQr: () => void;
+  onLogout: () => void;
 }) {
   return (
     <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Case Facilitator</Text>
-      <Text style={styles.subtitle}>Vælg bruger-type / organisation (midlertidig login).</Text>
+      <View style={styles.headerRow}>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.title}>Case Facilitator</Text>
+          <Text style={styles.subtitle}>Vælg organisation / rolle.</Text>
+        </View>
 
-      {!authReady && (
+        <TouchableOpacity
+          style={styles.smallButton}
+          onPress={onLogout}
+          disabled={!canPickOrg}
+        >
+          <Text style={styles.smallButtonText}>⎋</Text>
+        </TouchableOpacity>
+      </View>
+
+      {!canPickOrg && (
         <View style={{ marginTop: 16, alignItems: "center" }}>
           <ActivityIndicator />
-          <Text style={[styles.text, { marginTop: 8 }]}>Logger ind anonymt…</Text>
+          <Text style={[styles.text, { marginTop: 8 }]}>
+            Log ind for at fortsætte…
+          </Text>
         </View>
       )}
 
@@ -30,8 +46,8 @@ export function LoginScreen({
         {ORG_CHOICES.map((org) => (
           <TouchableOpacity
             key={org.id}
-            style={styles.caseCard}
-            disabled={!authReady}
+            style={[styles.caseCard, { opacity: canPickOrg ? 1 : 0.5 }]}
+            disabled={!canPickOrg}
             onPress={() =>
               onPickOrg(org).catch(() => {
                 Alert.alert("Kunne ikke hente cases", "Tjek Firestore regler + internet.");
@@ -53,12 +69,20 @@ export function LoginScreen({
 
       <View style={{ marginTop: 18, flexDirection: "row", gap: 8 }}>
         <TouchableOpacity
-          style={[styles.button, { flex: 1, backgroundColor: "#60a5fa" }]}
+          style={[
+            styles.button,
+            { flex: 1, backgroundColor: "#60a5fa", opacity: canPickOrg ? 1 : 0.5 },
+          ]}
           onPress={onScanQr}
+          disabled={!canPickOrg}
         >
           <Text style={styles.buttonText}>Scan QR (join)</Text>
         </TouchableOpacity>
       </View>
+
+      <Text style={[styles.textSmall, { marginTop: 10 }]}>
+        Tip: Tryk ⎋ for at logge ud og teste en anden bruger.
+      </Text>
     </SafeAreaView>
   );
 }

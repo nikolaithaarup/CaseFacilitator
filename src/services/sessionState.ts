@@ -1,3 +1,4 @@
+// src/services/sessionState.ts
 import { doc, onSnapshot, serverTimestamp, setDoc } from "firebase/firestore";
 import type { PatientState } from "../domain/cases/types";
 import { auth, db } from "../firebase/firebase";
@@ -8,11 +9,11 @@ function stripUndefined<T>(value: T): T {
 }
 
 export type SessionLiveState = {
-  vitals: PatientState["vitals"];
+  vitals: PatientState["vitals"];   // ✅ includes etco2 now, via PatientVitals
   abcde: PatientState["abcde"];
   extraInfo?: string;
   rhythmKey?: string;
-  updatedAt: any;
+  updatedAt: unknown;
 };
 
 export async function publishLiveState(params: {
@@ -24,6 +25,7 @@ export async function publishLiveState(params: {
   if (!uid) throw new Error("Not authenticated");
 
   const ref = doc(db, "sessions", params.sessionId, "state", "current");
+
   const payload: SessionLiveState = {
     vitals: params.currentState.vitals,
     abcde: params.currentState.abcde,
@@ -38,12 +40,12 @@ export async function publishLiveState(params: {
 export function listenLiveState(
   sessionId: string,
   onData: (data: SessionLiveState | null) => void,
-  onError: (e: any) => void,
+  onError: (e: unknown) => void
 ) {
   const ref = doc(db, "sessions", sessionId, "state", "current");
   return onSnapshot(
     ref,
     (snap) => onData(snap.exists() ? (snap.data() as SessionLiveState) : null),
-    onError,
+    (e) => onError(e)
   );
 }

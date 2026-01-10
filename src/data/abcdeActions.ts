@@ -7,6 +7,8 @@ export const ABCDE_ACTIONS: AbcdeAction[] = [
   { id: "A_NPA", letter: "A", label: "Anlæg NPA" },
   { id: "A_OPA", letter: "A", label: "Anlæg OPA" },
   { id: "A_LMA", letter: "A", label: "Larynxmaske" },
+  { id: "A_SUCTION", letter: "A", label: "Sug / fjern blod/sekret" },
+{ id: "A_RECOVERY", letter: "A", label: "Sideleje (recovery position)" },
 
   { id: "B_INSPECT", letter: "B", label: "Inspicer thorax / RF" },
   { id: "B_STETHO", letter: "B", label: "Stetoskopér lunger" },
@@ -16,6 +18,9 @@ export const ABCDE_ACTIONS: AbcdeAction[] = [
   { id: "B_NEEDLE_DECOMP", letter: "B", label: "Nåledekompression" },
   { id: "B_ETT", letter: "B", label: "Tube (intubation)" },
   { id: "B_BINASAL", letter: "B", label: "Binasal tube + kapnografi" },
+  { id: "B_CPAP", letter: "B", label: "CPAP" },
+{ id: "B_BVM_PEEP", letter: "B", label: "Pose-maske ventilation + PEEP" },
+{ id: "B_ETCO2", letter: "B", label: "Kapnografi (ETCO₂)" },
 
   { id: "C_BP", letter: "C", label: "Mål blodtryk" },
   { id: "C_PULSE", letter: "C", label: "Tæl puls / rytme" },
@@ -23,12 +28,17 @@ export const ABCDE_ACTIONS: AbcdeAction[] = [
   { id: "C_IO", letter: "C", label: "Anlæg IO-adgang" },
   { id: "C_EKG4", letter: "C", label: "EKG 4-afledninger" },
   { id: "C_EKG12", letter: "C", label: "EKG 12-afledninger" },
+  { id: "C_BLEEDING_CONTROL", letter: "C", label: "Stop blødning / trykforbinding" },
+{ id: "C_TOURNIQUET", letter: "C", label: "Tourniquet" },
+{ id: "C_PELVIC_BINDER", letter: "C", label: "Bækkenbælte" },
 
   { id: "D_GCS", letter: "D", label: "Vurder GCS" },
   { id: "D_BS", letter: "D", label: "Mål blodsukker" },
   { id: "D_PUPILS", letter: "D", label: "Tjek pupiller" },
+  { id: "D_REASSURE", letter: "D", label: "Ro, guidet vejrtrækning / reassurance" },
 
   { id: "E_TEMP", letter: "E", label: "Mål temperatur" },
   { id: "E_TOPTOE", letter: "E", label: "Top-til-tå inspektion" },
+  { id: "ACTION_VALSALVA", letter: "C", label: "Valsalva manøvre" },
 ];
 export default ABCDE_ACTIONS;

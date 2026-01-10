@@ -1,0 +1,1481 @@
+[
+  {
+    "id": "MED_v3_001_STEMI_INFERIOR_MED_HYPOTENSION",
+    "category": "MEDICAL",
+    "title": "STEMI (inferior) med hypotension",
+    "subtitle": "Brystsmerter, kvalme, koldsved",
+    "caseType": "ACS/STEMI",
+    "dispatchText": "68-årig mand med pludseligt indsættende brystsmerter og kvalme. Koldsvedende. Virker påvirket.",
+    "patientInfo": { "sex": "M", "age": 68 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 52, "rr": 22, "btSys": 86, "btDia": 58, "spo2": 94, "etco2": 4.6, "temp": 36.7, "bs": 6.2, "painNrs": 8 },
+        "abcde": {
+          "A": "Fri luftvej, taler i korte sætninger.",
+          "B": "Let takypnø. Ingen hvæsen. SpO₂ 94%.",
+          "C": "Bradykard, kold/klam. BT lavt. Brystsmerter 8/10.",
+          "D": "Vågen, ængstelig. Ingen fokale udfald.",
+          "E": "Bleg, klamtsvedende. Ingen traumer."
+        },
+        "extraInfo": "Inferior STEMI mistænkes. Høj risiko for RV-infarkt → nitro kan forværre hypotension."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 44, "rr": 26, "btSys": 70, "btDia": 45, "spo2": 92, "etco2": 4.2, "temp": 36.6, "bs": 6.4, "painNrs": 9 },
+        "abcde": {
+          "A": "Fri luftvej, bliver mere sløv mellem svar.",
+          "B": "Takypnø tiltager. SpO₂ falder.",
+          "C": "Markant hypotensiv, bradykard, perifert kold.",
+          "D": "Tiltagende konfusion.",
+          "E": "Koldsved, bleg, dårlig perfusion."
+        },
+        "extraInfo": "Efter vasodilatation/hypotension (fx nitro)."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 56, "rr": 18, "btSys": 102, "btDia": 68, "spo2": 96, "etco2": 4.8, "temp": 36.7, "bs": 6.1, "painNrs": 5 },
+        "abcde": {
+          "A": "Fri luftvej, roligere.",
+          "B": "Bedre respirationsarbejde. SpO₂ 96%.",
+          "C": "BT stabiliseret efter væske/tiltag. Brystsmerter reduceret.",
+          "D": "Klar og orienteret.",
+          "E": "Stadig koldsved men bedre perfusion."
+        },
+        "extraInfo": "Hurtig EKG, ASA/heparin, væske ved RV-mistanke. Nitro undgås ved hypotension."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "C_ECG_4_12_LEAD", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "C_IV_ACCESS", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_ACETYLSALICYLSYRE", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_HEPARIN", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_GLYCERYLNITRAT", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "C_ECG_4_12_LEAD", "title": "12-aflednings EKG", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 300 },
+      { "actionId": "C_IV_ACCESS", "title": "IV-adgang", "importance": "IMPORTANT", "recommendedBeforeSec": 240 },
+      { "actionId": "MED_ACETYLSALICYLSYRE", "title": "ASA", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 },
+      { "actionId": "MED_HEPARIN", "title": "Heparin", "importance": "IMPORTANT", "recommendedBeforeSec": 300 },
+      { "actionId": "MED_NACL_ISO", "title": "NaCl 0,9% (væske)", "importance": "IMPORTANT", "recommendedBeforeSec": 300 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_002_AKUT_LUNGEOEDEM",
+    "category": "MEDICAL",
+    "title": "Akut lungeødem",
+    "subtitle": "Skummende ekspektorat, ortopnø",
+    "caseType": "Acute heart failure",
+    "dispatchText": "72-årig kvinde med svær åndenød, kan ikke ligge ned. Skummende opspyt. Angst og uro.",
+    "patientInfo": { "sex": "K", "age": 72 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 118, "rr": 34, "btSys": 186, "btDia": 104, "spo2": 82, "etco2": 5.2, "temp": 36.9, "bs": 7.4, "painNrs": 2 },
+        "abcde": {
+          "A": "Fri luftvej, gisper efter luft.",
+          "B": "Svær respirationsinsufficiens, krepitation bilat. SpO₂ 82%.",
+          "C": "Hypertensiv, tachykard, perifert kold.",
+          "D": "Vågen, panik.",
+          "E": "Klam, bleg, skummende sekret."
+        },
+        "extraInfo": "CPAP/ilt + nitro/furosemid kan hjælpe (hvis ikke hypotensiv)."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 132, "rr": 40, "btSys": 160, "btDia": 95, "spo2": 74, "etco2": 6.0, "temp": 37.0, "bs": 7.8, "painNrs": 4 },
+        "abcde": {
+          "A": "Tiltagende sekret, svært ved at tale.",
+          "B": "Udtalt krepitation, udtrætning. SpO₂ 74%.",
+          "C": "Tachykard, begyndende kredsløbspåvirkning.",
+          "D": "Konfus pga hypoksi.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forværres uden ventilationsstøtte."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 104, "rr": 22, "btSys": 156, "btDia": 92, "spo2": 92, "etco2": 5.0, "temp": 36.9, "bs": 7.2, "painNrs": 1 },
+        "abcde": {
+          "A": "Fri luftvej, mindre sekret.",
+          "B": "Bedre RF/arbejde. SpO₂ 92%.",
+          "C": "Stabil, stadig hypertensiv men mindre stress.",
+          "D": "Klarere.",
+          "E": "Bedre farve."
+        },
+        "extraInfo": "Efter ventilationsstøtte + vasodilatation/diuretika (klinisk respons)."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "B_OXYGEN_TITRATE", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "B_BVM_SUPPORT", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_MEDICINSK_ILT", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "C_ECG_4_12_LEAD", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_GLYCERYLNITRAT", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_FUROSEMID", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "C_POSITION_LEGS_UP", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_GLYCERYLNITRAT", "toStateId": "S_GOOD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_FUROSEMID", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "B_OXYGEN_TITRATE", "title": "Titrér ilt / ventilationsstrategi", "importance": "CRITICAL", "recommendedBeforeSec": 60, "mustBeforeSec": 180 },
+      { "actionId": "MED_MEDICINSK_ILT", "title": "Medicinsk ilt", "importance": "IMPORTANT", "recommendedBeforeSec": 90 },
+      { "actionId": "C_ECG_4_12_LEAD", "title": "12-aflednings EKG", "importance": "IMPORTANT", "recommendedBeforeSec": 240 },
+      { "actionId": "MED_GLYCERYLNITRAT", "title": "Glycerylnitrat", "importance": "IMPORTANT", "recommendedBeforeSec": 180 },
+      { "actionId": "MED_FUROSEMID", "title": "Furosemid", "importance": "IMPORTANT", "recommendedBeforeSec": 300 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_003_ANAFYLAKSI_EFTER_NOEDDER",
+    "category": "MEDICAL",
+    "title": "Anafylaksi efter nødder",
+    "subtitle": "Hævelse, urticaria, vejrtrækningsbesvær",
+    "caseType": "Anaphylaxis",
+    "dispatchText": "24-årig mand med pludselig kløe, udslæt, hævede læber og tiltagende åndenød efter indtag af mad.",
+    "patientInfo": { "sex": "M", "age": 24 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 124, "rr": 28, "btSys": 92, "btDia": 58, "spo2": 90, "etco2": 4.2, "temp": 36.8, "bs": 6.0, "painNrs": 0 },
+        "abcde": {
+          "A": "Hæs stemme, hævede læber. Risiko for obstruktion.",
+          "B": "Hvæsen, dyspnø. SpO₂ 90%.",
+          "C": "Tachykard, hypotensiv tendens.",
+          "D": "Vågen men panisk.",
+          "E": "Urticaria, flush."
+        },
+        "extraInfo": "Klassisk anafylaksi: adrenalin IM først."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 140, "rr": 34, "btSys": 70, "btDia": 40, "spo2": 82, "etco2": 3.6, "temp": 36.7, "bs": 6.4, "painNrs": 0 },
+        "abcde": {
+          "A": "Tiltagende hævelse, stridor kan udvikles.",
+          "B": "Svær bronkospasme. SpO₂ 82%.",
+          "C": "Shock. Meget lavt BT.",
+          "D": "Sløv/konfus.",
+          "E": "Udbredt urticaria."
+        },
+        "extraInfo": "Forværres hurtigt uden adrenalin."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 102, "rr": 20, "btSys": 112, "btDia": 70, "spo2": 96, "etco2": 4.8, "temp": 36.8, "bs": 6.1, "painNrs": 0 },
+        "abcde": {
+          "A": "Hævelse aftager. Stemmen klarere.",
+          "B": "Mindre hvæsen. SpO₂ 96%.",
+          "C": "BT stabiliseret.",
+          "D": "Roligere og klar.",
+          "E": "Udslæt aftager."
+        },
+        "extraInfo": "Efter adrenalin + ilt + evt. antihistamin/steroid."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "MED_ADRENALIN_IM", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_MEDICINSK_ILT", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_CLEMASTIN", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_SOLU_MEDROL", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "C_IV_ACCESS", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_GLYCERYLNITRAT", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_ADRENALIN_IM", "toStateId": "S_GOOD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "MED_ADRENALIN_IM", "title": "Adrenalin IM", "importance": "CRITICAL", "recommendedBeforeSec": 90, "mustBeforeSec": 180 },
+      { "actionId": "MED_MEDICINSK_ILT", "title": "Medicinsk ilt", "importance": "IMPORTANT", "recommendedBeforeSec": 120 },
+      { "actionId": "C_IV_ACCESS", "title": "IV-adgang", "importance": "IMPORTANT", "recommendedBeforeSec": 180 },
+      { "actionId": "MED_NACL_ISO", "title": "NaCl 0,9% (væske)", "importance": "IMPORTANT", "recommendedBeforeSec": 240 },
+      { "actionId": "MED_CLEMASTIN", "title": "Clemastin", "importance": "OPTIONAL", "recommendedBeforeSec": 600 },
+      { "actionId": "MED_SOLU_MEDROL", "title": "Solu-Medrol", "importance": "OPTIONAL", "recommendedBeforeSec": 600 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_004_ASTMAFORVAERRING",
+    "category": "MEDICAL",
+    "title": "Astmaforværring",
+    "subtitle": "Hvæsen og brug af accessoriske muskler",
+    "caseType": "Asthma",
+    "dispatchText": "31-årig kvinde med kendt astma. Tiltagende åndenød trods egen inhalator.",
+    "patientInfo": { "sex": "K", "age": 31 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 118, "rr": 30, "btSys": 128, "btDia": 82, "spo2": 89, "etco2": 5.4, "temp": 36.8, "bs": 5.6, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej, taler i korte sætninger.",
+          "B": "Udtalt hvæsen, forlænget eksspiration. SpO₂ 89%.",
+          "C": "Tachykard men stabil.",
+          "D": "Vågen, angst.",
+          "E": "Ingen feber, ingen traumer."
+        },
+        "extraInfo": "Responderer typisk på ilt + salbutamol + steroid."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 132, "rr": 38, "btSys": 124, "btDia": 78, "spo2": 82, "etco2": 6.6, "temp": 36.8, "bs": 6.0, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej, udtrættes.",
+          "B": "Næsten stille thorax (fatigue). SpO₂ 82%.",
+          "C": "Tachykard, perifert kold.",
+          "D": "Konfus pga hypoksi.",
+          "E": "Svedende."
+        },
+        "extraInfo": "Forværring ved manglende bronkodilatation/ilt."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 96, "rr": 20, "btSys": 126, "btDia": 80, "spo2": 95, "etco2": 5.2, "temp": 36.8, "bs": 5.7, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Mindre hvæsen. SpO₂ 95%.",
+          "C": "Stabil.",
+          "D": "Rolig og klar.",
+          "E": "Bedre hudfarve."
+        },
+        "extraInfo": "Efter salbutamol + steroid + ilt (klinisk bedring)."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "B_AUSCULTATE_LUNGS", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "B_OXYGEN_TITRATE", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_MEDICINSK_ILT", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_SALBUTAMOL", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_SOLU_MEDROL", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_LABETALOL", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_SALBUTAMOL", "toStateId": "S_GOOD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_MEDICINSK_ILT", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "B_AUSCULTATE_LUNGS", "title": "Auskultation af lunger", "importance": "IMPORTANT", "recommendedBeforeSec": 180 },
+      { "actionId": "MED_MEDICINSK_ILT", "title": "Medicinsk ilt", "importance": "IMPORTANT", "recommendedBeforeSec": 180 },
+      { "actionId": "MED_SALBUTAMOL", "title": "Salbutamol", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 },
+      { "actionId": "MED_SOLU_MEDROL", "title": "Solu-Medrol", "importance": "IMPORTANT", "recommendedBeforeSec": 300 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_005_KOL_EXACERBATION_CO2_RETAINER",
+    "category": "MEDICAL",
+    "title": "KOL-exacerbation (CO2-retainer)",
+    "subtitle": "Dyspnø + lav SpO₂, kendt KOL",
+    "caseType": "COPD exacerbation",
+    "dispatchText": "67-årig mand med kendt KOL. Tiltagende åndenød og hoste. Træt og udmattet.",
+    "patientInfo": { "sex": "M", "age": 67 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 104, "rr": 28, "btSys": 142, "btDia": 86, "spo2": 86, "etco2": 6.8, "temp": 37.1, "bs": 6.8, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej, tør hoste.",
+          "B": "Hvæsen/ronchi. SpO₂ 86%.",
+          "C": "Stabil cirkulation.",
+          "D": "Vågen men træt.",
+          "E": "Afebril. Ingen traumer."
+        },
+        "extraInfo": "Mål: titrer ilt (ikke bare max-flow). Bronkodilatator hjælper."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 96, "rr": 10, "btSys": 138, "btDia": 84, "spo2": 92, "etco2": 9.2, "temp": 37.1, "bs": 6.9, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Respirationsdrive falder (CO₂-narkose). Sløv, lav RF. SpO₂ ser 'pæn' ud.",
+          "C": "Stabil men dårlig ventilation.",
+          "D": "Tiltagende somnolens.",
+          "E": "Varm hud."
+        },
+        "extraInfo": "Efter for meget ilt uden titrering (klassisk faldgrube)."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 92, "rr": 22, "btSys": 140, "btDia": 84, "spo2": 90, "etco2": 7.4, "temp": 37.1, "bs": 6.8, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre luftskifte. SpO₂ omkring 88–92%.",
+          "C": "Stabil.",
+          "D": "Klarere.",
+          "E": "Mindre udtrætning."
+        },
+        "extraInfo": "Efter titreret ilt + bronkodilatation."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "B_AUSCULTATE_LUNGS", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_SALBUTAMOL", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_BERODUAL", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_MEDICINSK_ILT", "toStateId": "S_BAD" },
+      { "fromStateId": "S0", "actionId": "B_OXYGEN_TITRATE", "toStateId": "S_GOOD" },
+      { "fromStateId": "S_BAD", "actionId": "B_OXYGEN_TITRATE", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "B_AUSCULTATE_LUNGS", "title": "Auskultation af lunger", "importance": "IMPORTANT", "recommendedBeforeSec": 180 },
+      { "actionId": "B_OXYGEN_TITRATE", "title": "Titrér ilt (mål 88–92% ved KOL)", "importance": "CRITICAL", "recommendedBeforeSec": 120, "mustBeforeSec": 300 },
+      { "actionId": "MED_SALBUTAMOL", "title": "Salbutamol", "importance": "IMPORTANT", "recommendedBeforeSec": 240 },
+      { "actionId": "MED_BERODUAL", "title": "Berodual", "importance": "IMPORTANT", "recommendedBeforeSec": 240 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_006_HYPOGLYKAEMI",
+    "category": "MEDICAL",
+    "title": "Hypoglykæmi",
+    "subtitle": "Konfus, svedende, lavt BS",
+    "caseType": "Hypoglycemia",
+    "dispatchText": "58-årig kvinde, kendt diabetiker. Fundet konfus og svedende. Pårørende mistænker lavt blodsukker.",
+    "patientInfo": { "sex": "K", "age": 58 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 112, "rr": 18, "btSys": 138, "btDia": 86, "spo2": 98, "etco2": 4.7, "temp": 36.7, "bs": 2.1, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal respiration.",
+          "C": "Tachykard, klamtsved.",
+          "D": "Konfus, irritabel. Mistanke om hypoglykæmi.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Husk D: blodsukker tidligt."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 90, "rr": 10, "btSys": 130, "btDia": 84, "spo2": 98, "etco2": 4.3, "temp": 36.6, "bs": 1.4, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Langsom respiration.",
+          "C": "Brady-tendens, stadig svedende.",
+          "D": "Somnolent, risiko for kramper.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Ubehandlet hypoglykæmi → bevidsthedspåvirkning."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 88, "rr": 16, "btSys": 136, "btDia": 86, "spo2": 98, "etco2": 4.7, "temp": 36.7, "bs": 6.8, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "Bedre perfusion.",
+          "D": "Klar og orienteret.",
+          "E": "Sved aftager."
+        },
+        "extraInfo": "Efter glukose/Hypo-Fit."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "D_BGL_CHECK", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_GLUKOSE_50", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_HYPO_FIT", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_LABETALOL", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_GLUKOSE_50", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "D_BGL_CHECK", "title": "Blodsukker (BS) måling", "importance": "CRITICAL", "recommendedBeforeSec": 120, "mustBeforeSec": 180 },
+      { "actionId": "MED_GLUKOSE_50", "title": "Glukose IV", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 300 },
+      { "actionId": "MED_HYPO_FIT", "title": "Hypo-Fit / oral glukose", "importance": "IMPORTANT", "recommendedBeforeSec": 240 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_007_OPIOID_OVERDOSE",
+    "category": "MEDICAL",
+    "title": "Opioid-overdose",
+    "subtitle": "Hypoventilation, pinpoint pupiller",
+    "caseType": "Overdose",
+    "dispatchText": "41-årig mand fundet sløv på toilettet. Langsom vejrtrækning. Mistanke om rusmidler.",
+    "patientInfo": { "sex": "M", "age": 41 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 66, "rr": 6, "btSys": 118, "btDia": 76, "spo2": 84, "etco2": 8.8, "temp": 36.4, "bs": 5.2, "painNrs": 0 },
+        "abcde": {
+          "A": "Snorkende respiration, sekret mulig.",
+          "B": "Hypoventilerer. SpO₂ 84%.",
+          "C": "Stabil puls/BT.",
+          "D": "Somnolent. Pinpoint pupiller.",
+          "E": "Ingen traumer."
+        },
+        "extraInfo": "Luftvej + ventilation først, naloxon som specifik antidot."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 54, "rr": 2, "btSys": 92, "btDia": 60, "spo2": 70, "etco2": 11.0, "temp": 36.2, "bs": 5.1, "painNrs": 0 },
+        "abcde": {
+          "A": "Obstrueret, risiko for aspiration.",
+          "B": "Næsten apnø. Svær hypoksi.",
+          "C": "Brady/hypotension pga hypoksi.",
+          "D": "Dybt bevidstløs.",
+          "E": "Cyanose."
+        },
+        "extraInfo": "Forværres uden ventilationsstøtte."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 78, "rr": 14, "btSys": 126, "btDia": 82, "spo2": 95, "etco2": 4.9, "temp": 36.4, "bs": 5.2, "painNrs": 2 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normaliseret respiration. SpO₂ 95%.",
+          "C": "Stabil.",
+          "D": "Vågner, kan blive agiteret/abstinens.",
+          "E": "Bedre farve."
+        },
+        "extraInfo": "Efter ventilation + naloxon."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "A_JAW_CHIN_LIFT", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "A_SUCTION_OR_FINGERSWEEP", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "B_BVM_SUPPORT", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_NALOXON", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_DIAZEPAM", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "B_BVM_SUPPORT", "toStateId": "S_GOOD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_NALOXON", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "A_JAW_CHIN_LIFT", "title": "Kæbeløft / chin-lift", "importance": "CRITICAL", "recommendedBeforeSec": 30, "mustBeforeSec": 60 },
+      { "actionId": "B_BVM_SUPPORT", "title": "Ventilationsstøtte (BVM)", "importance": "CRITICAL", "recommendedBeforeSec": 60, "mustBeforeSec": 120 },
+      { "actionId": "MED_NALOXON", "title": "Naloxon", "importance": "CRITICAL", "recommendedBeforeSec": 120, "mustBeforeSec": 300 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_008_APOPLEKSI_FAST_POS",
+    "category": "MEDICAL",
+    "title": "Apopleksi (FAST+)",
+    "subtitle": "Pludselig hemiparese og talebesvær",
+    "caseType": "Stroke",
+    "dispatchText": "77-årig kvinde med pludselig opstået højresidig slaphed og talebesvær. Debut for 30 min siden.",
+    "patientInfo": { "sex": "K", "age": 77 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 88, "rr": 18, "btSys": 196, "btDia": 102, "spo2": 96, "etco2": 4.7, "temp": 36.8, "bs": 7.2, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal respiration.",
+          "C": "Hypertension, regelmæssig puls.",
+          "D": "FAST+: facialisparese, arm drift, afasi/dysartri.",
+          "E": "Ingen feber. Ingen traumer."
+        },
+        "extraInfo": "Fokus: tid, neurologi, glukose, transport. Aggressiv BT-sænkning er ofte forkert prehospitalt."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 92, "rr": 18, "btSys": 150, "btDia": 86, "spo2": 96, "etco2": 4.6, "temp": 36.8, "bs": 7.0, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "BT faldet markant.",
+          "D": "Neurologi forværres (svimmelhed/tiltagende udfald).",
+          "E": "Ingen ændring."
+        },
+        "extraInfo": "Overbehandling med antihypertensiv kan reducere perfusion."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 86, "rr": 18, "btSys": 188, "btDia": 100, "spo2": 97, "etco2": 4.7, "temp": 36.8, "bs": 7.1, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "Stabil.",
+          "D": "Uændrede udfald, men stabil og beskyttet.",
+          "E": "Varm, tør."
+        },
+        "extraInfo": "Efter korrekt fokus (BS/neurologi/transport/ilt ved behov)."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "D_BGL_CHECK", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "D_NEURO_EXAM_STROKE", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "B_SPO2_MEASURE", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_LABETALOL", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "D_NEURO_EXAM_STROKE", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "D_NEURO_EXAM_STROKE", "title": "Neurologisk undersøgelse (FAST/Stroke)", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 },
+      { "actionId": "D_BGL_CHECK", "title": "Blodsukker (BS) måling", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_009_KRAMPER_STATUS_RISIKO",
+    "category": "MEDICAL",
+    "title": "Kramper (status risiko)",
+    "subtitle": "Generaliserede kramper",
+    "caseType": "Seizure",
+    "dispatchText": "29-årig mand med kramper. Pårørende oplyser tidligere epilepsi, men ukendt compliance.",
+    "patientInfo": { "sex": "M", "age": 29 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 130, "rr": 30, "btSys": 150, "btDia": 92, "spo2": 88, "etco2": 4.0, "temp": 37.1, "bs": 6.0, "painNrs": 0 },
+        "abcde": {
+          "A": "Risiko for sekret/aspiration.",
+          "B": "Uregelmæssig respiration under kramper. SpO₂ 88%.",
+          "C": "Tachykard.",
+          "D": "Kramper aktuelt.",
+          "E": "Bidmærker mulig. Ingen tydelige traumer."
+        },
+        "extraInfo": "Sikring af luftvej + benzo ved vedvarende kramper. Glukose-tjek."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 148, "rr": 8, "btSys": 138, "btDia": 86, "spo2": 78, "etco2": 6.8, "temp": 37.4, "bs": 5.8, "painNrs": 0 },
+        "abcde": {
+          "A": "Sekret/aspirationstendens.",
+          "B": "Hypoventilation efter langvarige kramper. SpO₂ 78%.",
+          "C": "Tachykard, stress.",
+          "D": "Postiktal, dybt sløv.",
+          "E": "Cyanose."
+        },
+        "extraInfo": "Ubehandlet langvarig krampe → hypoksi."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 102, "rr": 16, "btSys": 142, "btDia": 88, "spo2": 96, "etco2": 4.8, "temp": 37.1, "bs": 5.9, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normaliseret respiration. SpO₂ 96%.",
+          "C": "Stabil.",
+          "D": "Postiktal men vågner gradvist.",
+          "E": "Bedre farve."
+        },
+        "extraInfo": "Efter midazolam/diazepam + ilt/ventilationsstøtte."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "D_BGL_CHECK", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_MIDAZOLAM", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_DIAZEPAM", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "B_BVM_SUPPORT", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_MEDICINSK_ILT", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_FENTANYL", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "B_BVM_SUPPORT", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "D_BGL_CHECK", "title": "Blodsukker (BS) måling", "importance": "IMPORTANT", "recommendedBeforeSec": 240 },
+      { "actionId": "MED_MIDAZOLAM", "title": "Midazolam", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 300 },
+      { "actionId": "MED_DIAZEPAM", "title": "Diazepam", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 300 },
+      { "actionId": "B_BVM_SUPPORT", "title": "Ventilationsstøtte (BVM)", "importance": "CRITICAL", "recommendedBeforeSec": 120, "mustBeforeSec": 300 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_010_SVT",
+    "category": "MEDICAL",
+    "title": "SVT",
+    "subtitle": "Pludselig hjertebanken, svimmel",
+    "caseType": "SVT",
+    "dispatchText": "56-årig mand med pludselig hjertebanken og svimmelhed. Ingen brystsmerter. Vågen.",
+    "patientInfo": { "sex": "M", "age": 56 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 190, "rr": 20, "btSys": 112, "btDia": 74, "spo2": 97, "etco2": 4.6, "temp": 36.8, "bs": 6.1, "painNrs": 1 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let takypnø.",
+          "C": "Meget hurtig regelmæssig puls, BT ok men påvirket.",
+          "D": "Vågen, svimmel.",
+          "E": "Bleg."
+        },
+        "extraInfo": "Første non-farmakologisk: Valsalva (hvis stabil)."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 200, "rr": 26, "btSys": 86, "btDia": 58, "spo2": 95, "etco2": 4.2, "temp": 36.8, "bs": 6.4, "painNrs": 2 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Takypnø.",
+          "C": "Hypotension, dårlig perfusion.",
+          "D": "Konfus/tiltagende svimmel.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forværres ved yderligere vasodilatation."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 88, "rr": 16, "btSys": 124, "btDia": 80, "spo2": 98, "etco2": 4.7, "temp": 36.8, "bs": 6.0, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "Sinusrytme, stabil.",
+          "D": "Klar og rolig.",
+          "E": "Normal farve."
+        },
+        "extraInfo": "Efter vellykket Valsalva."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "C_ECG_4_12_LEAD", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "ACTION_VALSALVA", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_GLYCERYLNITRAT", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "ACTION_VALSALVA", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "C_ECG_4_12_LEAD", "title": "12-aflednings EKG", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 },
+      { "actionId": "ACTION_VALSALVA", "title": "Valsalva manøvre", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_011_SYMPTOMATISK_BRADYKARDI",
+    "category": "MEDICAL",
+    "title": "Symptomatisk bradykardi",
+    "subtitle": "Svimmel, nær-synkope",
+    "caseType": "Bradycardia",
+    "dispatchText": "83-årig kvinde med svimmelhed og nær-synkope. Kold perifert. Langsom puls.",
+    "patientInfo": { "sex": "K", "age": 83 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 34, "rr": 18, "btSys": 84, "btDia": 52, "spo2": 96, "etco2": 4.3, "temp": 36.6, "bs": 6.3, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal respiration.",
+          "C": "Markant bradykardi og hypotension.",
+          "D": "Svimmel, sløv.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Atropin kan hjælpe ved vagal/AV-nodal brady (ikke altid ved høj-grad AV-blok)."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 28, "rr": 14, "btSys": 70, "btDia": 40, "spo2": 94, "etco2": 3.8, "temp": 36.5, "bs": 6.4, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal til let overfladisk.",
+          "C": "Meget lavt BT, dårlig perfusion.",
+          "D": "Konfus, næsten synkope.",
+          "E": "Bleg, klam."
+        },
+        "extraInfo": "Forværres hvis man giver vasodilatator."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 52, "rr": 16, "btSys": 106, "btDia": 66, "spo2": 96, "etco2": 4.5, "temp": 36.6, "bs": 6.2, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "Bedre puls/BT.",
+          "D": "Klarere.",
+          "E": "Bedre perfusion."
+        },
+        "extraInfo": "Efter atropin og/eller væske."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "C_ECG_4_12_LEAD", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_ATROPIN", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_GLYCERYLNITRAT", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_ATROPIN", "toStateId": "S_GOOD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "C_ECG_4_12_LEAD", "title": "12-aflednings EKG", "importance": "CRITICAL", "recommendedBeforeSec": 240 },
+      { "actionId": "MED_ATROPIN", "title": "Atropin", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 },
+      { "actionId": "MED_NACL_ISO", "title": "NaCl 0,9% (væske)", "importance": "IMPORTANT", "recommendedBeforeSec": 240 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_012_AFLI_HURTIG_VENTRIKELRESPONS",
+    "category": "MEDICAL",
+    "title": "AFLI med hurtig ventrikelrespons",
+    "subtitle": "Uregelmæssig puls, dyspnø",
+    "caseType": "AF RVR",
+    "dispatchText": "64-årig mand med hjertebanken og åndenød. Uregelmæssig hurtig puls.",
+    "patientInfo": { "sex": "M", "age": 64 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 160, "rr": 24, "btSys": 118, "btDia": 76, "spo2": 95, "etco2": 4.6, "temp": 36.9, "bs": 6.5, "painNrs": 1 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Let dyspnø.",
+          "C": "Uregelmæssig tachy, BT ok.",
+          "D": "Vågen, utilpas.",
+          "E": "Bleg."
+        },
+        "extraInfo": "Prehospitalt fokus ofte: EKG, vurder shock-tegn, transport. For aggressiv vasodilatation kan give BT-fald."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 170, "rr": 28, "btSys": 88, "btDia": 56, "spo2": 92, "etco2": 4.2, "temp": 36.9, "bs": 6.7, "painNrs": 2 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Takypnø.",
+          "C": "Hypotension, dårlig perfusion.",
+          "D": "Svimmel/konfus.",
+          "E": "Kold/klam."
+        },
+        "extraInfo": "Forværres ved nitro uden indikation."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 132, "rr": 20, "btSys": 118, "btDia": 76, "spo2": 96, "etco2": 4.7, "temp": 36.9, "bs": 6.4, "painNrs": 1 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre dyspnø.",
+          "C": "Bedre perfusion, fortsat AFLI men lavere respons.",
+          "D": "Klar.",
+          "E": "Varmere perifert."
+        },
+        "extraInfo": "Efter ro/lejring/ilt ved behov og hurtig transport."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "C_ECG_4_12_LEAD", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "B_SPO2_MEASURE", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "B_POSITIONING", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_GLYCERYLNITRAT", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "B_POSITIONING", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "C_ECG_4_12_LEAD", "title": "12-aflednings EKG", "importance": "CRITICAL", "recommendedBeforeSec": 240 },
+      { "actionId": "B_POSITIONING", "title": "Lejring / ro", "importance": "IMPORTANT", "recommendedBeforeSec": 180 }
+    ]
+  },
+  {
+    "id": "MED_v3_013_SEPSIS_PNEUMONI",
+    "category": "MEDICAL",
+    "title": "Sepsis (pneumoni)",
+    "subtitle": "Feber, takypnø, påvirket",
+    "caseType": "Sepsis",
+    "dispatchText": "39-årig kvinde med feber, hoste og tiltagende påvirkning. Pårørende siger hun er blevet forvirret.",
+    "patientInfo": { "sex": "K", "age": 39 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 128, "rr": 30, "btSys": 96, "btDia": 62, "spo2": 91, "etco2": 4.4, "temp": 39.2, "bs": 9.8, "painNrs": 3 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Takypnø, krepitation hø side. SpO₂ 91%.",
+          "C": "Tachykard, borderline hypotension.",
+          "D": "Let konfus.",
+          "E": "Varm, febermistanke."
+        },
+        "extraInfo": "Væske + ilt + tidlig erkendelse."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 140, "rr": 34, "btSys": 78, "btDia": 50, "spo2": 88, "etco2": 3.9, "temp": 39.5, "bs": 10.6, "painNrs": 4 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Tiltagende respirationsstress.",
+          "C": "Septisk shock, hypotension.",
+          "D": "Konfus.",
+          "E": "Marmoreret."
+        },
+        "extraInfo": "Forværres hvis man giver vasodilatator/diuretika."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 112, "rr": 24, "btSys": 106, "btDia": 70, "spo2": 94, "etco2": 4.4, "temp": 39.0, "bs": 9.6, "painNrs": 3 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre iltning.",
+          "C": "BT bedre efter væske.",
+          "D": "Klarere.",
+          "E": "Mindre marmoreret."
+        },
+        "extraInfo": "Efter NaCl og ilt."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "C_IV_ACCESS", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_MEDICINSK_ILT", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_FUROSEMID", "toStateId": "S_BAD" },
+      { "fromStateId": "S0", "actionId": "MED_GLYCERYLNITRAT", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "C_IV_ACCESS", "title": "IV-adgang", "importance": "IMPORTANT", "recommendedBeforeSec": 240 },
+      { "actionId": "MED_NACL_ISO", "title": "NaCl 0,9% (væske)", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 },
+      { "actionId": "MED_MEDICINSK_ILT", "title": "Medicinsk ilt", "importance": "IMPORTANT", "recommendedBeforeSec": 180 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_014_GI_BLOEDNING_MELAENA",
+    "category": "MEDICAL",
+    "title": "GI-blødning (melæna)",
+    "subtitle": "Svimmel, lavt BT",
+    "caseType": "GI bleed",
+    "dispatchText": "52-årig mand med sort afføring og svimmelhed. Koldsvedende. Ingen traumer.",
+    "patientInfo": { "sex": "M", "age": 52 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 118, "rr": 20, "btSys": 92, "btDia": 60, "spo2": 97, "etco2": 4.1, "temp": 36.6, "bs": 6.7, "painNrs": 2 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "Tachykard, hypotension, bleg.",
+          "D": "Svimmel men vågen.",
+          "E": "Kolde ekstremiteter."
+        },
+        "extraInfo": "Væske/transport. Antitrombotika kan være forkert her."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 132, "rr": 26, "btSys": 76, "btDia": 48, "spo2": 95, "etco2": 3.6, "temp": 36.5, "bs": 6.9, "painNrs": 3 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Takypnø.",
+          "C": "Shock-tegn, meget lavt BT.",
+          "D": "Konfus.",
+          "E": "Marmoreret."
+        },
+        "extraInfo": "Forværres hvis man giver heparin/ASA unødigt."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 104, "rr": 18, "btSys": 102, "btDia": 66, "spo2": 97, "etco2": 4.2, "temp": 36.6, "bs": 6.6, "painNrs": 2 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "Bedre perfusion efter væske.",
+          "D": "Klarere.",
+          "E": "Bedre farve."
+        },
+        "extraInfo": "Efter NaCl og korrekt håndtering."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "C_IV_ACCESS", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_HEPARIN", "toStateId": "S_BAD" },
+      { "fromStateId": "S0", "actionId": "MED_ACETYLSALICYLSYRE", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "C_IV_ACCESS", "title": "IV-adgang", "importance": "IMPORTANT", "recommendedBeforeSec": 240 },
+      { "actionId": "MED_NACL_ISO", "title": "NaCl 0,9% (væske)", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_015_HYPERVENTILATION_PANIKANFALD",
+    "category": "MEDICAL",
+    "title": "Hyperventilation / panikanfald",
+    "subtitle": "Prikken i fingre, brystsmerter, angst",
+    "caseType": "Panic attack",
+    "dispatchText": "28-årig kvinde hyperventilerer, føler sig ved at besvime. Prikken i hænder/læber. Ingen feber.",
+    "patientInfo": { "sex": "K", "age": 28 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 110, "rr": 34, "btSys": 132, "btDia": 84, "spo2": 99, "etco2": 3.0, "temp": 36.8, "bs": 5.8, "painNrs": 2 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Hyperventilation, SpO₂ normal.",
+          "C": "Tachykard pga stress.",
+          "D": "Angst, parestesier.",
+          "E": "Ingen traumer."
+        },
+        "extraInfo": "Psykisk førstehjælp og guidet vejrtrækning er centralt."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 76, "rr": 8, "btSys": 118, "btDia": 76, "spo2": 99, "etco2": 6.6, "temp": 36.7, "bs": 5.7, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Over-sedering → hypoventilation.",
+          "C": "Bedre puls men dårlig respiration.",
+          "D": "Sløv.",
+          "E": "Træt."
+        },
+        "extraInfo": "Unødig benzo kan give respirationsproblemer."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 86, "rr": 16, "btSys": 124, "btDia": 80, "spo2": 99, "etco2": 4.7, "temp": 36.8, "bs": 5.8, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normaliseret respiration.",
+          "C": "Stabil.",
+          "D": "Roligere.",
+          "E": "Afslappet."
+        },
+        "extraInfo": "Efter ro/vejledning."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "B_PSYCHOLOGICAL_FIRST_AID", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "D_PUPILS", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_DIAZEPAM", "toStateId": "S_BAD" },
+      { "fromStateId": "S0", "actionId": "MED_MIDAZOLAM", "toStateId": "S_BAD" }
+    ],
+    "expectedActions": [
+      { "actionId": "B_PSYCHOLOGICAL_FIRST_AID", "title": "Psykisk førstehjælp / guidet vejrtrækning", "importance": "IMPORTANT", "recommendedBeforeSec": 180 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_016_DKA_MISTANKE",
+    "category": "MEDICAL",
+    "title": "Diabetisk ketoacidose (DKA) mistanke",
+    "subtitle": "Kussmaul, dehydrering",
+    "caseType": "DKA",
+    "dispatchText": "48-årig mand med kvalme, mavesmerter og dyb vejrtrækning. Tørst og hyppig vandladning.",
+    "patientInfo": { "sex": "M", "age": 48 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 122, "rr": 30, "btSys": 98, "btDia": 62, "spo2": 98, "etco2": 2.9, "temp": 37.2, "bs": 26.0, "painNrs": 4 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Dyb hurtig vejrtrækning (Kussmaul). SpO₂ normal.",
+          "C": "Dehydreret, tachykard, lavt BT.",
+          "D": "Træt/konfus.",
+          "E": "Tørre slimhinder."
+        },
+        "extraInfo": "Væske er nøgle prehospitalt. Insulin gives typisk ikke prehospitalt i mange systemer."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 136, "rr": 34, "btSys": 80, "btDia": 50, "spo2": 97, "etco2": 2.5, "temp": 37.4, "bs": 30.0, "painNrs": 5 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Dybere respiration, udtrætning.",
+          "C": "Shock-tegn.",
+          "D": "Tiltagende konfusion.",
+          "E": "Meget tør."
+        },
+        "extraInfo": "Forværres hvis man giver diuretika."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 108, "rr": 26, "btSys": 104, "btDia": 68, "spo2": 98, "etco2": 3.0, "temp": 37.2, "bs": 24.0, "painNrs": 3 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Stadig dyb men stabil respiration.",
+          "C": "Bedre perfusion efter væske.",
+          "D": "Klarere.",
+          "E": "Mindre tør."
+        },
+        "extraInfo": "Efter NaCl, BS-check, transport."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "D_BGL_CHECK", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "C_IV_ACCESS", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_FUROSEMID", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "D_BGL_CHECK", "title": "Blodsukker (BS) måling", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 },
+      { "actionId": "C_IV_ACCESS", "title": "IV-adgang", "importance": "IMPORTANT", "recommendedBeforeSec": 240 },
+      { "actionId": "MED_NACL_ISO", "title": "NaCl 0,9% (væske)", "importance": "CRITICAL", "recommendedBeforeSec": 240, "mustBeforeSec": 900 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_017_ANAFYLAKTOID_REAKTION_BI_STIK",
+    "category": "MEDICAL",
+    "title": "Anafylaktoid reaktion (bi-stik)",
+    "subtitle": "Urticaria + hvæsen",
+    "caseType": "Anaphylaxis",
+    "dispatchText": "70-årig kvinde stukket af bi. Udslæt og hvæsen. Har tidligere reageret kraftigt.",
+    "patientInfo": { "sex": "K", "age": 70 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 118, "rr": 26, "btSys": 108, "btDia": 70, "spo2": 92, "etco2": 4.3, "temp": 36.8, "bs": 6.6, "painNrs": 1 },
+        "abcde": {
+          "A": "Let hæshed, ingen stridor endnu.",
+          "B": "Hvæsen. SpO₂ 92%.",
+          "C": "Tachykard, borderline BT.",
+          "D": "Vågen, angst.",
+          "E": "Urticaria."
+        },
+        "extraInfo": "Adrenalin IM hvis systemisk reaktion."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 140, "rr": 32, "btSys": 78, "btDia": 46, "spo2": 84, "etco2": 3.7, "temp": 36.7, "bs": 6.9, "painNrs": 1 },
+        "abcde": {
+          "A": "Tiltagende hævelse.",
+          "B": "Svær bronkospasme.",
+          "C": "Shock.",
+          "D": "Konfus.",
+          "E": "Udbredt udslæt."
+        },
+        "extraInfo": "Ubehandlet anafylaksi."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 98, "rr": 18, "btSys": 118, "btDia": 74, "spo2": 96, "etco2": 4.7, "temp": 36.8, "bs": 6.5, "painNrs": 0 },
+        "abcde": {
+          "A": "Bedre stemme, mindre hævelse.",
+          "B": "Bedre luft. SpO₂ 96%.",
+          "C": "Stabilt BT.",
+          "D": "Roligere.",
+          "E": "Udslæt aftager."
+        },
+        "extraInfo": "Efter adrenalin + ilt + support."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "MED_ADRENALIN_IM", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_MEDICINSK_ILT", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_CLEMASTIN", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_SOLU_MEDROL", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_ADRENALIN_IM", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "MED_ADRENALIN_IM", "title": "Adrenalin IM", "importance": "CRITICAL", "recommendedBeforeSec": 120, "mustBeforeSec": 300 },
+      { "actionId": "MED_MEDICINSK_ILT", "title": "Medicinsk ilt", "importance": "IMPORTANT", "recommendedBeforeSec": 180 },
+      { "actionId": "MED_CLEMASTIN", "title": "Clemastin", "importance": "OPTIONAL", "recommendedBeforeSec": 600 },
+      { "actionId": "MED_SOLU_MEDROL", "title": "Solu-Medrol", "importance": "OPTIONAL", "recommendedBeforeSec": 600 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_018_INTOX_PARACETAMOL_SELVSKADE",
+    "category": "MEDICAL",
+    "title": "Intoksikation: paracetamol (selvskade)",
+    "subtitle": "Kvalme, usikker dosis",
+    "caseType": "Toxicology",
+    "dispatchText": "60-årig mand oplyser indtag af 'mange piller' for nogle timer siden. Kvalme. Vil ikke fortælle mængde.",
+    "patientInfo": { "sex": "M", "age": 60 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 96, "rr": 16, "btSys": 132, "btDia": 82, "spo2": 98, "etco2": 4.7, "temp": 36.9, "bs": 6.8, "painNrs": 3 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal respiration.",
+          "C": "Stabil.",
+          "D": "Vågen, trist, ambivalent.",
+          "E": "Kvalme, let sved."
+        },
+        "extraInfo": "N-acetylcystein er antidot (hospital). Prehospitalt: vurdering, sikkerhed, transport, evt. IV."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 120, "rr": 18, "btSys": 108, "btDia": 70, "spo2": 98, "etco2": 4.6, "temp": 37.2, "bs": 7.4, "painNrs": 5 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "Begyndende påvirkning/dehydrering.",
+          "D": "Mere sløv.",
+          "E": "Tiltagende kvalme/opkast."
+        },
+        "extraInfo": "Forværres hvis man overser/ikke får iv/transport."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 92, "rr": 16, "btSys": 128, "btDia": 80, "spo2": 98, "etco2": 4.7, "temp": 36.9, "bs": 6.9, "painNrs": 2 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "Stabil.",
+          "D": "Roligere, accepterer hjælp.",
+          "E": "Kvalme lidt bedre."
+        },
+        "extraInfo": "Efter IV/NaCl og tidlig erkendelse + transport."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "C_IV_ACCESS", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_N_ACETYLCYSTEIN", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_IBUPROFEN", "toStateId": "S_BAD" }
+    ],
+    "expectedActions": [
+      { "actionId": "C_IV_ACCESS", "title": "IV-adgang", "importance": "IMPORTANT", "recommendedBeforeSec": 300 },
+      { "actionId": "MED_NACL_ISO", "title": "NaCl 0,9% (væske)", "importance": "IMPORTANT", "recommendedBeforeSec": 360 },
+      { "actionId": "MED_N_ACETYLCYSTEIN", "title": "N-acetylcystein (NAC)", "importance": "IMPORTANT", "recommendedBeforeSec": 600 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_019_HYPOTERMI_VAAD_OG_KOLD",
+    "category": "MEDICAL",
+    "title": "Hypotermi (våd og kold)",
+    "subtitle": "Shivering, langsom tale",
+    "caseType": "Hypothermia",
+    "dispatchText": "66-årig kvinde fundet udendørs, våd og meget kold. Ryster kraftigt.",
+    "patientInfo": { "sex": "K", "age": 66 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 58, "rr": 16, "btSys": 102, "btDia": 64, "spo2": 97, "etco2": 4.6, "temp": 34.0, "bs": 5.4, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej, sløret tale.",
+          "B": "Normal respiration.",
+          "C": "Brady-tendens, perifer vasokonstriktion.",
+          "D": "Konfus let.",
+          "E": "Meget kold, våd. Shivering."
+        },
+        "extraInfo": "Forebyg hypotermi aktivt (tæpper, varm miljø)."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 42, "rr": 12, "btSys": 88, "btDia": 56, "spo2": 95, "etco2": 4.2, "temp": 32.5, "bs": 4.6, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Langsommere respiration.",
+          "C": "Bradykardi/hypotension.",
+          "D": "Mere sløv.",
+          "E": "Shivering aftager (dårligt tegn)."
+        },
+        "extraInfo": "Forværres hvis man ikke varmer/isolere."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 62, "rr": 14, "btSys": 110, "btDia": 70, "spo2": 97, "etco2": 4.5, "temp": 35.0, "bs": 5.2, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Stabil.",
+          "C": "Bedre puls/BT.",
+          "D": "Klarere.",
+          "E": "Varmere, mindre rysten."
+        },
+        "extraInfo": "Efter tæpper og isolering."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "E_PREVENT_HYPOTHERMIA", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "E_TEMPERATURE_ASSESS", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "E_COOLING_HYPERTHERMIA", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "E_PREVENT_HYPOTHERMIA", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "E_TEMPERATURE_ASSESS", "title": "Temperatur-vurdering", "importance": "IMPORTANT", "recommendedBeforeSec": 240 },
+      { "actionId": "E_PREVENT_HYPOTHERMIA", "title": "Forebyg hypotermi (tæpper/isolering)", "importance": "IMPORTANT", "recommendedBeforeSec": 180 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_020_VARMEUDMATTELSE_HEDESLAG_MISTANKE",
+    "category": "MEDICAL",
+    "title": "Varmeudmattelse / hedeslag mistanke",
+    "subtitle": "Forvirring, varm og tør",
+    "caseType": "Heat illness",
+    "dispatchText": "73-årig mand kollapset på gåtur. Varm, rød og virker forvirret. Høj udetemperatur.",
+    "patientInfo": { "sex": "M", "age": 73 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 122, "rr": 24, "btSys": 104, "btDia": 66, "spo2": 97, "etco2": 4.4, "temp": 40.2, "bs": 6.4, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Takypnø.",
+          "C": "Tachykard, dehydrering.",
+          "D": "Konfus.",
+          "E": "Varm, rød, tør hud."
+        },
+        "extraInfo": "Aktiv afkøling + væske. Overopvarmning er organ-trussel."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 140, "rr": 30, "btSys": 86, "btDia": 54, "spo2": 96, "etco2": 4.0, "temp": 41.1, "bs": 6.9, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Takypnø, udtrætning.",
+          "C": "Shock-tendens.",
+          "D": "Sløv.",
+          "E": "Meget varm."
+        },
+        "extraInfo": "Forværres uden afkøling."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 108, "rr": 18, "btSys": 112, "btDia": 72, "spo2": 97, "etco2": 4.5, "temp": 38.6, "bs": 6.3, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre.",
+          "C": "Stabiliseres.",
+          "D": "Klarere.",
+          "E": "Mindre varm."
+        },
+        "extraInfo": "Efter afkøling + væske."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "E_COOLING_HYPERTHERMIA", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "E_PREVENT_HYPOTHERMIA", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "E_COOLING_HYPERTHERMIA", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "E_COOLING_HYPERTHERMIA", "title": "Aktiv afkøling", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 },
+      { "actionId": "MED_NACL_ISO", "title": "NaCl 0,9% (væske)", "importance": "IMPORTANT", "recommendedBeforeSec": 300 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_021_ALLERGISK_REAKTION_IKKE_ANAFYLAKSI",
+    "category": "MEDICAL",
+    "title": "Allergisk reaktion (ikke-anafylaksi)",
+    "subtitle": "Urticaria uden shock",
+    "caseType": "Allergy",
+    "dispatchText": "46-årig kvinde med udslæt og kløe efter ny medicin. Ingen åndenød.",
+    "patientInfo": { "sex": "K", "age": 46 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 92, "rr": 16, "btSys": 128, "btDia": 82, "spo2": 99, "etco2": 4.7, "temp": 36.8, "bs": 5.9, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "Stabil.",
+          "D": "Vågen.",
+          "E": "Urticaria, kløe."
+        },
+        "extraInfo": "Antihistamin/steroid kan hjælpe. Adrenalin kun ved anafylaksi."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 118, "rr": 20, "btSys": 92, "btDia": 60, "spo2": 94, "etco2": 4.3, "temp": 36.8, "bs": 6.2, "painNrs": 0 },
+        "abcde": {
+          "A": "Hæshed opstår.",
+          "B": "Let hvæsen.",
+          "C": "BT falder → anafylaksi udvikling.",
+          "D": "Angst.",
+          "E": "Tiltagende udslæt."
+        },
+        "extraInfo": "Udvikler sig til anafylaksi hvis det eskalerer."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 84, "rr": 16, "btSys": 126, "btDia": 82, "spo2": 99, "etco2": 4.7, "temp": 36.8, "bs": 5.9, "painNrs": 0 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "Stabil.",
+          "D": "Roligere.",
+          "E": "Udslæt aftager."
+        },
+        "extraInfo": "Efter clemastin/steroid."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "MED_CLEMASTIN", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_SOLU_MEDROL", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_ADRENALIN_IV", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_ADRENALIN_IM", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "MED_CLEMASTIN", "title": "Clemastin", "importance": "IMPORTANT", "recommendedBeforeSec": 600 },
+      { "actionId": "MED_SOLU_MEDROL", "title": "Solu-Medrol", "importance": "IMPORTANT", "recommendedBeforeSec": 600 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_022_ASTMA_KOL_OVERLAP_INFEKTION",
+    "category": "MEDICAL",
+    "title": "Astma/KOL overlap med infektion",
+    "subtitle": "Hvæsen + febermistanke",
+    "caseType": "Respiratory infection",
+    "dispatchText": "62-årig mand med dyspnø og hoste. Lyder 'tæt' i brystet. Pårørende siger han er varm.",
+    "patientInfo": { "sex": "M", "age": 62 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 112, "rr": 26, "btSys": 136, "btDia": 84, "spo2": 88, "etco2": 6.5, "temp": 38.3, "bs": 7.8, "painNrs": 2 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Hvæsen/ronchi. SpO₂ 88%.",
+          "C": "Tachykard, stabil BT.",
+          "D": "Vågen.",
+          "E": "Let febermistanke."
+        },
+        "extraInfo": "Bronkodilatation + titreret ilt. Overvej sepsis hvis påvirket."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 126, "rr": 32, "btSys": 110, "btDia": 70, "spo2": 82, "etco2": 7.8, "temp": 38.7, "bs": 8.6, "painNrs": 3 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Mere udtrætning. SpO₂ 82%.",
+          "C": "Stress.",
+          "D": "Let konfus.",
+          "E": "Svedende."
+        },
+        "extraInfo": "Forværres uden bronkodilatation."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 98, "rr": 20, "btSys": 134, "btDia": 82, "spo2": 91, "etco2": 6.6, "temp": 38.2, "bs": 7.7, "painNrs": 1 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre luft. SpO₂ 90–92%.",
+          "C": "Stabil.",
+          "D": "Klar.",
+          "E": "Mindre sved."
+        },
+        "extraInfo": "Efter salbutamol/berodual + titreret ilt."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "B_OXYGEN_TITRATE", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_SALBUTAMOL", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_BERODUAL", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_LABETALOL", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_SALBUTAMOL", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "B_OXYGEN_TITRATE", "title": "Titrér ilt (mål SpO₂ 90–92%)", "importance": "CRITICAL", "recommendedBeforeSec": 120, "mustBeforeSec": 300 },
+      { "actionId": "MED_SALBUTAMOL", "title": "Salbutamol", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 },
+      { "actionId": "MED_BERODUAL", "title": "Berodual", "importance": "IMPORTANT", "recommendedBeforeSec": 240 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_023_HYPERTENSIV_HOVEDPINE_UDEN_UDFALD",
+    "category": "MEDICAL",
+    "title": "Hypertensiv hovedpine (ingen udfald)",
+    "subtitle": "Meget højt BT, angst",
+    "caseType": "Hypertension",
+    "dispatchText": "55-årig kvinde med kraftig hovedpine og højt målt blodtryk hjemme. Ingen lammelser. Ingen brystsmerter.",
+    "patientInfo": { "sex": "K", "age": 55 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 96, "rr": 18, "btSys": 220, "btDia": 118, "spo2": 98, "etco2": 4.6, "temp": 36.8, "bs": 6.4, "painNrs": 7 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "Svært forhøjet BT.",
+          "D": "Hovedpine, men ingen fokale udfald.",
+          "E": "Ingen feber."
+        },
+        "extraInfo": "Fokus: sekundær årsag? neuro/ACS? For hurtig BT-sænkning kan give problemer."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 88, "rr": 18, "btSys": 150, "btDia": 90, "spo2": 98, "etco2": 4.5, "temp": 36.8, "bs": 6.3, "painNrs": 6 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "BT faldet hurtigt.",
+          "D": "Svimmelhed/tiltagende utilpashed.",
+          "E": "Bleg."
+        },
+        "extraInfo": "For hurtig/for meget antihypertensiv prehospitalt."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 88, "rr": 16, "btSys": 210, "btDia": 112, "spo2": 98, "etco2": 4.6, "temp": 36.8, "bs": 6.3, "painNrs": 5 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal.",
+          "C": "Stabil, stadig højt BT.",
+          "D": "Hovedpine let bedre pga ro/analgesi.",
+          "E": "Roligere."
+        },
+        "extraInfo": "Efter vurdering + smertelindring + transport (ikke aggressiv BT-sænkning)."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "D_NEURO_EXAM_STROKE", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "C_ECG_4_12_LEAD", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_PARACETAMOL", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_LABETALOL", "toStateId": "S_BAD" }
+    ],
+    "expectedActions": [
+      { "actionId": "D_NEURO_EXAM_STROKE", "title": "Neurologisk undersøgelse (FAST/Stroke)", "importance": "CRITICAL", "recommendedBeforeSec": 240, "mustBeforeSec": 600 },
+      { "actionId": "C_ECG_4_12_LEAD", "title": "12-aflednings EKG", "importance": "IMPORTANT", "recommendedBeforeSec": 300 },
+      { "actionId": "MED_PARACETAMOL", "title": "Paracetamol", "importance": "IMPORTANT", "recommendedBeforeSec": 360 }
+    ]
+  },
+
+  {
+    "id": "MED_v3_024_BINYREBARKKRISE_ADDISON",
+    "category": "MEDICAL",
+    "title": "Binyrebarkkrise (Addison)",
+    "subtitle": "Shock + mavesmerter, kendt steroidbehandling",
+    "caseType": "Adrenal crisis",
+    "dispatchText": "59-årig mand med kendt binyrebarkinsufficiens. Opkast, mavesmerter, svimmelhed. Ser meget påvirket ud.",
+    "patientInfo": { "sex": "M", "age": 59 },
+    "initialStateId": "S0",
+    "states": [
+      {
+        "id": "S0",
+        "vitals": { "hr": 126, "rr": 22, "btSys": 84, "btDia": 54, "spo2": 98, "etco2": 4.5, "temp": 36.6, "bs": 3.2, "painNrs": 6 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Normal respiration.",
+          "C": "Hypotension, tachykard, dehydrering.",
+          "D": "Træt/konfus.",
+          "E": "Kold perifert."
+        },
+        "extraInfo": "Solu-Cortef + væske kan være livreddende."
+      },
+      {
+        "id": "S_BAD",
+        "vitals": { "hr": 140, "rr": 26, "btSys": 70, "btDia": 40, "spo2": 97, "etco2": 4.1, "temp": 36.4, "bs": 2.5, "painNrs": 7 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Takypnø.",
+          "C": "Shock.",
+          "D": "Tiltagende konfusion.",
+          "E": "Marmoreret."
+        },
+        "extraInfo": "Forværres uden steroid/væske."
+      },
+      {
+        "id": "S_GOOD",
+        "vitals": { "hr": 108, "rr": 18, "btSys": 104, "btDia": 66, "spo2": 98, "etco2": 4.6, "temp": 36.6, "bs": 4.6, "painNrs": 4 },
+        "abcde": {
+          "A": "Fri luftvej.",
+          "B": "Bedre.",
+          "C": "BT responderer på væske/steroid.",
+          "D": "Klarere.",
+          "E": "Bedre perfusion."
+        },
+        "extraInfo": "Efter Solu-Cortef + NaCl."
+      }
+    ],
+    "transitions": [
+      { "fromStateId": "S0", "actionId": "C_IV_ACCESS", "toStateId": "S0" },
+      { "fromStateId": "S0", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_SOLU_CORTEF", "toStateId": "S_GOOD" },
+      { "fromStateId": "S0", "actionId": "MED_FUROSEMID", "toStateId": "S_BAD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_SOLU_CORTEF", "toStateId": "S_GOOD" },
+      { "fromStateId": "S_BAD", "actionId": "MED_NACL_ISO", "toStateId": "S_GOOD" }
+    ],
+    "expectedActions": [
+      { "actionId": "C_IV_ACCESS", "title": "IV-adgang", "importance": "IMPORTANT", "recommendedBeforeSec": 240 },
+      { "actionId": "MED_NACL_ISO", "title": "NaCl 0,9% (væske)", "importance": "CRITICAL", "recommendedBeforeSec": 180, "mustBeforeSec": 600 },
+      { "actionId": "MED_SOLU_CORTEF", "title": "Solu-Cortef", "importance": "CRITICAL", "recommendedBeforeSec": 240, "mustBeforeSec": 600 }
+    ]
+  }
+]
