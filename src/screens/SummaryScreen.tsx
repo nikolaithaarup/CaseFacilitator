@@ -26,11 +26,10 @@ function evalTitle(status: "GREEN" | "YELLOW" | "RED") {
 }
 
 function expectedLabel(ev: EvaluatedAction): string {
-  const anyExpected: any = ev.expected as any;
   return (
-    anyExpected?.label ||
-    anyExpected?.title ||
-    anyExpected?.actionLabel ||
+    ev.expected.label ||
+    ev.expected.title ||
+    ev.expected.actionLabel ||
     ev.expected?.actionId ||
     "Ukendt"
   );

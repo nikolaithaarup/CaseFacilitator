@@ -14,12 +14,12 @@ import {
 
 import type {
   ActionLogEntry,
+  CaseCategory,
+  EvaluatedAction,
   MidasheLetter,
   OpqrstLetter,
   SamplerLetter,
 } from "../domain/cases/types";
-
-import type { EvaluatedAction } from "../domain/cases/types";
 
 import { auth, db } from "../firebase/firebase";
 
@@ -36,6 +36,7 @@ export type RunDoc = {
 
   caseId: string | null;
   caseTitle: string | null;
+  caseCategory?: CaseCategory | null;
 
   focus: string | null;
 
@@ -57,11 +58,11 @@ export type RunDoc = {
 
   traineeDisplayName: string | null;
 
-  participants?: Array<{
+  participants?: {
     role: "AMBULANCE" | "AKUTBIL" | "LAEGEBIL" | "DEFIB" | "FACILITATOR";
     displayName?: string | null;
     uid?: string | null;
-  }>;
+  }[];
 };
 
 export type RunListItem = {

@@ -1,6 +1,6 @@
 // src/screens/TraumeCaseScreen.tsx
 import type { CaseScenario } from "../domain/cases/types";
-import CaseListScreen from "./CaseListScreen";
+import { CaseListScreen } from "./CaseListScreen";
 
 type UserProfile = {
   uid: string;

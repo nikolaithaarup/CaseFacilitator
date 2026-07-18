@@ -31,8 +31,8 @@ export function evaluateCase(
   scenario: CaseScenario,
   log: ActionLogEntry[]
 ): { evaluated: EvaluatedAction[]; extraActions: ActionLogEntry[] } {
-  const expectedActions = Array.isArray((scenario as any)?.expectedActions)
-    ? (scenario as any).expectedActions
+  const expectedActions = Array.isArray(scenario.expectedActions)
+    ? scenario.expectedActions
     : [];
 
   const logByActionId: Record<string, ActionLogEntry[]> = {};
@@ -66,9 +66,7 @@ export function evaluateCase(
       continue;
     }
 
-    const tt = (exp as any).timeTargetsSec as
-      | { green: number; yellow: number; red: number }
-      | undefined;
+    const tt = exp.timeTargetsSec;
 
     if (tt && Number.isFinite(tt.green) && Number.isFinite(tt.yellow) && Number.isFinite(tt.red)) {
       if (timeSec <= tt.green) {
@@ -92,7 +90,7 @@ export function evaluateCase(
     }
   }
 
-  const expectedIds = new Set(expectedActions.map((e: any) => normalizeId(e.actionId)));
+  const expectedIds = new Set(expectedActions.map((expected) => normalizeId(expected.actionId)));
   const extraActions = log.filter((e) => !expectedIds.has(normalizeId(e.actionId)));
 
   return { evaluated, extraActions };

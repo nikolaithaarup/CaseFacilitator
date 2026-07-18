@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Text } from "react-native";
 import { loadSessionRuns, type RunDoc } from "../services/runs";
 
 export function SessionRunsScreen({ sessionId }: { sessionId: string }) {

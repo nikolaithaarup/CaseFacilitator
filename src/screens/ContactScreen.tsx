@@ -68,7 +68,7 @@ export function ContactScreen({ onBack }: { onBack: () => void }) {
       setContactEmail("");
       setContactMessage("");
       onBack();
-    } catch (e) {
+    } catch {
       Alert.alert("Fejl", "Kunne ikke sende beskeden. Tjek internet og prøv igen.");
     } finally {
       setSending(false);
