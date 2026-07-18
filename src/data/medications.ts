@@ -92,11 +92,11 @@ export type MedicationDoseOption = {
   unit: string; // same unit as medication
 };
 
-const DOSE_STRENGTH_FACTORS: Array<{
+const DOSE_STRENGTH_FACTORS: {
   id: DoseStrength;
   label: string;
   factor: number;
-}> = [
+}[] = [
   { id: "HALF" as DoseStrength, label: "½ dosis", factor: 0.5 },
   { id: "NORMAL" as DoseStrength, label: "Normal dosis", factor: 1 },
   { id: "DOUBLE" as DoseStrength, label: "Dobbelt dosis", factor: 2 },

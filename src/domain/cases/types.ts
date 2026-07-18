@@ -1,9 +1,7 @@
-// src/domain/cases/types.ts
-
-// ----- Basic enums/unions -----
-
 export type SchoolPeriod = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 export type Acuity = "AKUT" | "SUBAKUT";
+export type CaseCategory = "MEDICAL" | "TRAUMA" | "HLR";
+export type HlrLevel = "BLS" | "ALS";
 
 export type AbcdeLetter = "A" | "B" | "C" | "D" | "E";
 export type SamplerLetter = "S" | "A" | "M" | "P" | "L" | "E" | "R";
@@ -15,14 +13,10 @@ export type ActionImportance =
   | "IMPORTANT"
   | "OPTIONAL"
   | "FORBIDDEN";
-
 export type DoseStrength = "HALF" | "NORMAL" | "DOUBLE";
-
 export type MedicationType = "drug" | "oxygen";
-
+export type AssistanceChoice = "EKSTRA_AMBULANCE" | "AKUTBIL" | "LAEGEBIL";
 export type Screen = "home" | "caseList" | "caseDetail" | "summary";
-
-// ----- Core case model -----
 
 export interface PatientVitals {
   hr: number;
@@ -30,17 +24,13 @@ export interface PatientVitals {
   btSys: number;
   btDia: number;
   spo2: number;
-
-  // ✅ monitor vitals (always present)
-  etco2: number;   // kPa
-  temp: number;    // °C
-  bs: number;      // mmol/L
-
-  // optional extras
+  // Older case definitions may not contain all monitor values.
+  etco2?: number;
+  temp?: number;
+  bs?: number;
   gcs?: number;
   painNrs?: number;
 }
-
 
 export interface PatientAbcde {
   A: string;
@@ -68,29 +58,39 @@ export interface Transition {
 export interface ExpectedAction {
   actionId: string;
   importance: ActionImportance;
+  recommendedBeforeSec?: number;
+  mustBeforeSec?: number;
+  timeTargetsSec?: {
+    green: number;
+    yellow: number;
+    red: number;
+  };
+  title?: string;
+  label?: string;
+  actionLabel?: string;
+  successText?: string;
+  improveText?: string;
+  criticalText?: string;
+}
 
-  // timing
-  recommendedBeforeSec?: number; // green if <= this
-  mustBeforeSec?: number; // red if > this (or missing)
-
-  // ✅ new: what to show in Summary
-  title?: string; // "Adrenalin (IM)"
-  successText?: string; // "Adrenalin givet hurtigt"
-  improveText?: string; // "Giv adrenalin tidligere"
-  criticalText?: string; // "Adrenalin for sent / mangler"
+export interface CaseMetadata {
+  hlrLevel?: HlrLevel;
+  [key: string]: unknown;
 }
 
 export interface CaseScenario {
   id: string;
-  title: string; // "skp 1 – AKS – M 58 sygdom"
-  subtitle: string; // "(mand 58 år, ...)"
+  title: string;
+  subtitle: string;
   dispatchText: string;
   schoolPeriods: SchoolPeriod[];
   acuity: Acuity;
   difficulty: 1 | 2 | 3;
   diagnosis: string;
   actionDiagnoses: string[];
-  caseType: string; // "AKS", "Hypoglykæmi", "SVT", ...
+  caseType: string;
+  category?: CaseCategory;
+  meta?: CaseMetadata;
   patientInfo: {
     age: number;
     sex: "M" | "K";
@@ -104,8 +104,6 @@ export interface CaseScenario {
   expectedActions: ExpectedAction[];
 }
 
-// ----- Actions, meds, evaluation -----
-
 export interface AbcdeAction {
   id: string;
   letter: AbcdeLetter;
@@ -116,29 +114,39 @@ export interface Medication {
   id: string;
   name: string;
   type: MedicationType;
-  normalDose?: number; // you fill these in from Region H guidelines
-  unit?: string; // "mg", "µg", "ml", etc.
+  normalDose?: number;
+  unit?: string;
   note?: string;
-  oxygenFlows?: number[]; // for medicinsk ilt
+  oxygenFlows?: number[];
 }
 
-export type ActionLogEntry = {
+export interface ActionLogMetadata {
+  doseStrength?: DoseStrength;
+  baseDose?: number | null;
+  factor?: number;
+  actualDose?: number;
+  unit?: string;
+  oxygenFlow?: number;
+  triage?: "CRITICAL" | "NONCRITICAL";
+  assistance?: AssistanceChoice | boolean;
+  cpr?: {
+    type: string;
+    level: HlrLevel;
+    [key: string]: unknown;
+  };
+  source?: "DEFIB" | "FACILITATOR" | "SYSTEM";
+  originalType?: string;
+  payload?: Record<string, unknown> | null;
+}
+
+export interface ActionLogEntry {
   id: string;
   timeMs: number;
   actionId: string;
   description: string;
   resultingStateId: string;
-
-  meta?: {
-    doseStrength?: DoseStrength;
-    baseDose?: number;
-    factor?: number;
-    actualDose?: number;
-    unit?: string;
-
-    oxygenFlow?: number;
-  };
-};
+  meta?: ActionLogMetadata;
+}
 
 export interface EvaluatedAction {
   expected: ExpectedAction;

@@ -1,6 +1,13 @@
 // src/screens/CaseDetailScreen.tsx
 import { useMemo, useState } from "react";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  Alert,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+  type ViewStyle,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { MEDICATIONS, getDoseOptionsForMedication } from "../data/medications";
@@ -9,18 +16,18 @@ import type {
   AbcdeAction,
   AbcdeLetter,
   CaseScenario,
+  CaseCategory,
   DoseStrength,
   Medication,
   MidasheLetter,
   OpqrstLetter,
   PatientState,
   SamplerLetter,
+  HlrLevel,
 } from "../domain/cases/types";
 
 import { styles } from "../styles/indexStyles";
 import { formatTime } from "../utils/format";
-
-export type CaseCategory = "MEDICAL" | "TRAUMA" | "HLR";
 
 type AckState = { key: string; icon: string } | null;
 
@@ -114,9 +121,7 @@ const HLR_MED_IDS = new Set([
 ]);
 
 type ItlsTab = "UNDERSOEGELSE" | "BEHANDLING";
-type HlrLevel = "BLS" | "ALS";
-
-function getScenarioHlrLevel(scenario: any, fallback: HlrLevel): HlrLevel {
+function getScenarioHlrLevel(scenario: CaseScenario, fallback: HlrLevel): HlrLevel {
   const v = scenario?.meta?.hlrLevel;
   return v === "ALS" ? "ALS" : v === "BLS" ? "BLS" : fallback;
 }
@@ -226,7 +231,7 @@ export function CaseDetailScreen({
       | "AIRWAY"
       | "IV_IO"
       | "ROSC",
-    extra?: any
+    extra?: Record<string, unknown>
   ) => void;
 
   onRegisterAssistance: () => void;
@@ -246,7 +251,7 @@ export function CaseDetailScreen({
   const showItlsPanel = isTrauma;
   const showHlrPanel = isHlr;
 
-  const hlrLevel = getScenarioHlrLevel(scenario as any, cprLevel);
+  const hlrLevel = getScenarioHlrLevel(scenario, cprLevel);
 
   // Local ITLS UI state
   const [itlsExpanded, setItlsExpanded] = useState(true);
@@ -265,11 +270,16 @@ export function CaseDetailScreen({
     if (!isHlr) return meds;
 
     // HLR: allowlist + oxygen
-    const base = meds.filter((m: any) => HLR_MED_IDS.has(String(m.id)) || m.type === "oxygen");
+    const base = meds.filter((medication) =>
+      HLR_MED_IDS.has(medication.id) || medication.type === "oxygen"
+    );
 
     // BLS: typically no IV/IO drugs — keep oxygen only (and any "MED_MEDICINSK_ILT" if it's a drug in your catalog)
     if (hlrLevel === "BLS") {
-      return base.filter((m: any) => m.type === "oxygen" || String(m.id) === "MED_MEDICINSK_ILT");
+      return base.filter(
+        (medication) =>
+          medication.type === "oxygen" || medication.id === "MED_MEDICINSK_ILT",
+      );
     }
 
     // ALS: full HLR allowlist
@@ -325,8 +335,8 @@ export function CaseDetailScreen({
   };
 
   const GAP = 8;
-  const gridItemStyle = (cols: number) => ({
-    width: `${100 / cols}%`,
+  const gridItemStyle = (cols: number): ViewStyle => ({
+    width: `${100 / cols}%` as `${number}%`,
     paddingRight: GAP,
     marginBottom: GAP,
   });
@@ -376,7 +386,7 @@ export function CaseDetailScreen({
       { id: "ROSC", label: "ROSC" },
     ];
     return base;
-  }, [hlrLevel, onLogCprCallout]);
+  }, [hlrLevel]);
 
   return (
     <SafeAreaView style={styles.container}>

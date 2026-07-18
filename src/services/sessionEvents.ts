@@ -14,14 +14,17 @@ export type SessionEventType =
   | "DEFIB_ANALYZE"
   | "DEFIB_RHYTHM_CALLOUT"
   | "DEFIB_ROSC"
-  | "DEFIB_STRIP_SHARED";
+  | "DEFIB_STRIP_SHARED"
+  | "ASSISTANCE_REGISTERED";
 
 export type SessionEvent = {
   type: SessionEventType;
   tRelMs: number;
-  payload?: any;
+  payload?: Record<string, unknown>;
   note?: string;
   source?: "DEFIB" | "FACILITATOR" | "SYSTEM";
+  createdAt?: unknown;
+  createdByUid?: string;
 };
 
 export async function logSessionEvent(params: {

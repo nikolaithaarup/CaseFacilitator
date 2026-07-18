@@ -51,7 +51,6 @@ if (!Array.isArray(cases)) {
 }
 
 const mapKeys = Object.keys(map).map(normalizeId);
-const mapKeySet = new Set(mapKeys);
 
 console.log(`Loaded expected-actions map with ${mapKeys.length} keys.`);
 

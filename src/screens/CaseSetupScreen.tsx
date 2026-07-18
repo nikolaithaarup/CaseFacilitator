@@ -3,7 +3,7 @@ import { useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CounterRow } from "../components/CounterRow";
-import type { CaseScenario } from "../domain/cases/types";
+import type { CaseScenario, HlrLevel } from "../domain/cases/types";
 import { styles } from "../styles/indexStyles";
 
 export type UnitsRunConfig = {
@@ -11,8 +11,6 @@ export type UnitsRunConfig = {
   akutbil: number;
   laegebil: number;
 };
-
-type HlrLevel = "BLS" | "ALS";
 
 export function CaseSetupScreen({
   selectedCaseTemplate,
@@ -46,6 +44,8 @@ export function CaseSetupScreen({
   onScanQr: () => void;
   onCreateSessionInvite: () => Promise<void>;
 }) {
+  const [hlrLevel, setHlrLevel] = useState<HlrLevel>("BLS");
+
   if (!selectedCaseTemplate) {
     return (
       <SafeAreaView style={styles.container}>
@@ -60,8 +60,6 @@ export function CaseSetupScreen({
   const isHlr = selectedCaseTemplate.category === "HLR";
 
   // Only relevant for HLR
-  const [hlrLevel, setHlrLevel] = useState<HlrLevel>("BLS");
-
   const derivedScenario: CaseScenario = {
     ...selectedCaseTemplate,
     patientInfo: {
@@ -70,14 +68,13 @@ export function CaseSetupScreen({
       age: setupAge,
     },
     ...(isHlr
-      ? ({
-          // keep it flexible even if CaseScenario doesn't explicitly type "meta"
+      ? {
           meta: {
-            ...(selectedCaseTemplate as any).meta,
-            hlrLevel, // "BLS" | "ALS"
+            ...selectedCaseTemplate.meta,
+            hlrLevel,
           },
-        } as any)
-      : null),
+        }
+      : {}),
   };
 
   return (

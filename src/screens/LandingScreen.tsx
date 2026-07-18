@@ -18,7 +18,7 @@ export function LandingScreen({
 }: {
   authReady: boolean;
   onLogin: (username: string, password: string) => Promise<void>;
-  onGoToOrgPicker: () => void;
+  onGoToOrgPicker?: () => void;
 }) {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");

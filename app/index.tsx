@@ -64,37 +64,51 @@ import type {
   AbcdeAction,
   AbcdeLetter,
   ActionLogEntry,
-  AssistanceChoice,
   CaseScenario,
+  CaseCategory,
   DoseStrength,
   Medication,
   MidasheLetter,
   OpqrstLetter,
   PatientState,
   SamplerLetter,
+  HlrLevel,
 } from "../src/domain/cases/types";
+import { normalizeCaseScenario } from "../src/domain/cases/normalize";
+import {
+  applySimulationCommand,
+  createSimulationState,
+} from "../src/domain/simulation/engine";
+import type {
+  SimulationCommand,
+  SimulationState,
+} from "../src/domain/simulation/types";
 
 // Screens
 import { CaseDetailScreen } from "../src/screens/CaseDetailScreen";
-import CaseListScreen from "../src/screens/CaseListScreen";
-import CaseSetupScreen from "../src/screens/CaseSetupScreen";
+import { CaseListScreen } from "../src/screens/CaseListScreen";
+import { CaseSetupScreen } from "../src/screens/CaseSetupScreen";
 import CasesHubScreen from "../src/screens/CasesHubScreen";
-import ContactScreen from "../src/screens/ContactScreen";
+import { ContactScreen } from "../src/screens/ContactScreen";
 import { DefibScreen } from "../src/screens/DefibScreen";
-import DocumentsScreen from "../src/screens/DocumentsScreen";
-import HlrCaseScreen from "../src/screens/HlrCaseScreen";
+import { DocumentsScreen } from "../src/screens/DocumentsScreen";
+import { HlrCaseScreen } from "../src/screens/HlrCaseScreen";
 import { InviteQrScreen } from "../src/screens/InviteQrScreen";
 import { LandingScreen } from "../src/screens/LandingScreen";
-import MainMenuScreen from "../src/screens/MainMenuScreen";
+import { MainMenuScreen } from "../src/screens/MainMenuScreen";
 import { PickFocusScreen } from "../src/screens/PickFocusScreen";
 import { RunDetailScreen } from "../src/screens/RunDetailScreen";
 import { RunHistoryScreen } from "../src/screens/RunHistoryScreen";
 import { ScanQrScreen } from "../src/screens/ScanQrScreen";
 import { SummaryScreen } from "../src/screens/SummaryScreen";
-import TraumeCaseScreen from "../src/screens/TraumeCaseScreen";
+import { TraumeCaseScreen } from "../src/screens/TraumeCaseScreen";
 
 // Evaluation helpers
-import { evaluateCase, eventToLogEntry } from "../src/utils/caseEvaluation";
+import {
+  evaluateCase,
+  eventToLogEntry,
+  mapDefibEventToActionId,
+} from "../src/utils/caseEvaluation";
 
 // ---------- Types ----------
 type Screen =
@@ -125,8 +139,6 @@ type UnitsRunConfig = {
   laegebil: number;
 };
 
-type CaseCategory = "MEDICAL" | "TRAUMA" | "HLR";
-
 type CprCallout =
   | "ARREST_RECOGNIZED"
   | "CPR_STARTED"
@@ -136,7 +148,7 @@ type CprCallout =
   | "IV_IO"
   | "ROSC";
 
-type CprLevel = "BLS" | "ALS";
+type CprLevel = HlrLevel;
 
 type UserProfile = {
   uid: string;
@@ -165,10 +177,11 @@ async function loadAllCasesFromFirestore(): Promise<CaseScenario[]> {
   const snap = await getDocs(collection(db, "cases_v3"));
   const cases: CaseScenario[] = [];
   snap.forEach((docSnap) => {
-    const data: any = docSnap.data();
-    if (!data?.title || typeof data.title !== "string") return;
-    if (!data?.id || typeof data.id !== "string") return;
-    cases.push(data as CaseScenario);
+    try {
+      cases.push(normalizeCaseScenario({ id: docSnap.id, ...docSnap.data() }));
+    } catch (error) {
+      console.warn(`Skipping invalid case ${docSnap.id}:`, error);
+    }
   });
 
   cases.sort((a, b) =>
@@ -266,15 +279,11 @@ export default function Index() {
   // Session / pairing
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionDoc, setSessionDoc] = useState<SessionDoc | null>(null);
-  const [cprLevel, setCprLevel] = useState<CprLevel>("BLS");
+  const cprLevel: CprLevel = "BLS";
 
   const [pendingJoinSessionId, setPendingJoinSessionId] = useState<
     string | null
   >(null);
-  const [pendingJoinRole, setPendingJoinRole] = useState<
-    "FACILITATOR" | "DEFIB"
-  >("FACILITATOR");
-
   // Live state for defib
   const [liveState, setLiveState] = useState<SessionLiveState | null>(null);
   const [pickedFocus, setPickedFocus] = useState<FacilitatorFocus>("ALL");
@@ -285,6 +294,8 @@ export default function Index() {
   // Live case state (lead device)
   const [scenario, setScenario] = useState<CaseScenario | null>(null);
   const [currentState, setCurrentState] = useState<PatientState | null>(null);
+  const [simulationState, setSimulationState] =
+    useState<SimulationState | null>(null);
 
   // Run/timer/log
   const [elapsedMs, setElapsedMs] = useState(0);
@@ -438,7 +449,6 @@ export default function Index() {
 
       // ✅ clear deep-link join intent
       setPendingJoinSessionId(null);
-      setPendingJoinRole("FACILITATOR");
 
       // ✅ reset defib UI state
       setDefibOn(false);
@@ -454,6 +464,7 @@ export default function Index() {
       // ✅ clear run state
       setScenario(null);
       setCurrentState(null);
+      setSimulationState(null);
       setLog([]);
       setElapsedMs(0);
       setRunId(null);
@@ -464,14 +475,7 @@ export default function Index() {
   }
 
   function categoryForScenario(c: CaseScenario): CaseCategory {
-    // ✅ If you already store something like this in Firestore, use it:
-    const explicit =
-      (c as any).category || (c as any).caseCategory || (c as any).mode;
-
-    const explicitUpper = String(explicit || "").toUpperCase();
-    if (explicitUpper === "HLR") return "HLR";
-    if (explicitUpper === "TRAUMA") return "TRAUMA";
-    if (explicitUpper === "MEDICAL") return "MEDICAL";
+    if (c.category) return c.category;
 
     // fallback heuristics
     if (isHlrCase(c)) return "HLR";
@@ -505,7 +509,12 @@ export default function Index() {
       const tSec = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
       const vitals = buildDemoVitals(tSec);
       const rhythmKey = "SINUS";
-      setDemoLiveState({ vitals, rhythmKey });
+      setDemoLiveState({
+        vitals,
+        abcde: { A: "", B: "", C: "", D: "", E: "" },
+        rhythmKey,
+        updatedAt: Date.now(),
+      });
     }, 900);
 
     return () => clearInterval(id);
@@ -605,7 +614,6 @@ export default function Index() {
 
       if (isJoin && sid) {
         setPendingJoinSessionId(sid);
-        setPendingJoinRole(role);
 
         if (role === "DEFIB") setScreen("defib");
         else setScreen("pickFocus");
@@ -722,8 +730,9 @@ export default function Index() {
 
   const startCase = (c: CaseScenario) => {
     setScenario(c);
-    const initState = c.states.find((s) => s.id === c.initialStateId)!;
-    setCurrentState(initState);
+    const initialSimulationState = createSimulationState(c);
+    setSimulationState(initialSimulationState);
+    setCurrentState(initialSimulationState.patient);
     setCaseCategory(categoryForScenario(c));
 
     setElapsedMs(0);
@@ -794,33 +803,39 @@ export default function Index() {
     return false;
   };
 
-  const handleActionPress = (action: AbcdeAction) => {
-    if (guardLocked()) return;
-    if (!scenario || !currentState) return;
+  const executeSimulationCommand = (command: SimulationCommand) => {
+    if (!scenario || !simulationState) return null;
 
-    const transition = scenario.transitions.find(
-      (t) => t.fromStateId === currentState.id && t.actionId === action.id
-    );
-    const newState =
-      transition && scenario.states.find((s) => s.id === transition.toStateId);
-    const resultingState = newState || currentState;
-
-    if (newState) setCurrentState(newState);
+    const result = applySimulationCommand(scenario, simulationState, command);
+    setSimulationState(result.state);
+    setCurrentState(result.state.patient);
 
     const entry: ActionLogEntry = {
-      id: `${Date.now()}_${action.id}`,
-      timeMs: elapsedMs,
-      actionId: action.id,
-      description: `${action.label}`,
-      resultingStateId: resultingState.id,
+      id: command.commandId,
+      timeMs: command.occurredAtMs,
+      actionId: command.actionId,
+      description: command.description,
+      resultingStateId: result.state.patient.id,
+      ...(command.metadata ? { meta: command.metadata } : {}),
     };
+    setLog((previous) => [...previous, entry]);
+    return result;
+  };
 
-    setLog((prev) => [...prev, entry]);
+  const handleActionPress = (action: AbcdeAction) => {
+    if (guardLocked()) return;
+    executeSimulationCommand({
+      type: "ACTION",
+      commandId: `${Date.now()}_${action.id}`,
+      actionId: action.id,
+      occurredAtMs: elapsedMs,
+      description: action.label,
+    });
   };
 
   const handleRegisterMedication = () => {
     if (guardLocked()) return;
-    if (!scenario || !currentState) return;
+    if (!scenario || !simulationState) return;
 
     if (!selectedMedication) {
       Alert.alert("Manglende valg", "Vælg et præparat.");
@@ -860,7 +875,7 @@ export default function Index() {
       actionId = selectedMedication.id;
       meta = {
         doseStrength: selectedDose,
-        baseDose: (selectedMedication as any).normalDose ?? null,
+        baseDose: selectedMedication.normalDose ?? null,
         factor: doseMeta.factor,
         actualDose: doseMeta.value,
         unit: doseMeta.unit,
@@ -868,27 +883,14 @@ export default function Index() {
       description = `Medicin: ${selectedMedication.name} – ${doseMeta.label}.`;
     }
 
-    const medTransition = scenario.transitions.find(
-      (t) => t.fromStateId === currentState.id && t.actionId === actionId
-    );
-
-    const medNewState =
-      medTransition &&
-      scenario.states.find((s) => s.id === medTransition.toStateId);
-    const resultingState = medNewState || currentState;
-
-    if (medNewState) setCurrentState(medNewState);
-
-    const entry: ActionLogEntry = {
-      id: `${Date.now()}_${actionId}`,
-      timeMs: elapsedMs,
+    executeSimulationCommand({
+      type: "MEDICATION",
+      commandId: `${Date.now()}_${actionId}`,
       actionId,
+      occurredAtMs: elapsedMs,
       description,
-      resultingStateId: resultingState.id,
-      meta,
-    };
-
-    setLog((prev) => [...prev, entry]);
+      metadata: meta,
+    });
 
     setSelectedMedication(null);
     setSelectedDose(null);
@@ -897,7 +899,7 @@ export default function Index() {
 
   const handleLogTriage = (isCritical: boolean) => {
     if (guardLocked()) return;
-    if (!scenario || !currentState) return;
+    if (!scenario || !simulationState) return;
 
     const actionId = isCritical
       ? "PATIENT_TRIAGE_CRITICAL"
@@ -906,35 +908,32 @@ export default function Index() {
       ? "Triage: Kritisk patient."
       : "Triage: Ikke kritisk patient.";
 
-    const entry: ActionLogEntry = {
-      id: `${Date.now()}_${actionId}`,
-      timeMs: elapsedMs,
+    executeSimulationCommand({
+      type: "ACTION",
+      commandId: `${Date.now()}_${actionId}`,
       actionId,
+      occurredAtMs: elapsedMs,
       description,
-      resultingStateId: currentState.id,
-      meta: { triage: isCritical ? "CRITICAL" : "NONCRITICAL" },
-    };
-
-    setLog((prev) => [...prev, entry]);
+      metadata: { triage: isCritical ? "CRITICAL" : "NONCRITICAL" },
+    });
   };
 
   const handleRegisterAssistance = async () => {
     if (guardLocked()) return;
-    if (!scenario || !currentState) return;
+    if (!scenario || !simulationState) return;
 
     const actionId = "ASSIST_REGISTERED";
     const description = "Assistance registreret.";
 
-    const entry: ActionLogEntry = {
-      id: `${Date.now()}_${actionId}`,
-      timeMs: elapsedMs,
+    executeSimulationCommand({
+      type: "ASSISTANCE",
+      commandId: `${Date.now()}_${actionId}`,
       actionId,
+      occurredAtMs: elapsedMs,
       description,
-      resultingStateId: currentState.id,
-      meta: { assistance: true },
-    };
-
-    setLog((prev) => [...prev, entry]);
+      assistance: true,
+      metadata: { assistance: true },
+    });
 
     // Optional: also log to session timeline if you’re in a session
     if (sessionId) {
@@ -953,9 +952,12 @@ export default function Index() {
     }
   };
 
-  const handleLogCprCallout = (type: CprCallout, extra?: any) => {
+  const handleLogCprCallout = (
+    type: CprCallout,
+    extra: Record<string, unknown> = {},
+  ) => {
     if (guardLocked()) return;
-    if (!scenario || !currentState) return;
+    if (!scenario || !simulationState) return;
 
     const actionId = `CPR_${type}`;
     const description =
@@ -975,49 +977,54 @@ export default function Index() {
         ? "CPR: ROSC."
         : `CPR: ${type}`;
 
-    const entry: ActionLogEntry = {
-      id: `${Date.now()}_${actionId}`,
-      timeMs: elapsedMs,
+    executeSimulationCommand({
+      type: "CPR",
+      commandId: `${Date.now()}_${actionId}`,
       actionId,
+      occurredAtMs: elapsedMs,
       description,
-      resultingStateId: currentState.id,
-      meta: {
+      metadata: {
         cpr: {
           type,
           level: cprLevel,
           ...extra,
         },
       },
-    };
-
-    setLog((prev) => [...prev, entry]);
+    });
   };
 
-  const handleLogAssistance = (choice: AssistanceChoice) => {
-    if (guardLocked()) return;
-    if (!currentState) return;
+  async function handleDefibAction(
+    type: SessionEvent["type"],
+    payload: Record<string, unknown>,
+    note?: string,
+  ) {
+    if (!sessionId) return;
+    const occurredAtMs = sessionRelNowMs();
+    await logSessionEvent({
+      sessionId,
+      type,
+      tRelMs: occurredAtMs,
+      payload,
+      note,
+      source: "DEFIB",
+    });
 
-    const label =
-      choice === "EKSTRA_AMBULANCE"
-        ? "Ekstra ambulance"
-        : choice === "AKUTBIL"
-        ? "Akutbil"
-        : "Lægebil";
-
-    const actionId = `ASSIST_${choice}`;
-    const description = `Tilkald assistance: ${label}.`;
-
-    const entry: ActionLogEntry = {
-      id: `${Date.now()}_${actionId}`,
-      timeMs: elapsedMs,
-      actionId,
-      description,
-      resultingStateId: currentState.id,
-      meta: { assistance: choice },
-    };
-
-    setLog((prev) => [...prev, entry]);
-  };
+    // A defib-only client has no local scenario. If the defib is running in the
+    // same module instance as a case, apply any matching case transition while
+    // retaining the existing Firestore event as the timeline source.
+    if (scenario && simulationState) {
+      const result = applySimulationCommand(scenario, simulationState, {
+        type: "DEFIBRILLATOR",
+        commandId: `${Date.now()}_${type}`,
+        actionId: mapDefibEventToActionId(type),
+        occurredAtMs,
+        description: note ?? type,
+        metadata: { source: "DEFIB", originalType: type, payload },
+      });
+      setSimulationState(result.state);
+      setCurrentState(result.state.patient);
+    }
+  }
 
   async function saveSummaryWithFeedback() {
     if (!scenario) return;
@@ -1442,7 +1449,6 @@ export default function Index() {
         onBack={() => setScreen(scanQrBackScreen)}
         onParsedInvite={({ sessionId: sid, role }) => {
           setPendingJoinSessionId(sid);
-          setPendingJoinRole(role);
 
           if (role === "DEFIB") setScreen("defib");
           else setScreen("pickFocus");
@@ -1510,17 +1516,7 @@ export default function Index() {
         onSetBusy={(v) => setDefibBusy(v)}
         onSetDisplay={(s) => setDefibDisplay(s)}
         onSetEkgKey={(k) => setDefibEkgKey(k)}
-        onLogDefib={async (type, payload, note) => {
-          if (!sessionId) return;
-          await logSessionEvent({
-            sessionId,
-            type,
-            tRelMs: sessionRelNowMs(),
-            payload,
-            note,
-            source: "DEFIB",
-          });
-        }}
+        onLogDefib={handleDefibAction}
         sessionRelNowMs={sessionRelNowMs}
       />
     );
@@ -1551,7 +1547,6 @@ export default function Index() {
 
     return (
       <SummaryScreen
-        mode={caseCategory}
         scenario={scenario!}
         sessionId={sessionId}
         runId={runId}
@@ -1579,6 +1574,7 @@ export default function Index() {
           setRunning(false);
           setScenario(null);
           setCurrentState(null);
+          setSimulationState(null);
           setLog([]);
           setElapsedMs(0);
           setRunId(null);

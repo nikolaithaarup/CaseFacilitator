@@ -1,6 +1,6 @@
 // src/screens/RunDetailScreen.tsx
 import * as Clipboard from "expo-clipboard";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -23,23 +23,23 @@ import { deleteMyRunById, loadMyRunById } from "../services/runs";
 import { styles } from "../styles/indexStyles";
 import { evaluateCase } from "../utils/caseEvaluation";
 import { formatTime, statusColor } from "../utils/format";
+import { normalizeCaseScenario } from "../domain/cases/normalize";
 
 function evalTitle(status: "GREEN" | "YELLOW" | "RED") {
   return status === "GREEN" ? "Godt" : status === "YELLOW" ? "Kan forbedres" : "Kritisk";
 }
 
 function expectedLabel(ev: EvaluatedAction): string {
-  const anyExpected: any = ev.expected as any;
   return (
-    anyExpected?.label ||
-    anyExpected?.title ||
-    anyExpected?.actionLabel ||
+    ev.expected.label ||
+    ev.expected.title ||
+    ev.expected.actionLabel ||
     ev.expected?.actionId ||
     "Ukendt"
   );
 }
 
-function csvEscape(v: any): string {
+function csvEscape(v: unknown): string {
   const s = String(v ?? "");
   // RFC4180-ish: wrap in quotes if it contains comma, quote, newline
   if (/[,"\n\r]/.test(s)) return `"${s.replace(/"/g, '""')}"`;
@@ -102,8 +102,9 @@ export function RunDetailScreen({
           if (!cancelled) setScenario(null);
           return;
         }
-        const data: any = snap.data();
-        if (!cancelled) setScenario(data as CaseScenario);
+        if (!cancelled) {
+          setScenario(normalizeCaseScenario({ id: snap.id, ...snap.data() }));
+        }
       } catch (e) {
         console.warn("load scenario failed:", e);
         if (!cancelled) setScenario(null);
@@ -415,7 +416,7 @@ ${actionsText}
           <Text style={styles.textSmall}>Henter case data til evaluering…</Text>
         ) : !scenario ? (
           <Text style={styles.textSmall}>
-            (Ingen "Gik godt / Kan forbedres / Kritisk" tilgængelig på dette run endnu.)
+            (Ingen &quot;Gik godt / Kan forbedres / Kritisk&quot; tilgængelig på dette run endnu.)
           </Text>
         ) : (
           <>

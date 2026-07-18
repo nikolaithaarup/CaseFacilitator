@@ -11,7 +11,7 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Asset } from "expo-asset";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as ScreenOrientation from "expo-screen-orientation";
 import * as Sharing from "expo-sharing";
 
@@ -128,7 +128,11 @@ export function DefibScreen({
   onSetDisplay: (s: string) => void;
   onSetEkgKey: (k: string | null) => void;
 
-  onLogDefib: (type: DefibEventType, payload: any, note?: string) => Promise<void>;
+  onLogDefib: (
+    type: DefibEventType,
+    payload: Record<string, unknown>,
+    note?: string,
+  ) => Promise<void>;
   sessionRelNowMs: () => number;
 }) {
   const { width, height } = useWindowDimensions();
