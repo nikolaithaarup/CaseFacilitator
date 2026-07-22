@@ -3,6 +3,7 @@ import { Image, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "rea
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MenuTile } from "../components/MenuTile";
 import { styles as appStyles } from "../styles/indexStyles";
+import { BrandMark } from "../components/BrandMark";
 
 const APP_LOGO = require("../../assets/her-icon.png");
 
@@ -40,7 +41,7 @@ export function MainMenuScreen({
         {/* Logo + title + username */}
         <View style={s.centerBlock}>
           <Image source={APP_LOGO} style={s.logo} resizeMode="contain" />
-          <Text style={[appStyles.title, s.centerText]}>CaseFacilitator</Text>
+          <BrandMark />
           <Text style={[appStyles.subtitle, s.centerText]}>{profileLabel}</Text>
         </View>
 
