@@ -20,6 +20,7 @@ const sessionDocument = (fixture) => ({
   organisationId: fixture.organisationId,
   leadInstructorUid: fixture.leadInstructorUid,
   status: fixture.status,
+  hlrMode: fixture.hlrMode,
   capacity: fixture.capacity,
   createdAtEpochMs: 1_700_000_000_000,
 });
@@ -97,7 +98,8 @@ describe("instructor authority", () => {
       fictional: true,
       organisationId: "fictional-org-c",
       leadInstructorUid: "new-lead",
-      status: "ACTIVE",
+      status: "PREPARING",
+      hlrMode: "ALS",
       capacity: { assistantInstructors: 1, learnerUnits: 2, monitorDevices: 1 },
       createdAtEpochMs: 1_700_000_004_000,
     };
@@ -115,6 +117,10 @@ describe("instructor authority", () => {
     const db = dbFor("lead-a");
     await assertSucceeds(getDoc(doc(db, "simulationSessions", "session-a", "instructorTruth", "current")));
     await assertSucceeds(updateDoc(doc(db, "simulationSessions", "session-a"), { status: "FINISHED" }));
+  });
+
+  test("lead cannot skip lifecycle states", async () => {
+    await assertFails(updateDoc(doc(dbFor("lead-a"), "simulationSessions", "session-a"), { status: "ARCHIVED" }));
   });
 
   test("assistant may read truth and release an observation but cannot administer", async () => {

@@ -42,6 +42,7 @@ import {
   joinSession,
   listenToSession,
   setFacilitatorFocus,
+  setSessionFinished,
   setSessionRunning,
   type FacilitatorFocus,
   type SessionDoc,
@@ -54,7 +55,7 @@ import {
 } from "../src/services/sessionState";
 
 import {
-  loadSessionEvents,
+  listenSessionEvents,
   logSessionEvent,
   type SessionEvent,
 } from "../src/services/sessionEvents";
@@ -70,19 +71,13 @@ import type {
   Medication,
   MidasheLetter,
   OpqrstLetter,
-  PatientState,
   SamplerLetter,
   HlrLevel,
 } from "../src/domain/cases/types";
 import { normalizeCaseScenario } from "../src/domain/cases/normalize";
-import {
-  applySimulationCommand,
-  createSimulationState,
-} from "../src/domain/simulation/engine";
-import type {
-  SimulationCommand,
-  SimulationState,
-} from "../src/domain/simulation/types";
+import { loadCasesWithFallback, type CaseSourceMode } from "../src/domain/cases/fallbackRepository";
+import type { SimulationCommand } from "../src/domain/simulation/types";
+import { useSimulationLifecycle } from "../src/application/simulation/useSimulationLifecycle";
 
 // Screens
 import { CaseDetailScreen } from "../src/screens/CaseDetailScreen";
@@ -256,6 +251,8 @@ export default function Index() {
   const [selectedCaseTemplate, setSelectedCaseTemplate] =
     useState<CaseScenario | null>(null);
   const [caseCategory, setCaseCategory] = useState<CaseCategory>("MEDICAL");
+  const [caseSourceMode, setCaseSourceMode] = useState<CaseSourceMode>("REMOTE_CANONICAL");
+  const [hlrMode, setHlrMode] = useState<HlrLevel>("BLS");
 
   // Run browsing
   const [selectedRunId, setSelectedRunId] = useState<string | null>(null);
@@ -279,7 +276,7 @@ export default function Index() {
   // Session / pairing
   const [sessionId, setSessionId] = useState<string | null>(null);
   const [sessionDoc, setSessionDoc] = useState<SessionDoc | null>(null);
-  const cprLevel: CprLevel = "BLS";
+  const cprLevel: CprLevel = hlrMode;
 
   const [pendingJoinSessionId, setPendingJoinSessionId] = useState<
     string | null
@@ -291,16 +288,15 @@ export default function Index() {
   const sessionUnsubRef = useRef<null | (() => void)>(null);
   const liveUnsubRef = useRef<null | (() => void)>(null);
 
-  // Live case state (lead device)
-  const [scenario, setScenario] = useState<CaseScenario | null>(null);
-  const [currentState, setCurrentState] = useState<PatientState | null>(null);
-  const [simulationState, setSimulationState] =
-    useState<SimulationState | null>(null);
+  const simulation = useSimulationLifecycle();
+  const {
+    scenario, currentState, simulationState, log, transitionFeedback,
+    startSimulation, resetSimulation, applyCommand,
+  } = simulation;
 
   // Run/timer/log
   const [elapsedMs, setElapsedMs] = useState(0);
   const [running, setRunning] = useState(false);
-  const [log, setLog] = useState<ActionLogEntry[]>([]);
   const [selectedLetter, setSelectedLetter] = useState<AbcdeLetter>("A");
 
   // Run identity
@@ -462,10 +458,7 @@ export default function Index() {
       setSelectedCaseTemplate(null);
 
       // ✅ clear run state
-      setScenario(null);
-      setCurrentState(null);
-      setSimulationState(null);
-      setLog([]);
+      resetSimulation();
       setElapsedMs(0);
       setRunId(null);
       setRunStartedAtEpochMs(null);
@@ -573,10 +566,11 @@ export default function Index() {
         });
 
         setLoadingCases(true);
-        const cases = await loadAllCasesFromFirestore();
+        const sourcedCases = await loadCasesWithFallback(loadAllCasesFromFirestore);
         if (cancelled) return;
 
-        setAllCases(cases);
+        setAllCases(sourcedCases.cases);
+        setCaseSourceMode(sourcedCases.mode);
         setLoadingCases(false);
 
         setScreen("mainMenu");
@@ -637,7 +631,10 @@ export default function Index() {
     cleanupSessionListener();
     sessionUnsubRef.current = listenToSession(
       sid,
-      (data) => setSessionDoc(data),
+      (data) => {
+        setSessionDoc(data);
+        if (data?.hlrMode === "BLS" || data?.hlrMode === "ALS") setHlrMode(data.hlrMode);
+      },
       (e) => console.warn("Session listen error:", e)
     );
     liveUnsubRef.current = listenLiveState(
@@ -682,20 +679,18 @@ export default function Index() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [screen, pendingJoinSessionId]);
 
-  // Load remote events when entering summary (and sessionId exists)
+  // Realtime legacy compatibility subscription. Canonical persistence remains opt-in.
   useEffect(() => {
-    (async () => {
-      if (screen !== "summary") return;
-      if (!sessionId) return;
-      try {
-        const evs = await loadSessionEvents(sessionId);
-        setRemoteEvents(evs);
-      } catch (e) {
-        console.warn("loadSessionEvents:", e);
-        setRemoteEvents([]);
-      }
-    })();
-  }, [screen, sessionId]);
+    if (!sessionId) {
+      setRemoteEvents([]);
+      return;
+    }
+    return listenSessionEvents(
+      sessionId,
+      setRemoteEvents,
+      (error) => console.warn("listenSessionEvents:", error),
+    );
+  }, [sessionId]);
 
   const mergedTimeline = useMemo(() => {
     const evEntries = remoteEvents.map(eventToLogEntry);
@@ -729,15 +724,15 @@ export default function Index() {
   }, [allCases]);
 
   const startCase = (c: CaseScenario) => {
-    setScenario(c);
-    const initialSimulationState = createSimulationState(c);
-    setSimulationState(initialSimulationState);
-    setCurrentState(initialSimulationState.patient);
+    const selectedHlrMode = c.meta?.hlrLevel;
+    if (selectedHlrMode === "BLS" || selectedHlrMode === "ALS") {
+      setHlrMode(selectedHlrMode);
+    }
+    startSimulation(c);
     setCaseCategory(categoryForScenario(c));
 
     setElapsedMs(0);
     setRunning(false);
-    setLog([]);
     setSelectedLetter("A");
 
     setSamplerState(initialSampler);
@@ -804,22 +799,7 @@ export default function Index() {
   };
 
   const executeSimulationCommand = (command: SimulationCommand) => {
-    if (!scenario || !simulationState) return null;
-
-    const result = applySimulationCommand(scenario, simulationState, command);
-    setSimulationState(result.state);
-    setCurrentState(result.state.patient);
-
-    const entry: ActionLogEntry = {
-      id: command.commandId,
-      timeMs: command.occurredAtMs,
-      actionId: command.actionId,
-      description: command.description,
-      resultingStateId: result.state.patient.id,
-      ...(command.metadata ? { meta: command.metadata } : {}),
-    };
-    setLog((previous) => [...previous, entry]);
-    return result;
+    return applyCommand(command);
   };
 
   const handleActionPress = (action: AbcdeAction) => {
@@ -1013,16 +993,14 @@ export default function Index() {
     // same module instance as a case, apply any matching case transition while
     // retaining the existing Firestore event as the timeline source.
     if (scenario && simulationState) {
-      const result = applySimulationCommand(scenario, simulationState, {
+      applyCommand({
         type: "DEFIBRILLATOR",
         commandId: `${Date.now()}_${type}`,
         actionId: mapDefibEventToActionId(type),
         occurredAtMs,
         description: note ?? type,
         metadata: { source: "DEFIB", originalType: type, payload },
-      });
-      setSimulationState(result.state);
-      setCurrentState(result.state.patient);
+      }, { recordLog: false });
     }
   }
 
@@ -1084,6 +1062,7 @@ export default function Index() {
         orgId: profile?.orgId ?? null, // keep field if backend expects it
         sessionId: sessionId ?? null,
         caseCategory: caseCategory ?? null,
+        hlrMode: caseCategory === "HLR" ? hlrMode : null,
 
         caseId: scenario.id ?? null,
         caseTitle: scenario.title ?? null,
@@ -1141,7 +1120,7 @@ export default function Index() {
     return (
       <SafeAreaView style={styles.container}>
         <MainMenuScreen
-          profileLabel={who}
+          profileLabel={caseSourceMode === "LOCAL_FICTIONAL_FALLBACK" ? `${who} · LOCAL FICTIONAL MODE` : who}
           onLogout={doLogout}
           onOpenProfile={() => router.push("/profile")}
           onOpenCases={() => setScreen("casesHub")}
@@ -1351,10 +1330,12 @@ export default function Index() {
         setupAge={setupAge}
         units={units}
         facilitatorsCount={facilitatorsCount}
+        hlrLevel={hlrMode}
         onSetSex={setSetupSex}
         onSetAge={setSetupAge}
         onSetUnits={setUnits}
         onSetFacilitatorsCount={setFacilitatorsCount}
+        onSetHlrLevel={setHlrMode}
         onBack={() => setScreen(caseListBackScreen)}
         onScanQr={() => {
           setScanQrBackScreen("caseSetup");
@@ -1398,6 +1379,7 @@ export default function Index() {
               facilitatorsCount,
               units,
               patient: { sex: setupSex, age: setupAge },
+              hlrMode,
             });
 
             // 2) Immediately create your own membership doc (prevents "read requires member" deadlock)
@@ -1572,10 +1554,7 @@ export default function Index() {
         }}
         onBackToCases={() => {
           setRunning(false);
-          setScenario(null);
-          setCurrentState(null);
-          setSimulationState(null);
-          setLog([]);
+          resetSimulation();
           setElapsedMs(0);
           setRunId(null);
           setRunStartedAtEpochMs(null);
@@ -1598,6 +1577,8 @@ export default function Index() {
       elapsedMs={elapsedMs}
       running={running}
       popupText={popupText}
+      transitionFeedback={transitionFeedback}
+      remoteEventCount={remoteEvents.length}
       selectedLetter={selectedLetter}
       setSelectedLetter={setSelectedLetter}
       abcdeActionsExpanded={abcdeActionsExpanded}
@@ -1635,6 +1616,9 @@ export default function Index() {
       onRegisterMedication={handleRegisterMedication}
       onFinishCaseToSummary={() => {
         setRunning(false);
+        if (sessionId && sessionDoc?.createdByUid === auth.currentUser?.uid) {
+          setSessionFinished(sessionId).catch((error) => console.warn("setSessionFinished:", error));
+        }
         setScreen("summary");
       }}
     />

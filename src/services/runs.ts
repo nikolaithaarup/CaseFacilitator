@@ -37,6 +37,7 @@ export type RunDoc = {
   caseId: string | null;
   caseTitle: string | null;
   caseCategory?: CaseCategory | null;
+  hlrMode?: "BLS" | "ALS" | null;
 
   focus: string | null;
 

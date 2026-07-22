@@ -9,6 +9,7 @@ import {
   updateDoc,
 } from "firebase/firestore";
 import { auth, db } from "../firebase/firebase";
+import type { HlrLevel } from "../domain/cases/types";
 
 export type FacilitatorFocus = "ALL" | "AMBULANCE_1" | "AMBULANCE_2" | "AKUTBIL" | "LAEGEBIL";
 
@@ -32,6 +33,7 @@ export type SessionDoc = {
   facilitatorsCount: number;
   units: SessionUnits;
   patient: SessionPatient;
+  hlrMode?: HlrLevel;
 
   // set when lead presses GO (epoch ms from lead device)
   startedAtEpochMs?: number;
@@ -43,6 +45,7 @@ export async function createSession(params: {
   facilitatorsCount: number;
   units: SessionUnits;
   patient: SessionPatient;
+  hlrMode: HlrLevel;
 }): Promise<{ sessionId: string }> {
   const uid = auth.currentUser?.uid;
   if (!uid) throw new Error("Not authenticated");
@@ -56,6 +59,7 @@ export async function createSession(params: {
     facilitatorsCount: params.facilitatorsCount,
     units: params.units,
     patient: params.patient,
+    hlrMode: params.hlrMode,
   } satisfies SessionDoc);
 
   // ✅ New: membership doc used by security rules
@@ -79,10 +83,28 @@ export async function createSession(params: {
 }
 
 export async function setSessionRunning(sessionId: string) {
-  // leader sets a shared reference time
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error("Not authenticated");
+  const snapshot = await getDoc(doc(db, "sessions", sessionId));
+  if (!snapshot.exists() || snapshot.data().createdByUid !== uid) {
+    throw new Error("Lead instructor authority required");
+  }
   await updateDoc(doc(db, "sessions", sessionId), {
     status: "RUNNING",
     startedAtEpochMs: Date.now(),
+  });
+}
+
+export async function setSessionFinished(sessionId: string) {
+  const uid = auth.currentUser?.uid;
+  if (!uid) throw new Error("Not authenticated");
+  const snapshot = await getDoc(doc(db, "sessions", sessionId));
+  if (!snapshot.exists() || snapshot.data().createdByUid !== uid) {
+    throw new Error("Lead instructor authority required");
+  }
+  await updateDoc(doc(db, "sessions", sessionId), {
+    status: "FINISHED",
+    finishedAtEpochMs: Date.now(),
   });
 }
 
