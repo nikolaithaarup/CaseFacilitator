@@ -1,0 +1,211 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function session(sessionId) {
+      return get(/databases/$(database)/documents/simulationSessions/$(sessionId));
+    }
+
+    function membership(sessionId) {
+      return get(/databases/$(database)/documents/simulationSessions/$(sessionId)/members/$(request.auth.uid));
+    }
+
+    function hasActiveMembership(sessionId) {
+      return signedIn()
+        && membership(sessionId).data.active == true
+        && membership(sessionId).data.uid == request.auth.uid;
+    }
+
+    function hasRole(sessionId, role) {
+      return hasActiveMembership(sessionId)
+        && membership(sessionId).data.role == role;
+    }
+
+    function isInstructor(sessionId) {
+      return hasRole(sessionId, "INSTRUCTOR_LEAD")
+        || hasRole(sessionId, "INSTRUCTOR_ASSISTANT");
+    }
+
+    function isLead(sessionId) {
+      return hasRole(sessionId, "INSTRUCTOR_LEAD")
+        && session(sessionId).data.leadInstructorUid == request.auth.uid;
+    }
+
+    function isMonitor(sessionId) {
+      return hasRole(sessionId, "MONITOR_DEVICE");
+    }
+
+    function validSessionCreate() {
+      return request.resource.data.keys().hasOnly([
+          "schemaVersion", "fictional", "organisationId", "leadInstructorUid",
+          "status", "capacity", "createdAtEpochMs", "externalReference"
+        ])
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.fictional == true
+        && request.resource.data.leadInstructorUid == request.auth.uid
+        && request.resource.data.status == "ACTIVE"
+        && request.resource.data.organisationId is string
+        && request.resource.data.organisationId.size() > 0
+        && request.resource.data.organisationId.size() <= 128
+        && request.resource.data.capacity is map
+        && request.resource.data.capacity.keys().hasOnly([
+          "assistantInstructors", "learnerUnits", "monitorDevices"
+        ])
+        && request.resource.data.capacity.assistantInstructors is int
+        && request.resource.data.capacity.learnerUnits is int
+        && request.resource.data.capacity.monitorDevices is int
+        && request.resource.data.capacity.assistantInstructors >= 0
+        && request.resource.data.capacity.assistantInstructors <= 10
+        && request.resource.data.capacity.learnerUnits >= 0
+        && request.resource.data.capacity.learnerUnits <= 20
+        && request.resource.data.capacity.monitorDevices >= 0
+        && request.resource.data.capacity.monitorDevices <= 10;
+    }
+
+    function validSessionUpdate() {
+      return request.resource.data.keys().hasOnly([
+          "schemaVersion", "fictional", "organisationId", "leadInstructorUid",
+          "status", "capacity", "createdAtEpochMs", "externalReference"
+        ])
+        && request.resource.data.capacity is map
+        && request.resource.data.capacity.keys().hasOnly([
+          "assistantInstructors", "learnerUnits", "monitorDevices"
+        ]);
+    }
+
+    function validMembership() {
+      return request.resource.data.keys().hasOnly([
+          "schemaVersion", "uid", "role", "active", "unitId",
+          "joinedAtEpochMs", "revokedAtEpochMs", "revokedByUid"
+        ])
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.uid is string
+        && request.resource.data.active is bool
+        && request.resource.data.role in [
+          "INSTRUCTOR_LEAD", "INSTRUCTOR_ASSISTANT", "LEARNER_UNIT", "MONITOR_DEVICE"
+        ];
+    }
+
+    function validProjection() {
+      return request.resource.data.keys().hasOnly([
+          "schemaVersion", "fictional", "sessionId", "observationId", "kind",
+          "label", "value", "unit", "releasedAtEpochMs", "releasedByUid"
+        ])
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.fictional == true
+        && request.resource.data.sessionId is string
+        && request.resource.data.observationId is string
+        && request.resource.data.kind in ["FINDING", "VITAL_SIGN", "MONITOR_VALUE", "EVENT"]
+        && request.resource.data.label is string
+        && request.resource.data.label.size() > 0
+        && request.resource.data.label.size() <= 200
+        && (request.resource.data.value is string
+          || request.resource.data.value is number
+          || request.resource.data.value is bool)
+        && (!request.resource.data.keys().hasAny(["unit"])
+          || request.resource.data.unit is string)
+        && request.resource.data.releasedByUid == request.auth.uid;
+    }
+
+    function validMonitorObservation() {
+      return request.resource.data.keys().hasOnly([
+          "schemaVersion", "fictional", "sessionId", "observationId", "kind",
+          "label", "value", "unit", "observedAtEpochMs", "createdByUid"
+        ])
+        && request.resource.data.schemaVersion == 1
+        && request.resource.data.fictional == true
+        && request.resource.data.sessionId is string
+        && request.resource.data.observationId is string
+        && request.resource.data.kind in ["VITAL_SIGN", "MONITOR_VALUE", "EVENT"]
+        && request.resource.data.label is string
+        && request.resource.data.label.size() > 0
+        && request.resource.data.label.size() <= 200
+        && (request.resource.data.value is string
+          || request.resource.data.value is number
+          || request.resource.data.value is bool)
+        && (!request.resource.data.keys().hasAny(["unit"])
+          || request.resource.data.unit is string)
+        && request.resource.data.createdByUid == request.auth.uid;
+    }
+
+    // Canonical case truth is deliberately separate from learner-readable data.
+    match /simulationCases/{caseId} {
+      allow read: if signedIn() && request.auth.token.facilitatorInstructor == true;
+      allow write: if false;
+    }
+
+    match /simulationSessions/{sessionId} {
+      allow create: if signedIn() && validSessionCreate();
+      allow read: if hasActiveMembership(sessionId);
+      allow update: if isLead(sessionId)
+        && validSessionUpdate()
+        && request.resource.data.schemaVersion == resource.data.schemaVersion
+        && request.resource.data.fictional == true
+        && request.resource.data.leadInstructorUid == resource.data.leadInstructorUid
+        && request.resource.data.organisationId == resource.data.organisationId
+        && request.resource.data.status in ["ACTIVE", "FINISHED", "ARCHIVED"];
+      allow delete: if false;
+
+      match /members/{memberUid} {
+        allow read: if isLead(sessionId)
+          || (hasActiveMembership(sessionId) && request.auth.uid == memberUid);
+        allow create: if signedIn()
+          && session(sessionId).data.leadInstructorUid == request.auth.uid
+          && request.resource.data.uid == memberUid
+          && validMembership()
+          && ((memberUid == session(sessionId).data.leadInstructorUid
+              && request.resource.data.role == "INSTRUCTOR_LEAD")
+            || (memberUid != session(sessionId).data.leadInstructorUid
+              && request.resource.data.role != "INSTRUCTOR_LEAD"));
+        allow update: if isLead(sessionId)
+          && request.resource.data.uid == resource.data.uid
+          && validMembership()
+          && ((memberUid == session(sessionId).data.leadInstructorUid
+              && request.resource.data.role == "INSTRUCTOR_LEAD")
+            || (memberUid != session(sessionId).data.leadInstructorUid
+              && request.resource.data.role != "INSTRUCTOR_LEAD"));
+        allow delete: if false;
+      }
+
+      match /instructorTruth/{documentId} {
+        allow read: if isInstructor(sessionId);
+        allow create, update: if isInstructor(sessionId)
+          && request.resource.data.schemaVersion == 1
+          && request.resource.data.fictional == true
+          && request.resource.data.sessionId == sessionId;
+        allow delete: if isLead(sessionId);
+      }
+
+      match /learnerProjection/{observationId} {
+        allow read: if hasActiveMembership(sessionId);
+        allow create, update: if isInstructor(sessionId)
+          && validProjection()
+          && request.resource.data.sessionId == sessionId
+          && request.resource.data.observationId == observationId;
+        allow delete: if isInstructor(sessionId);
+      }
+
+      match /monitorObservations/{observationId} {
+        allow read: if isInstructor(sessionId);
+        allow create: if isMonitor(sessionId)
+          && validMonitorObservation()
+          && request.resource.data.sessionId == sessionId
+          && request.resource.data.observationId == observationId;
+        allow update, delete: if false;
+      }
+
+      match /facilitatorCommands/{commandId} {
+        allow read, create, update: if isInstructor(sessionId);
+        allow delete: if isLead(sessionId);
+      }
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
