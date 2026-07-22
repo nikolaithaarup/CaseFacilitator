@@ -133,6 +133,8 @@ export function CaseDetailScreen({
   elapsedMs,
   running,
   popupText,
+  transitionFeedback,
+  remoteEventCount,
 
   selectedLetter,
   setSelectedLetter,
@@ -188,6 +190,8 @@ export function CaseDetailScreen({
   elapsedMs: number;
   running: boolean;
   popupText: string | null;
+  transitionFeedback: string | null;
+  remoteEventCount: number;
 
   selectedLetter: AbcdeLetter;
   setSelectedLetter: (l: AbcdeLetter) => void;
@@ -453,6 +457,14 @@ export function CaseDetailScreen({
             {fmt1((currentState.vitals as any).bs)} mmol/L · Smerte {currentState.vitals.painNrs ?? "-"}
           </Text>
         </View>
+
+        {(transitionFeedback || remoteEventCount > 0) && (
+          <View style={styles.card}>
+            <Text style={styles.cardTitle}>Authoritative session</Text>
+            {transitionFeedback ? <Text style={styles.text}>Feedback: {transitionFeedback}</Text> : null}
+            <Text style={styles.textSmall}>Realtime monitor events: {remoteEventCount}</Text>
+          </View>
+        )}
 
         <View style={styles.card}>
           <Text style={styles.cardTitle}>ABCDE status</Text>

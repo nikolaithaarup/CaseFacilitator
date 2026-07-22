@@ -216,6 +216,7 @@ export function RunDetailScreen({
 
     return `Case: ${run.caseTitle ?? "-"}
 RunId: ${run.runId}
+HLR mode: ${run.hlrMode ?? "-"}
 Dato: ${run.createdAtEpochMs ? new Date(run.createdAtEpochMs).toLocaleString() : "-"}
 Trainee: ${run.traineeDisplayName ?? "-"}
 Samlet tid: ${formatTime(run.totalTimeMs)}
@@ -245,6 +246,7 @@ ${actionsText}
     lines.push(`META,runId,${csvEscape(run.runId)}`);
     lines.push(`META,caseTitle,${csvEscape(run.caseTitle ?? "")}`);
     lines.push(`META,caseId,${csvEscape(run.caseId ?? "")}`);
+    lines.push(`META,hlrMode,${csvEscape(run.hlrMode ?? "")}`);
     lines.push(`META,createdAt,${csvEscape(run.createdAtEpochMs ? new Date(run.createdAtEpochMs).toISOString() : "")}`);
     lines.push(`META,traineeDisplayName,${csvEscape(run.traineeDisplayName ?? "")}`);
     lines.push(`META,totalTime,${csvEscape(formatTime(run.totalTimeMs))}`);
@@ -384,6 +386,7 @@ ${actionsText}
         <View style={styles.card}>
           <Text style={styles.cardTitle}>Samlet tid</Text>
           <Text style={styles.text}>{formatTime(run.totalTimeMs)}</Text>
+          {run.hlrMode ? <Text style={styles.textSmall}>HLR mode: {run.hlrMode}</Text> : null}
 
           <AcronymRow
             letters={["S", "A", "M", "P", "L", "E", "R"] as SamplerLetter[]}

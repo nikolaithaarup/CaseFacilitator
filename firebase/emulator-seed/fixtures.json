@@ -7,6 +7,7 @@
       "organisationId": "fictional-org-a",
       "leadInstructorUid": "lead-a",
       "status": "ACTIVE",
+      "hlrMode": "ALS",
       "capacity": { "assistantInstructors": 2, "learnerUnits": 4, "monitorDevices": 2 }
     },
     {
@@ -14,6 +15,7 @@
       "organisationId": "fictional-org-b",
       "leadInstructorUid": "lead-b",
       "status": "ACTIVE",
+      "hlrMode": "BLS",
       "capacity": { "assistantInstructors": 1, "learnerUnits": 2, "monitorDevices": 1 }
     }
   ],

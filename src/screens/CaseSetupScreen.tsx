@@ -1,5 +1,4 @@
 // src/screens/CaseSetupScreen.tsx
-import { useState } from "react";
 import { Alert, ScrollView, Text, TextInput, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CounterRow } from "../components/CounterRow";
@@ -18,11 +17,13 @@ export function CaseSetupScreen({
   setupAge,
   units,
   facilitatorsCount,
+  hlrLevel,
   onBack,
   onSetSex,
   onSetAge,
   onSetUnits,
   onSetFacilitatorsCount,
+  onSetHlrLevel,
   onStartSoloCase,
   onScanQr,
   onCreateSessionInvite,
@@ -33,19 +34,19 @@ export function CaseSetupScreen({
   setupAge: number;
   units: UnitsRunConfig;
   facilitatorsCount: number;
+  hlrLevel: HlrLevel;
 
   onBack: () => void;
   onSetSex: (s: "M" | "K") => void;
   onSetAge: (n: number) => void;
   onSetUnits: (u: UnitsRunConfig) => void;
   onSetFacilitatorsCount: (n: number) => void;
+  onSetHlrLevel: (level: HlrLevel) => void;
 
   onStartSoloCase: (derivedScenario: CaseScenario) => void;
   onScanQr: () => void;
   onCreateSessionInvite: () => Promise<void>;
 }) {
-  const [hlrLevel, setHlrLevel] = useState<HlrLevel>("BLS");
-
   if (!selectedCaseTemplate) {
     return (
       <SafeAreaView style={styles.container}>
@@ -169,7 +170,7 @@ export function CaseSetupScreen({
             <View style={{ flexDirection: "row", gap: 8, marginTop: 10 }}>
               <TouchableOpacity
                 style={[styles.doseButton, hlrLevel === "BLS" && styles.doseButtonActive, { flex: 1 }]}
-                onPress={() => setHlrLevel("BLS")}
+                onPress={() => onSetHlrLevel("BLS")}
               >
                 <Text style={[styles.doseButtonText, hlrLevel === "BLS" && { color: "black" }]}>
                   BLS
@@ -178,7 +179,7 @@ export function CaseSetupScreen({
 
               <TouchableOpacity
                 style={[styles.doseButton, hlrLevel === "ALS" && styles.doseButtonActive, { flex: 1 }]}
-                onPress={() => setHlrLevel("ALS")}
+                onPress={() => onSetHlrLevel("ALS")}
               >
                 <Text style={[styles.doseButtonText, hlrLevel === "ALS" && { color: "black" }]}>
                   ALS

@@ -46,12 +46,13 @@ service cloud.firestore {
     function validSessionCreate() {
       return request.resource.data.keys().hasOnly([
           "schemaVersion", "fictional", "organisationId", "leadInstructorUid",
-          "status", "capacity", "createdAtEpochMs", "externalReference"
+          "status", "hlrMode", "capacity", "createdAtEpochMs", "externalReference"
         ])
         && request.resource.data.schemaVersion == 1
         && request.resource.data.fictional == true
         && request.resource.data.leadInstructorUid == request.auth.uid
-        && request.resource.data.status == "ACTIVE"
+        && request.resource.data.status == "PREPARING"
+        && request.resource.data.hlrMode in ["BLS", "ALS"]
         && request.resource.data.organisationId is string
         && request.resource.data.organisationId.size() > 0
         && request.resource.data.organisationId.size() <= 128
@@ -73,12 +74,19 @@ service cloud.firestore {
     function validSessionUpdate() {
       return request.resource.data.keys().hasOnly([
           "schemaVersion", "fictional", "organisationId", "leadInstructorUid",
-          "status", "capacity", "createdAtEpochMs", "externalReference"
+          "status", "hlrMode", "capacity", "createdAtEpochMs", "externalReference"
         ])
         && request.resource.data.capacity is map
         && request.resource.data.capacity.keys().hasOnly([
           "assistantInstructors", "learnerUnits", "monitorDevices"
         ]);
+    }
+
+    function validLifecycleTransition() {
+      return (resource.data.status == "PREPARING" && request.resource.data.status == "OPEN")
+        || (resource.data.status == "OPEN" && request.resource.data.status == "ACTIVE")
+        || (resource.data.status == "ACTIVE" && request.resource.data.status == "FINISHED")
+        || (resource.data.status == "FINISHED" && request.resource.data.status in ["ACTIVE", "ARCHIVED"]);
     }
 
     function validMembership() {
@@ -151,7 +159,8 @@ service cloud.firestore {
         && request.resource.data.fictional == true
         && request.resource.data.leadInstructorUid == resource.data.leadInstructorUid
         && request.resource.data.organisationId == resource.data.organisationId
-        && request.resource.data.status in ["ACTIVE", "FINISHED", "ARCHIVED"];
+        && request.resource.data.hlrMode == resource.data.hlrMode
+        && validLifecycleTransition();
       allow delete: if false;
 
       match /members/{memberUid} {
