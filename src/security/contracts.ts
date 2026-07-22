@@ -1,4 +1,6 @@
 import type { FacilitatorRole } from "./roles";
+import type { HlrLevel } from "../domain/cases/types";
+import type { SessionLifecycle } from "../application/session/lifecycle";
 
 export const FACILITATOR_SCHEMA_VERSION = 1 as const;
 export type FacilitatorSchemaVersion = typeof FACILITATOR_SCHEMA_VERSION;
@@ -64,7 +66,8 @@ export interface CanonicalSimulationSession extends FictionalMarker {
   sessionId: string;
   organisationId: string;
   leadInstructorUid: string;
-  status: "ACTIVE" | "FINISHED" | "ARCHIVED";
+  status: SessionLifecycle;
+  hlrMode: HlrLevel;
   capacity: SessionCapacity;
   createdAtEpochMs: number;
   externalReference?: string;
