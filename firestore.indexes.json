@@ -1,0 +1,21 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "learnerProjection",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "releasedAtEpochMs", "order": "ASCENDING" },
+        { "fieldPath": "kind", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "monitorObservations",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "createdByUid", "order": "ASCENDING" },
+        { "fieldPath": "observedAtEpochMs", "order": "ASCENDING" }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}

@@ -1,0 +1,30 @@
+{
+  "projectId": "demo-synapse-facilitator",
+  "fictionalOnly": true,
+  "sessions": [
+    {
+      "sessionId": "session-a",
+      "organisationId": "fictional-org-a",
+      "leadInstructorUid": "lead-a",
+      "status": "ACTIVE",
+      "capacity": { "assistantInstructors": 2, "learnerUnits": 4, "monitorDevices": 2 }
+    },
+    {
+      "sessionId": "session-b",
+      "organisationId": "fictional-org-b",
+      "leadInstructorUid": "lead-b",
+      "status": "ACTIVE",
+      "capacity": { "assistantInstructors": 1, "learnerUnits": 2, "monitorDevices": 1 }
+    }
+  ],
+  "participants": [
+    { "sessionId": "session-a", "uid": "lead-a", "role": "INSTRUCTOR_LEAD", "active": true },
+    { "sessionId": "session-a", "uid": "assistant-a", "role": "INSTRUCTOR_ASSISTANT", "active": true },
+    { "sessionId": "session-a", "uid": "learner-a", "role": "LEARNER_UNIT", "active": true },
+    { "sessionId": "session-a", "uid": "monitor-a", "role": "MONITOR_DEVICE", "active": true },
+    { "sessionId": "session-a", "uid": "revoked-learner", "role": "LEARNER_UNIT", "active": false },
+    { "sessionId": "session-a", "uid": "revoked-monitor", "role": "MONITOR_DEVICE", "active": false },
+    { "sessionId": "session-b", "uid": "lead-b", "role": "INSTRUCTOR_LEAD", "active": true },
+    { "sessionId": "session-b", "uid": "learner-b", "role": "LEARNER_UNIT", "active": true }
+  ]
+}

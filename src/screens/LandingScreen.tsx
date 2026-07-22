@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "../styles/indexStyles";
+import { BrandMark } from "../components/BrandMark";
 
 export function LandingScreen({
   authReady,
@@ -53,7 +54,7 @@ export function LandingScreen({
           style={styles.landingLogo}
           resizeMode="contain"
         />
-        <Text style={[styles.title, { marginTop: 10 }]}>CaseFacilitator</Text>
+        <View style={{ marginTop: 10 }}><BrandMark /></View>
         <Text style={[styles.subtitle, { textAlign: "center", marginTop: 6 }]}>
           Log ind for at vælge organisation og starte en simulation.
         </Text>

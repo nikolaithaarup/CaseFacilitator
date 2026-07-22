@@ -8,7 +8,7 @@ module.exports = defineConfig([
     ignores: [".expo/**", "dist/**", "web-build/**", "node_modules/**"],
   },
   {
-    files: ["data/**/*.js", "scripts/**/*.js", "tools/**/*.js"],
+    files: ["data/**/*.js", "scripts/**/*.js", "tools/**/*.js", "tests/**/*.cjs"],
     languageOptions: { globals: globals.node },
   },
   {
