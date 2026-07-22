@@ -58,8 +58,8 @@ const releasedDocument = {
   releasedByUid: "lead-a",
 };
 
-function dbFor(uid) {
-  return environment.authenticatedContext(uid).firestore();
+function dbFor(uid, token = {}) {
+  return environment.authenticatedContext(uid, token).firestore();
 }
 
 before(async () => {
@@ -91,6 +91,26 @@ after(async () => {
 });
 
 describe("instructor authority", () => {
+  test("trusted instructor may create a session while an ordinary learner identity cannot", async () => {
+    const newSession = {
+      schemaVersion: 1,
+      fictional: true,
+      organisationId: "fictional-org-c",
+      leadInstructorUid: "new-lead",
+      status: "ACTIVE",
+      capacity: { assistantInstructors: 1, learnerUnits: 2, monitorDevices: 1 },
+      createdAtEpochMs: 1_700_000_004_000,
+    };
+    await assertSucceeds(setDoc(
+      doc(dbFor("new-lead", { facilitatorInstructor: true }), "simulationSessions", "session-c"),
+      newSession,
+    ));
+    await assertFails(setDoc(
+      doc(dbFor("learner-outsider"), "simulationSessions", "session-d"),
+      { ...newSession, leadInstructorUid: "learner-outsider" },
+    ));
+  });
+
   test("lead may read truth and finish its session", async () => {
     const db = dbFor("lead-a");
     await assertSucceeds(getDoc(doc(db, "simulationSessions", "session-a", "instructorTruth", "current")));

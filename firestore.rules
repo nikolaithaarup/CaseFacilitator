@@ -6,6 +6,10 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function hasTrustedInstructorIdentity() {
+      return signedIn() && request.auth.token.facilitatorInstructor == true;
+    }
+
     function session(sessionId) {
       return get(/databases/$(database)/documents/simulationSessions/$(sessionId));
     }
@@ -134,12 +138,12 @@ service cloud.firestore {
 
     // Canonical case truth is deliberately separate from learner-readable data.
     match /simulationCases/{caseId} {
-      allow read: if signedIn() && request.auth.token.facilitatorInstructor == true;
+      allow read: if hasTrustedInstructorIdentity();
       allow write: if false;
     }
 
     match /simulationSessions/{sessionId} {
-      allow create: if signedIn() && validSessionCreate();
+      allow create: if hasTrustedInstructorIdentity() && validSessionCreate();
       allow read: if hasActiveMembership(sessionId);
       allow update: if isLead(sessionId)
         && validSessionUpdate()
