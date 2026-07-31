@@ -1,0 +1,11 @@
+
+import * as Linking from "expo-linking";
+import { router, useLocalSearchParams } from "expo-router";
+import { useEffect, useState } from "react";
+import { Pressable, StyleSheet, Text, View } from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { publicEnvironment } from "../../src/config/env";
+import { redeemPortalLaunch } from "../../src/services/portalBridge";
+function one(value:string|string[]|undefined,max:number){return typeof value==="string"&&value.length<=max?value:null;}
+export default function LaunchCallbackScreen(){const params=useLocalSearchParams<{code?:string|string[];state?:string|string[]}>();const [error,setError]=useState("");useEffect(()=>{const code=one(params.code,512),state=one(params.state,256);if(!code||!state){setError("Opstartslinket er ugyldigt.");return;} redeemPortalLaunch(code,state).then(()=>{if(typeof window!=="undefined")window.history.replaceState({},document.title,"/launch/callback");router.replace("/");}).catch(()=>setError("Portaladgangen kunne ikke oprettes. Start igen fra SynapsePortal."));},[params.code,params.state]);return <SafeAreaView style={styles.page}><View style={styles.card}><Text style={styles.eyebrow}>SYNAPSEFACILITATOR</Text><Text style={styles.title}>{error?"Adgang afvist":"Opretter sikker session…"}</Text><Text style={styles.body}>{error||"Engangskoden indløses, og din Facilitator-session klargøres."}</Text>{error?<Pressable onPress={()=>void Linking.openURL(publicEnvironment.access.portalUrl)} style={styles.button}><Text style={styles.buttonText}>Tilbage til SynapsePortal</Text></Pressable>:null}</View></SafeAreaView>}
+const styles=StyleSheet.create({page:{flex:1,backgroundColor:"#07131d",alignItems:"center",justifyContent:"center",padding:20},card:{width:"100%",maxWidth:640,borderRadius:22,padding:26,backgroundColor:"#0b1c27",borderWidth:1,borderColor:"rgba(148,163,184,0.2)"},eyebrow:{color:"#45d5c3",fontWeight:"900",letterSpacing:1.5,textAlign:"center"},title:{color:"#f8fafc",fontSize:27,lineHeight:34,fontWeight:"900",textAlign:"center",marginTop:10},body:{color:"#a8bac4",fontSize:16,lineHeight:24,textAlign:"center",marginTop:14},button:{minHeight:52,borderRadius:14,backgroundColor:"#45d5c3",alignItems:"center",justifyContent:"center",marginTop:24,paddingHorizontal:20},buttonText:{color:"#06201d",fontSize:16,fontWeight:"900"}});

@@ -1,9 +1,12 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import "react-native-reanimated";
+import { publicEnvironment } from "../src/config/env";
+import { PortalRequiredScreen } from "../src/screens/PortalRequiredScreen";
+import { restorePortalSession } from "../src/services/portalBridge";
 
 export { ErrorBoundary } from "expo-router";
 
@@ -34,6 +37,14 @@ export default function RootLayout() {
 }
 
 function RootLayoutNav() {
+  const pathname = usePathname();
+  const isLaunchCallback = pathname === "/launch/callback";
+  const [portalState, setPortalState] = useState<"CHECKING" | "ACTIVE" | "MISSING">(publicEnvironment.access.allowStandalone ? "ACTIVE" : "CHECKING");
+  useEffect(() => { if (publicEnvironment.access.allowStandalone || isLaunchCallback) return; let active=true; restorePortalSession().then(session => { if(active) setPortalState(session ? "ACTIVE" : "MISSING"); }); return () => { active=false; }; }, [isLaunchCallback]);
+  if (!publicEnvironment.access.allowStandalone && !isLaunchCallback && portalState !== "ACTIVE") {
+    return portalState === "CHECKING" ? null : <PortalRequiredScreen />;
+  }
+
   return (
     <Stack
       screenOptions={{
@@ -43,6 +54,7 @@ function RootLayoutNav() {
     >
       <Stack.Screen name="index" />
       <Stack.Screen name="profile" />
+      <Stack.Screen name="launch/callback" />
       {/* only add this if you actually make the route */}
       {/* <Stack.Screen name="profile-edit" /> */}
 

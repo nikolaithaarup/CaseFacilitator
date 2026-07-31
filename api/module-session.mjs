@@ -1,0 +1,3 @@
+
+import { admin, clearSessionCookie, decodeSession, json } from "./_lib/bridge.mjs";
+export default async function handler(req,res){if(req.method==="DELETE"){clearSessionCookie(res);return json(res,200,{ok:true});} if(req.method!=="GET" && req.method!=="POST") return json(res,405,{error:"METHOD_NOT_ALLOWED"}); const stored=decodeSession(req); if(!stored||stored.product!=="FACILITATOR") return json(res,401,{error:"NO_SESSION"}); try{const {auth}=admin(); const s=stored.session; const token=await auth.createCustomToken(s.firebaseUid,{facilitatorConnected:true,facilitatorSessionId:s.facilitatorSessionId,facilitatorRevocationVersion:s.revocationVersion}); return json(res,200,{session:s,firebaseCustomToken:token});}catch{return json(res,500,{error:"BRIDGE_ERROR"});}}

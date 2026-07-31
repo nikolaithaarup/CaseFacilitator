@@ -10,6 +10,12 @@ export type PublicEnvironment = {
   };
   useFirebaseEmulators: boolean;
   emulatorProjectId: string;
+  access: {
+    allowStandalone: boolean;
+    portalUrl: string;
+    launchAudience: string;
+    backendBaseUrl?: string;
+  };
 };
 
 function required(name: string, value: string | undefined): string {
@@ -22,7 +28,54 @@ function required(name: string, value: string | undefined): string {
   return normalized;
 }
 
-const useFirebaseEmulators = process.env.EXPO_PUBLIC_USE_FIREBASE_EMULATORS === "true";
+function exactBoolean(name: string, value: string | undefined): boolean {
+  const normalized = value?.trim().toLowerCase();
+  if (!normalized) return false;
+  if (normalized === "true") return true;
+  if (normalized === "false") return false;
+  throw new Error(`${name} skal være enten true eller false.`);
+}
+
+function normalizedUrl(name: string, value: string | undefined, fallback: string): string {
+  const normalized = value?.trim() || fallback;
+  let parsed: URL;
+  try {
+    parsed = new URL(normalized);
+  } catch {
+    throw new Error(`${name} skal være en gyldig absolut URL.`);
+  }
+  if (parsed.protocol !== "https:" && parsed.hostname !== "localhost") {
+    throw new Error(`${name} skal bruge HTTPS uden for localhost.`);
+  }
+  return parsed.toString().replace(/\/$/, "");
+}
+
+const useFirebaseEmulators = exactBoolean(
+  "EXPO_PUBLIC_USE_FIREBASE_EMULATORS",
+  process.env.EXPO_PUBLIC_USE_FIREBASE_EMULATORS,
+);
+
+const access = {
+  allowStandalone: exactBoolean(
+    "EXPO_PUBLIC_FACILITATOR_ALLOW_STANDALONE",
+    process.env.EXPO_PUBLIC_FACILITATOR_ALLOW_STANDALONE,
+  ),
+  portalUrl: normalizedUrl(
+    "EXPO_PUBLIC_SYNAPSE_PORTAL_URL",
+    process.env.EXPO_PUBLIC_SYNAPSE_PORTAL_URL,
+    "https://portal.synapsestudio.dk",
+  ),
+  launchAudience:
+    process.env.EXPO_PUBLIC_FACILITATOR_LAUNCH_AUDIENCE?.trim() ||
+    "synapse-facilitator-v1",
+  backendBaseUrl: process.env.EXPO_PUBLIC_FACILITATOR_BACKEND_BASE_URL?.trim()
+    ? normalizedUrl(
+        "EXPO_PUBLIC_FACILITATOR_BACKEND_BASE_URL",
+        process.env.EXPO_PUBLIC_FACILITATOR_BACKEND_BASE_URL,
+        "https://localhost",
+      )
+    : undefined,
+};
 
 export const publicEnvironment: PublicEnvironment = useFirebaseEmulators
   ? {
@@ -40,6 +93,7 @@ export const publicEnvironment: PublicEnvironment = useFirebaseEmulators
       emulatorProjectId:
         process.env.EXPO_PUBLIC_FIREBASE_EMULATOR_PROJECT_ID?.trim() ||
         "demo-synapse-facilitator",
+      access,
     }
   : {
       firebase: {
@@ -72,4 +126,5 @@ export const publicEnvironment: PublicEnvironment = useFirebaseEmulators
       },
       useFirebaseEmulators: false,
       emulatorProjectId: "demo-synapse-facilitator",
+      access,
     };
