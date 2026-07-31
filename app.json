@@ -1,17 +1,17 @@
 {
   "expo": {
-    "name": "CaseFacilitator",
-    "slug": "CaseFacilitator",
+    "name": "SynapseFacilitator",
+    "slug": "synapse-facilitator",
     "version": "1.0.0",
-    "orientation": "portrait",
+    "orientation": "default",
     "icon": "./assets/images/icon.png",
-    "scheme": "casefacilitator",
+    "scheme": "synapsefacilitator",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "splash": {
       "image": "./assets/images/splash-icon.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#07131d"
     },
     "ios": {
       "supportsTablet": true
@@ -19,7 +19,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#07131d"
       },
       "edgeToEdgeEnabled": true,
       "predictiveBackGestureEnabled": false,
@@ -33,7 +33,8 @@
     "plugins": [
       "expo-router",
       "expo-web-browser",
-      "expo-asset"
+      "expo-asset",
+      "expo-font"
     ],
     "experiments": {
       "typedRoutes": true

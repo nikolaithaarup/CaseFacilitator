@@ -6,9 +6,12 @@ import { ScrollViewStyleReset } from 'expo-router/html';
 // do not have access to the DOM or browser APIs.
 export default function Root({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="da">
       <head>
         <meta charSet="utf-8" />
+        <title>SynapseFacilitator · Simulationsstyring</title>
+        <meta name="description" content="Instruktørværktøj til fiktiv præhospital simulation. Må ikke anvendes til patientbehandling." />
+        <meta name="theme-color" content="#07131d" />
         <meta httpEquiv="X-UA-Compatible" content="IE=edge" />
         <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
 
@@ -28,11 +31,8 @@ export default function Root({ children }: { children: React.ReactNode }) {
 }
 
 const responsiveBackground = `
-body {
-  background-color: #fff;
+html, body {
+  background-color: #07131d;
+  color: #f8fafc;
 }
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #000;
-  }
-}`;
+body { margin: 0; }`;

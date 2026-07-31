@@ -204,6 +204,15 @@ export function DefibScreen({
     }
   }, [defibOn]);
 
+
+  function reportPersistenceFailure(error: unknown) {
+    console.warn("Defibrillator event could not be persisted", error);
+    Alert.alert(
+      "Målingen blev ikke gemt",
+      "Målingen vises på monitoren, men kunne ikke gemmes i simulationsloggen. Kontrollér forbindelsen og prøv igen.",
+    );
+  }
+
   async function shareEkgStrip() {
     if (!ekgImg) {
       Alert.alert("Ingen EKG", "Der er ikke noget EKG-billede til dette key.");
@@ -303,7 +312,9 @@ export function DefibScreen({
 
       try {
         await onLogDefib("DEFIB_SAT", { spo2: Math.round(spo2), hr: Math.round(hr) }, "SpO2 + pulse");
-      } catch {}
+      } catch (error) {
+        reportPersistenceFailure(error);
+      }
     }, 2200);
   }
 
@@ -336,7 +347,9 @@ export function DefibScreen({
 
       try {
         await onLogDefib("DEFIB_NIBP", { btSys: sys, btDia: dia }, "NIBP");
-      } catch {}
+      } catch (error) {
+        reportPersistenceFailure(error);
+      }
     }, 4200);
   }
 
@@ -361,7 +374,9 @@ export function DefibScreen({
 
       try {
         await onLogDefib("DEFIB_ETCO2", { etco2: base }, "EtCO2");
-      } catch {}
+      } catch (error) {
+        reportPersistenceFailure(error);
+      }
     }, 3200);
   }
 
@@ -387,7 +402,9 @@ export function DefibScreen({
 
       try {
         await onLogDefib("DEFIB_BS", { bs }, "Blood sugar");
-      } catch {}
+      } catch (error) {
+        reportPersistenceFailure(error);
+      }
     }, 2800);
   }
 
@@ -413,7 +430,9 @@ export function DefibScreen({
 
       try {
         await onLogDefib("DEFIB_TEMP", { temp }, "Temperature");
-      } catch {}
+      } catch (error) {
+        reportPersistenceFailure(error);
+      }
     }, 2600);
   }
 
@@ -436,7 +455,9 @@ export function DefibScreen({
 
       try {
         await onLogDefib(kind === "EKG4" ? "DEFIB_EKG4" : "DEFIB_EKG12", { ekgKey: key }, kind);
-      } catch {}
+      } catch (error) {
+        reportPersistenceFailure(error);
+      }
     }, kind === "EKG12" ? 12000 : 7000);
   }
 
@@ -453,7 +474,9 @@ export function DefibScreen({
 
       try {
         await onLogDefib("DEFIB_CHARGE", { charged: true }, "Charge");
-      } catch {}
+      } catch (error) {
+        reportPersistenceFailure(error);
+      }
     }, 2200);
   }
 
@@ -475,7 +498,9 @@ export function DefibScreen({
 
       try {
         await onLogDefib("DEFIB_SHOCK", { joules: 200 }, "Shock 200J");
-      } catch {}
+      } catch (error) {
+        reportPersistenceFailure(error);
+      }
     }, 800);
   }
 
