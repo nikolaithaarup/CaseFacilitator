@@ -1,18 +1,30 @@
 // app/index.tsx
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Linking from "expo-linking";
-import { useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Platform, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // Firebase
 import {
+  browserLocalPersistence,
+  browserSessionPersistence,
+  EmailAuthProvider,
+  linkWithCredential,
   onAuthStateChanged,
+  setPersistence,
+  signInAnonymously,
   signInWithEmailAndPassword,
-  signOut
+  signOut,
 } from "firebase/auth";
-import { collection, doc, getDocs, serverTimestamp, setDoc } from "firebase/firestore";
+
+import {
+  collection,
+  doc,
+  getDocs,
+  serverTimestamp,
+  setDoc,
+} from "firebase/firestore";
 import { auth, db } from "../src/firebase/firebase";
 
 // Camera
@@ -26,7 +38,7 @@ import { getDoseOptionsForMedication } from "../src/data/medications";
 
 // Utils
 import { stripUndefined } from "../src/utils/format";
-import { buildJoinUrl, parseJoinRole } from "../src/utils/joinLinks";
+import { buildJoinUrls, parseJoinRole } from "../src/utils/joinLinks";
 
 // Services
 import { saveRun } from "../src/services/runs";
@@ -58,14 +70,13 @@ import type {
   AbcdeAction,
   AbcdeLetter,
   ActionLogEntry,
-  AssistanceChoice,
   CaseScenario,
   DoseStrength,
   Medication,
   MidasheLetter,
   OpqrstLetter,
   PatientState,
-  SamplerLetter
+  SamplerLetter,
 } from "../src/domain/cases/types";
 
 // Screens
@@ -110,8 +121,7 @@ type Screen =
   | "runDetail"
   | "settings"
   | "contact"
-  | "documents"
-  | "profile";
+  | "documents";
 
 type UnitsRunConfig = {
   ambulancer: number;
@@ -135,8 +145,8 @@ type CprLevel = "BLS" | "ALS";
 type UserProfile = {
   uid: string;
   displayName: string;
-  role: string;   // e.g. "student" | "facilitator" | "admin"
-  orgId: string;  // read-only, from profile
+  role: string; // "student" | "facilitator" | "admin" etc.
+  orgId: string;
 };
 
 // ---------- Helpers ----------
@@ -169,7 +179,7 @@ async function loadAllCasesFromFirestore(): Promise<CaseScenario[]> {
   return cases;
 }
 
-// Heuristic: tag HLR cases without changing your DB schema yet
+// Heuristic: tag HLR cases without changing DB schema yet
 function isHlrCase(c: CaseScenario): boolean {
   const t = `${c.caseType ?? ""} ${c.title ?? ""} ${c.subtitle ?? ""}`.toLowerCase();
   return t.includes("hlr") || t.includes("arrest") || t.includes("cardiac arrest");
@@ -189,29 +199,36 @@ function isTraumaCase(c: CaseScenario): boolean {
   );
 }
 
+function categoryForScenario(c: CaseScenario): CaseCategory {
+  const explicit = (c as any).category || (c as any).caseCategory || (c as any).mode;
+  const explicitUpper = String(explicit || "").toUpperCase();
+  if (explicitUpper === "HLR") return "HLR";
+  if (explicitUpper === "TRAUMA") return "TRAUMA";
+  if (explicitUpper === "MEDICAL") return "MEDICAL";
+
+  if (isHlrCase(c)) return "HLR";
+  if (isTraumaCase(c)) return "TRAUMA";
+  return "MEDICAL";
+}
+
 function buildDemoVitals(_tSec: number) {
-  // "Normal patient" demo vitals (stable baseline, small natural noise)
   const w = (n: number, spread: number) => Math.round(n + (Math.random() * 2 - 1) * spread);
-  const wf = (n: number, spread: number) =>
-    Number((n + (Math.random() * 2 - 1) * spread).toFixed(1));
+  const wf = (n: number, spread: number) => Number((n + (Math.random() * 2 - 1) * spread).toFixed(1));
 
   return {
-    hr: w(78, 2),          // small noise
+    hr: w(78, 2),
     rr: w(14, 1),
-    btSys: 128,            // keep stable (remeasure only happens on defib side)
-    btDia: 78,             // stable
-    spo2: w(97, 1),        // tiny noise
-    etco2: wf(5.2, 0.1),   // tiny noise
-    temp: 36.8,            // stable
-    bs: 6.1,               // stable
+    btSys: 128,
+    btDia: 78,
+    spo2: w(97, 1),
+    etco2: wf(5.2, 0.1),
+    temp: 36.8,
+    bs: 6.1,
   };
 }
 
-
 // ---------- Component ----------
 export default function Index() {
-  const router = useRouter();
-
   // Auth
   const [authReady, setAuthReady] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
@@ -220,7 +237,6 @@ export default function Index() {
   const [screen, setScreen] = useState<Screen>("landing");
   const [scanQrBackScreen, setScanQrBackScreen] = useState<Screen>("caseSetup");
   const [caseListBackScreen, setCaseListBackScreen] = useState<Screen>("casesHub");
-
 
   // Profile + cases
   const [profile, setProfile] = useState<UserProfile | null>(null);
@@ -243,8 +259,8 @@ export default function Index() {
   });
   const [facilitatorsCount, setFacilitatorsCount] = useState<number>(1);
 
-const [demoStartedAt, setDemoStartedAt] = useState<number>(() => Date.now());
-const [demoLiveState, setDemoLiveState] = useState<SessionLiveState | null>(null);
+  const [demoStartedAt, setDemoStartedAt] = useState<number>(() => Date.now());
+  const [demoLiveState, setDemoLiveState] = useState<SessionLiveState | null>(null);
 
   // Session / pairing
   const [sessionId, setSessionId] = useState<string | null>(null);
@@ -253,6 +269,12 @@ const [demoLiveState, setDemoLiveState] = useState<SessionLiveState | null>(null
 
   const [pendingJoinSessionId, setPendingJoinSessionId] = useState<string | null>(null);
   const [pendingJoinRole, setPendingJoinRole] = useState<"FACILITATOR" | "DEFIB">("FACILITATOR");
+
+  // ✅ Avoid stale-closure race (don’t stomp join navigation)
+  const pendingJoinRef = useRef<string | null>(null);
+  useEffect(() => {
+    pendingJoinRef.current = pendingJoinSessionId;
+  }, [pendingJoinSessionId]);
 
   // Live state for defib
   const [liveState, setLiveState] = useState<SessionLiveState | null>(null);
@@ -277,10 +299,31 @@ const [demoLiveState, setDemoLiveState] = useState<SessionLiveState | null>(null
 
   // Acronyms
   const initialSampler: Record<SamplerLetter, boolean> = {
-    S: false, A: false, M: false, P: false, L: false, E: false, R: false
+    S: false,
+    A: false,
+    M: false,
+    P: false,
+    L: false,
+    E: false,
+    R: false,
   };
-  const initialOpqrst: Record<OpqrstLetter, boolean> = { O: false, P: false, Q: false, R: false, S: false, T: false };
-  const initialMidashe: Record<MidasheLetter, boolean> = { M: false, I: false, D: false, A: false, S: false, H: false, E: false };
+  const initialOpqrst: Record<OpqrstLetter, boolean> = {
+    O: false,
+    P: false,
+    Q: false,
+    R: false,
+    S: false,
+    T: false,
+  };
+  const initialMidashe: Record<MidasheLetter, boolean> = {
+    M: false,
+    I: false,
+    D: false,
+    A: false,
+    S: false,
+    H: false,
+    E: false,
+  };
 
   const [samplerState, setSamplerState] = useState<Record<SamplerLetter, boolean>>(initialSampler);
   const [opqrstState, setOpqrstState] = useState<Record<OpqrstLetter, boolean>>(initialOpqrst);
@@ -303,8 +346,8 @@ const [demoLiveState, setDemoLiveState] = useState<SessionLiveState | null>(null
   // Defib UI state
   const [defibOn, setDefibOn] = useState(false);
   const [defibBusy, setDefibBusy] = useState<
-  null | "NIBP" | "SAT" | "ETCO2" | "BS" | "TEMP" | "EKG4" | "EKG12" | "CHARGE" | "SHOCK"
->(null);
+    null | "NIBP" | "SAT" | "ETCO2" | "BS" | "TEMP" | "EKG4" | "EKG12" | "CHARGE" | "SHOCK"
+  >(null);
   const [defibDisplay, setDefibDisplay] = useState<string>("");
   const [defibEkgKey, setDefibEkgKey] = useState<string | null>(null);
 
@@ -321,39 +364,45 @@ const [demoLiveState, setDemoLiveState] = useState<SessionLiveState | null>(null
   const [perm, requestPerm] = useCameraPermissions();
 
   // ---------- Auth helpers ----------
-const usernameToEmail = (usernameRaw: string) => {
-  const u = (usernameRaw || "").trim().toLowerCase();
-  // ✅ If it already looks like an email, use it directly
-  if (u.includes("@")) return u;
-  return `${u}@casefacilitator.local`;
-};
+  const usernameToEmail = (usernameRaw: string) => {
+    const u = (usernameRaw || "").trim().toLowerCase();
+    if (u.includes("@")) return u;
+    return `${u}@casefacilitator.local`;
+  };
 
-async function signInWithUsernamePassword(username: string, password: string) {
+  async function signInWithUsernamePassword(username: string, password: string) {
   const email = usernameToEmail(username);
 
   try {
-    // ✅ If we previously auto-signed-in anonymously (device/defib),
-    // sign out first so email login is clean and predictable.
-    if (auth.currentUser?.isAnonymous) {
-      await signOut(auth);
+    const u = auth.currentUser;
+
+    // ✅ If we currently have an anonymous user on this tab,
+    // convert it into the real account WITHOUT signing out (prevents cross-tab logout).
+    if (u?.isAnonymous) {
+      const cred = EmailAuthProvider.credential(email, password);
+
+      try {
+        await linkWithCredential(u, cred);
+        return; // linked successfully = now signed in as email user
+      } catch (e: any) {
+        // If the email is already used elsewhere, linking can fail.
+        // In that case: just sign in normally (still avoid signOut).
+        const code = e?.code ?? "";
+        if (code !== "auth/credential-already-in-use" && code !== "auth/email-already-in-use") {
+          console.warn("linkWithCredential failed:", e);
+          // fall through to normal sign-in anyway
+        }
+      }
     }
 
+    // ✅ Normal login
     await signInWithEmailAndPassword(auth, email, password);
   } catch (e: any) {
     console.warn("Login failed:", e);
-
-    // ✅ Make the error visible (otherwise it looks like “nothing happens”)
-    Alert.alert(
-      "Login fejl",
-      e?.message ??
-        e?.code ??
-        "Ukendt fejl (se console)."
-    );
-
-    throw e; // optional, but useful if LandingScreen wants to handle it too
+    Alert.alert("Login fejl", e?.message ?? e?.code ?? "Ukendt fejl (se console).");
+    throw e;
   }
 }
-
 
   function cleanupSessionListener() {
     if (sessionUnsubRef.current) {
@@ -366,68 +415,58 @@ async function signInWithUsernamePassword(username: string, password: string) {
     }
   }
 
-async function doLogout() {
-  try {
-    await signOut(auth);
-  } finally {
-    cleanupSessionListener();
+  async function doLogout() {
+    try {
+      await signOut(auth);
+    } finally {
+      cleanupSessionListener();
 
-    // ✅ clear session + live state
-    setSessionId(null);
-    setSessionDoc(null);
-    setLiveState(null);
+      setSessionId(null);
+      setSessionDoc(null);
+      setLiveState(null);
 
-    // ✅ clear deep-link join intent
-    setPendingJoinSessionId(null);
-    setPendingJoinRole("FACILITATOR");
+      setPendingJoinSessionId(null);
+      setPendingJoinRole("FACILITATOR");
 
-    // ✅ reset defib UI state
-    setDefibOn(false);
-    setDefibBusy(null);
-    setDefibDisplay("");
-    setDefibEkgKey(null);
+      setDefibOn(false);
+      setDefibBusy(null);
+      setDefibDisplay("");
+      setDefibEkgKey(null);
 
-    // ✅ clear profile + cases
-    setProfile(null);
-    setAllCases([]);
-    setSelectedCaseTemplate(null);
+      setProfile(null);
+      setAllCases([]);
+      setSelectedCaseTemplate(null);
 
-    // ✅ clear run state
-    setScenario(null);
-    setCurrentState(null);
-    setLog([]);
-    setElapsedMs(0);
-    setRunId(null);
-    setRunStartedAtEpochMs(null);
+      setScenario(null);
+      setCurrentState(null);
+      setLog([]);
+      setElapsedMs(0);
+      setRunId(null);
+      setRunStartedAtEpochMs(null);
 
-    setScreen("landing");
+      setScreen("landing");
+    }
   }
-}
 
+  // ✅ Web-only: set persistence early (helps avoid "login bounce")
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+    setPersistence(auth, browserLocalPersistence).catch((e) => {
+      console.warn("setPersistence failed (web):", e);
+    });
+  }, []);
 
-function categoryForScenario(c: CaseScenario): CaseCategory {
-  // ✅ If you already store something like this in Firestore, use it:
-  const explicit =
-    (c as any).category ||
-    (c as any).caseCategory ||
-    (c as any).mode;
+// Auth bootstrap
+const hadUserRef = useRef(false);
 
-  const explicitUpper = String(explicit || "").toUpperCase();
-  if (explicitUpper === "HLR") return "HLR";
-  if (explicitUpper === "TRAUMA") return "TRAUMA";
-  if (explicitUpper === "MEDICAL") return "MEDICAL";
-
-  // fallback heuristics
-  if (isHlrCase(c)) return "HLR";
-  if (isTraumaCase(c)) return "TRAUMA";
-  return "MEDICAL";
-}
-
-
-  // ---------- Auth bootstrap ----------
 useEffect(() => {
   const unsub = onAuthStateChanged(auth, (user) => {
-    setIsAuthed(!!user);
+    const hasUser = !!user;
+
+    // Once we've had a user, don't treat brief null as "go to landing"
+    if (hasUser) hadUserRef.current = true;
+
+    setIsAuthed(hasUser);
     setAuthReady(true);
 
     console.log("AUTH:", {
@@ -435,81 +474,131 @@ useEffect(() => {
       anon: user?.isAnonymous ?? null,
       email: user?.email ?? null,
     });
+
+    // ❌ Do NOT navigate here. Let your bootstrap effect decide.
   });
 
   return () => unsub();
 }, []);
 
-useEffect(() => {
-  if (screen !== "defibDemo") return;
+  // ✅ Web-only: read query params on first load
+  // Example: http://192.168.x.x:8081/--/join?sessionId=...&role=defib
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
 
-  const startedAt = Date.now();
-  setDemoStartedAt(startedAt);
+    try {
+      const u = new URL(window.location.href);
+      const sid = u.searchParams.get("sessionId");
+      const roleRaw = u.searchParams.get("role");
 
-  const id = setInterval(() => {
-    const tSec = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
-    const vitals = buildDemoVitals(tSec);
-    const rhythmKey = "SINUS";
-    setDemoLiveState({ vitals, rhythmKey });
-  }, 900);
+      if (sid) {
+        const role = parseJoinRole(roleRaw);
+        setPendingJoinSessionId(sid);
+        setPendingJoinRole(role);
+        // ✅ Don't hard-navigate here; let join driver effect do it once auth is ready
+      }
+    } catch (e) {
+      console.warn("web url parse failed", e);
+    }
+  }, []);
 
-  return () => clearInterval(id);
-}, [screen]);
+  async function ensureAuthForJoin(role: "FACILITATOR" | "DEFIB") {
+    if (auth.currentUser) return;
 
+    // ✅ Defib should not require credentials: use anonymous auth
+    if (role === "DEFIB") {
+      try {
+        if (Platform.OS === "web") {
+          await setPersistence(auth, browserSessionPersistence).catch(() => {});
+        }
+        await signInAnonymously(auth);
+        return;
+      } catch (e) {
+        console.warn("anonymous sign-in failed:", e);
+      }
+    }
 
+    // Facilitator requires login
+    setScreen("landing");
+  }
 
-  // When auth changes, load profile + cases once
+  // ✅ Join driver: once we have a pending join and auth is ready, navigate safely
+  useEffect(() => {
+    (async () => {
+      if (!pendingJoinSessionId) return;
+      if (!authReady) return;
+
+      await ensureAuthForJoin(pendingJoinRole);
+
+      // if still no user (facilitator without login), stop here
+      if (!auth.currentUser) return;
+
+      setScreen(pendingJoinRole === "DEFIB" ? "defib" : "pickFocus");
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingJoinSessionId, pendingJoinRole, authReady]);
+
+  // Demo vitals ticker
+  useEffect(() => {
+    if (screen !== "defibDemo") return;
+
+    const startedAt = Date.now();
+    setDemoStartedAt(startedAt);
+
+    const id = setInterval(() => {
+      const tSec = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
+      const vitals = buildDemoVitals(tSec);
+      setDemoLiveState({ vitals, rhythmKey: "SINUS" });
+    }, 900);
+
+    return () => clearInterval(id);
+  }, [screen]);
+
+  // When auth changes, load profile + cases once (and don't stomp join flow)
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       if (!authReady) return;
 
-      if (!isAuthed || !auth.currentUser) {
-        if (cancelled) return;
-        setProfile(null);
-        setAllCases([]);
-        setScreen("landing");
-        return;
-      }
+      const user = auth.currentUser;
+      if (!user) {
+  if (cancelled) return;
 
-      try {
-        const uid = auth.currentUser.uid;
+  setProfile(null);
+  setAllCases([]);
 
-        const p = await getUserProfile(uid);
-
-if (!p) {
-  // ✅ If this is an anonymous device (e.g. DEFIB monitor), do NOT force profile onboarding.
-  if (auth.currentUser?.isAnonymous) {
-    // allow app to continue without profile
-    setProfile({
-      uid,
-      displayName: "Device",
-      role: "defib_device",
-      orgId: "unknown",
-    });
-
-    // You can choose where to send anonymous devices:
-    // - landing: forces them to scan QR
-    // - mainMenu: if you want them to browse
+  // ✅ Only go to landing if we truly don't have a user session
+  // If we've previously had a user, ignore transient web flicker
+  if (!hadUserRef.current) {
     setScreen("landing");
-    return;
   }
 
-  // Non-anonymous users must onboard profile
-  router.replace("/profile");
   return;
 }
 
+      try {
+        const uid = user.uid;
+        const p = await getUserProfile(uid);
 
         if (cancelled) return;
 
-        setProfile({
-          uid,
-          displayName: p.displayName ?? "Bruger",
-          role: p.role ?? "unknown",
-          orgId: p.orgId ?? "unknown",
-        });
+        // ✅ Don’t block app if profile missing (debug-friendly)
+        if (!p) {
+          setProfile({
+            uid,
+            displayName: user.email ?? "Bruger",
+            role: "unknown",
+            orgId: "unknown",
+          });
+        } else {
+          setProfile({
+            uid,
+            displayName: p.displayName ?? "Bruger",
+            role: p.role ?? "unknown",
+            orgId: p.orgId ?? "unknown",
+          });
+        }
 
         setLoadingCases(true);
         const cases = await loadAllCasesFromFirestore();
@@ -518,40 +607,49 @@ if (!p) {
         setAllCases(cases);
         setLoadingCases(false);
 
-        setScreen("mainMenu");
+        // ✅ CRITICAL: don't stomp join navigation
+        if (!pendingJoinRef.current) {
+          setScreen("mainMenu");
+        }
       } catch (e) {
         console.warn("bootstrap failed:", e);
         if (cancelled) return;
+
         setLoadingCases(false);
         Alert.alert("Fejl", "Kunne ikke hente brugerprofil eller cases.");
-        setScreen("landing");
+        if (!pendingJoinRef.current) setScreen("landing");
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [authReady, isAuthed, router]);
+  }, [authReady, isAuthed]);
 
-  // ---------- Deep link handler ----------
+  // ---------- Deep link handler (native + web Linking) ----------
   useEffect(() => {
     const handleUrl = (url: string) => {
       const parsed = Linking.parse(url);
-      if (parsed?.path === "join") {
-        const sid = (parsed.queryParams?.sessionId as string) || null;
-        const role = parseJoinRole(parsed.queryParams?.role);
-        if (sid) {
-          setPendingJoinSessionId(sid);
-          setPendingJoinRole(role);
-          if (role === "DEFIB") setScreen("defib");
-          else setScreen("pickFocus");
-        }
+      const path = String(parsed?.path ?? "").replace(/^\//, "");
+
+      const sid = (parsed.queryParams?.sessionId as string) || null;
+      const role = parseJoinRole(parsed.queryParams?.role);
+
+      const isJoin =
+        path === "join" ||
+        path === "--/join" ||
+        path.endsWith("join") ||
+        (!!sid && (path === "" || path === "index"));
+
+      if (isJoin && sid) {
+        setPendingJoinSessionId(sid);
+        setPendingJoinRole(role);
+        // ✅ don't setScreen here; join driver effect will do it when auth is ready
       }
     };
 
     const sub = Linking.addEventListener("url", (e) => handleUrl(e.url));
     Linking.getInitialURL().then((url) => url && handleUrl(url));
-
     return () => sub.remove();
   }, []);
 
@@ -587,12 +685,16 @@ if (!p) {
     }).catch((e) => console.warn("publishLiveState error:", e));
   }, [sessionId, scenario, currentState]);
 
-  // Auto-join defib when landing on defib screen via QR/deeplink
+  // Auto-join defib when landing on defib screen via QR/deeplink/web query
   useEffect(() => {
     (async () => {
       if (screen !== "defib") return;
       const sid = pendingJoinSessionId;
       if (!sid) return;
+
+      // ✅ Must be authed (anonymous ok)
+      if (!authReady) return;
+      if (!auth.currentUser) return;
 
       try {
         const docSnap = await joinSession({ sessionId: sid, role: "DEFIB" });
@@ -606,7 +708,7 @@ if (!p) {
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen, pendingJoinSessionId]);
+  }, [screen, pendingJoinSessionId, authReady, isAuthed]);
 
   // Load remote events when entering summary (and sessionId exists)
   useEffect(() => {
@@ -630,31 +732,27 @@ if (!p) {
     return all;
   }, [log, remoteEvents]);
 
-const evaluation = useMemo(() => {
-  if (!scenario) return { evaluated: [], extraActions: [] };
-  try {
-    return evaluateCase(scenario, mergedTimeline);
-  } catch (e) {
-    console.warn("evaluateCase failed:", e);
-    return { evaluated: [], extraActions: [] };
-  }
-}, [scenario, mergedTimeline]);
+  const evaluation = useMemo(() => {
+    if (!scenario) return { evaluated: [], extraActions: [] };
+    try {
+      return evaluateCase(scenario, mergedTimeline);
+    } catch (e) {
+      console.warn("evaluateCase failed:", e);
+      return { evaluated: [], extraActions: [] };
+    }
+  }, [scenario, mergedTimeline]);
 
+  const medicalCases = useMemo(() => {
+    return allCases.filter((c) => !isHlrCase(c) && !isTraumaCase(c));
+  }, [allCases]);
 
-const medicalCases = useMemo(() => {
-  // “Everything you have now” becomes Medicinske.
-  // We exclude HLR, and we exclude trauma if you start tagging them later.
-  return allCases.filter((c) => !isHlrCase(c) && !isTraumaCase(c));
-}, [allCases]);
+  const traumaCases = useMemo(() => {
+    return allCases.filter(isTraumaCase);
+  }, [allCases]);
 
-const traumaCases = useMemo(() => {
-  return allCases.filter(isTraumaCase);
-}, [allCases]);
-
-const hlrCases = useMemo(() => {
-  return allCases.filter(isHlrCase);
-}, [allCases]);
-
+  const hlrCases = useMemo(() => {
+    return allCases.filter(isHlrCase);
+  }, [allCases]);
 
   const startCase = (c: CaseScenario) => {
     setScenario(c);
@@ -842,39 +940,38 @@ const hlrCases = useMemo(() => {
   };
 
   const handleRegisterAssistance = async () => {
-  if (guardLocked()) return;
-  if (!scenario || !currentState) return;
+    if (guardLocked()) return;
+    if (!scenario || !currentState) return;
 
-  const actionId = "ASSIST_REGISTERED";
-  const description = "Assistance registreret.";
+    const actionId = "ASSIST_REGISTERED";
+    const description = "Assistance registreret.";
 
-  const entry: ActionLogEntry = {
-    id: `${Date.now()}_${actionId}`,
-    timeMs: elapsedMs,
-    actionId,
-    description,
-    resultingStateId: currentState.id,
-    meta: { assistance: true },
-  };
+    const entry: ActionLogEntry = {
+      id: `${Date.now()}_${actionId}`,
+      timeMs: elapsedMs,
+      actionId,
+      description,
+      resultingStateId: currentState.id,
+      meta: { assistance: true },
+    };
 
-  setLog((prev) => [...prev, entry]);
+    setLog((prev) => [...prev, entry]);
 
-  // Optional: also log to session timeline if you’re in a session
-  if (sessionId) {
-    try {
-      await logSessionEvent({
-        sessionId,
-        type: "ASSISTANCE_REGISTERED", // string is fine if your SessionEvent typing allows it
-        tRelMs: sessionRelNowMs(),
-        payload: { actionId },
-        note: description,
-        source: "FACILITATOR",
-      });
-    } catch (e) {
-      console.warn("logSessionEvent assistance failed:", e);
+    if (sessionId) {
+      try {
+        await logSessionEvent({
+          sessionId,
+          type: "ASSISTANCE_REGISTERED" as any,
+          tRelMs: sessionRelNowMs(),
+          payload: { actionId },
+          note: description,
+          source: "FACILITATOR",
+        });
+      } catch (e) {
+        console.warn("logSessionEvent assistance failed:", e);
+      }
     }
-  }
-};
+  };
 
   const handleLogCprCallout = (type: CprCallout, extra?: any) => {
     if (guardLocked()) return;
@@ -882,14 +979,21 @@ const hlrCases = useMemo(() => {
 
     const actionId = `CPR_${type}`;
     const description =
-      type === "ARREST_RECOGNIZED" ? "CPR: Cardiac arrest erkendt." :
-      type === "CPR_STARTED" ? "CPR: HLR startet." :
-      type === "PADS_ON" ? "CPR: Pads påsat." :
-      type === "RHYTHM_CHECK" ? "CPR: Rytmetjek." :
-      type === "AIRWAY" ? "CPR: Luftvej håndteret." :
-      type === "IV_IO" ? "CPR: IV/IO etableret." :
-      type === "ROSC" ? "CPR: ROSC." :
-      `CPR: ${type}`;
+      type === "ARREST_RECOGNIZED"
+        ? "CPR: Cardiac arrest erkendt."
+        : type === "CPR_STARTED"
+        ? "CPR: HLR startet."
+        : type === "PADS_ON"
+        ? "CPR: Pads påsat."
+        : type === "RHYTHM_CHECK"
+        ? "CPR: Rytmetjek."
+        : type === "AIRWAY"
+        ? "CPR: Luftvej håndteret."
+        : type === "IV_IO"
+        ? "CPR: IV/IO etableret."
+        : type === "ROSC"
+        ? "CPR: ROSC."
+        : `CPR: ${type}`;
 
     const entry: ActionLogEntry = {
       id: `${Date.now()}_${actionId}`,
@@ -909,34 +1013,10 @@ const hlrCases = useMemo(() => {
     setLog((prev) => [...prev, entry]);
   };
 
-  const handleLogAssistance = (choice: AssistanceChoice) => {
-    if (guardLocked()) return;
-    if (!currentState) return;
-
-    const label =
-      choice === "EKSTRA_AMBULANCE" ? "Ekstra ambulance" : choice === "AKUTBIL" ? "Akutbil" : "Lægebil";
-
-    const actionId = `ASSIST_${choice}`;
-    const description = `Tilkald assistance: ${label}.`;
-
-    const entry: ActionLogEntry = {
-      id: `${Date.now()}_${actionId}`,
-      timeMs: elapsedMs,
-      actionId,
-      description,
-      resultingStateId: currentState.id,
-      meta: { assistance: choice },
-    };
-
-    setLog((prev) => [...prev, entry]);
-  };
-
   async function saveSummaryWithFeedback() {
     if (!scenario) return;
 
     const uid = auth.currentUser?.uid ?? null;
-
-    // Grade allowed only for students (simple rule for now)
     const allowGrade = (profile?.role ?? "").toLowerCase() === "student";
 
     const payload = stripUndefined({
@@ -950,7 +1030,6 @@ const hlrCases = useMemo(() => {
       caseTitle: scenario.title ?? null,
       patient: scenario.patientInfo ?? null,
 
-      // No org picker — org info is read-only from profile
       orgId: profile?.orgId ?? null,
       user: { uid, displayName: profile?.displayName ?? null, role: profile?.role ?? null },
       focus: pickedFocus ?? null,
@@ -982,7 +1061,7 @@ const hlrCases = useMemo(() => {
 
       await saveRun({
         runId: effectiveRunId,
-        orgId: profile?.orgId ?? null,     // keep field if backend expects it
+        orgId: profile?.orgId ?? null,
         sessionId: sessionId ?? null,
         caseCategory: caseCategory ?? null,
 
@@ -1003,10 +1082,7 @@ const hlrCases = useMemo(() => {
         feedbackText: feedbackText.trim() || null,
         feedbackGrade: allowGrade ? (feedbackGrade.trim() || null) : null,
 
-        traineeDisplayName:
-          profile?.displayName ??
-          auth.currentUser?.displayName ??
-          null,
+        traineeDisplayName: profile?.displayName ?? auth.currentUser?.displayName ?? null,
       });
 
       Alert.alert("Gemt", "Feedback + summary gemt lokalt og i backend.");
@@ -1023,112 +1099,95 @@ const hlrCases = useMemo(() => {
   if (screen === "landing") {
     return (
       <LandingScreen
-  authReady={authReady}
-  onLogin={async (u, p) => {
-    // ✅ extra guard against “tap and nothing happens”
-    try {
-      await signInWithUsernamePassword(u, p);
-    } catch {
-      // already alerted in signInWithUsernamePassword
-    }
-  }}
-/>
-
+        authReady={authReady}
+        onLogin={async (u, p) => {
+          try {
+            await signInWithUsernamePassword(u, p);
+          } catch {
+            // already alerted
+          }
+        }}
+      />
     );
   }
 
-if (screen === "mainMenu") {
-  const who = profile
-    ? `${profile.displayName} • ${profile.orgId} • ${profile.role}`
-    : "Ingen profil indlæst";
+  if (screen === "mainMenu") {
+    const who = profile ? `${profile.displayName} • ${profile.orgId} • ${profile.role}` : "Ingen profil indlæst";
 
-  return (
-    <SafeAreaView style={styles.container}>
-      <MainMenuScreen
+    return (
+      <SafeAreaView style={styles.container}>
+        <MainMenuScreen
+          profileLabel={who}
+          onLogout={doLogout}
+          onOpenProfile={() => {
+            Alert.alert("Profile", "Profile screen not wired in this state-machine version yet.");
+          }}
+          onOpenCases={() => setScreen("casesHub")}
+          onOpenScanQr={() => {
+            setScanQrBackScreen("mainMenu");
+            setScreen("scanQr");
+          }}
+          onOpenDocuments={() => setScreen("documents")}
+          onOpenHistory={() => setScreen("history")}
+          onOpenSettings={() => setScreen("settings")}
+          onOpenContact={() => setScreen("contact")}
+        />
+
+        {__DEV__ && (
+          <View style={{ position: "absolute", left: 16, right: 16, bottom: 16 }}>
+            <TouchableOpacity style={[styles.button, { backgroundColor: "#4b5563" }]} onPress={() => setScreen("defibDemo")}>
+              <Text style={styles.buttonText}>DEV: Open Defib Demo</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+      </SafeAreaView>
+    );
+  }
+
+  if (screen === "casesHub") {
+    const who = profile ? `${profile.displayName} • ${profile.orgId} • ${profile.role}` : "Ingen profil indlæst";
+
+    return (
+      <CasesHubScreen
         profileLabel={who}
-        onLogout={doLogout}
-        onOpenProfile={() => router.push("/profile")}
-        onOpenCases={() => setScreen("casesHub")}
-        onOpenScanQr={() => {
-          setScanQrBackScreen("mainMenu");
-          setScreen("scanQr");
-        }}
-        onOpenDocuments={() => setScreen("documents")}
-        onOpenHistory={() => setScreen("history")}
-        onOpenSettings={() => setScreen("settings")}
-        onOpenContact={() => setScreen("contact")}
-      />
-
-      {/* ✅ DEV button overlay (only show in development builds) */}
-      {__DEV__ && (
-        <View style={{ position: "absolute", left: 16, right: 16, bottom: 16 }}>
-          <TouchableOpacity
-            style={[styles.button, { backgroundColor: "#4b5563" }]}
-            onPress={() => setScreen("defibDemo")}
-          >
-            <Text style={styles.buttonText}>DEV: Open Defib Demo</Text>
-          </TouchableOpacity>
-        </View>
-      )}
-    </SafeAreaView>
-  );
-}
-
-
-if (screen === "casesHub") {
-  const who = profile
-    ? `${profile.displayName} • ${profile.orgId} • ${profile.role}`
-    : "Ingen profil indlæst";
-
-  return (
-    <CasesHubScreen
-      profileLabel={who}
-      onBack={() => setScreen("mainMenu")}
-      onOpenMedical={() => setScreen("medicalCases")}
-      onOpenTrauma={() => setScreen("traumaCases")}
-      onOpenHlr={() => setScreen("hlrCases")}
-    />
-  );
-}
-
-if (screen === "defibDemo") {
-  const sid = "DEMO_SESSION";
-
-  const demoDoc: any = {
-    status: "RUNNING",
-    startedAtEpochMs: demoStartedAt,
-  };
-
-  return (
-    <SafeAreaView style={styles.container}>
-      <DefibScreen
-        sessionId={sid}
-        sessionDoc={demoDoc}
-        liveState={demoLiveState}
-
-        defibOn={defibOn}
-        defibBusy={defibBusy}
-        defibDisplay={defibDisplay}
-        defibEkgKey={defibEkgKey}
-
         onBack={() => setScreen("mainMenu")}
-        onTogglePower={() => {
-          setDefibOn((p) => !p);
-          setDefibDisplay("");
-          setDefibEkgKey(null);
-          setDefibBusy(null);
-        }}
-        onSetBusy={setDefibBusy}
-        onSetDisplay={setDefibDisplay}
-        onSetEkgKey={setDefibEkgKey}
-
-        onLogDefib={async () => {}}
-        sessionRelNowMs={() => Math.max(0, Date.now() - demoStartedAt)}
+        onOpenMedical={() => setScreen("medicalCases")}
+        onOpenTrauma={() => setScreen("traumaCases")}
+        onOpenHlr={() => setScreen("hlrCases")}
       />
-    </SafeAreaView>
-  );
-}
+    );
+  }
 
+  if (screen === "defibDemo") {
+    const sid = "DEMO_SESSION";
+    const demoDoc: any = { status: "RUNNING", startedAtEpochMs: demoStartedAt };
+
+    return (
+      <SafeAreaView style={styles.container}>
+        <DefibScreen
+          sessionId={sid}
+          sessionDoc={demoDoc}
+          liveState={demoLiveState}
+          defibOn={defibOn}
+          defibBusy={defibBusy as any}
+          defibDisplay={defibDisplay}
+          defibEkgKey={defibEkgKey}
+          onBack={() => setScreen("mainMenu")}
+          onTogglePower={() => {
+            setDefibOn((p) => !p);
+            setDefibDisplay("");
+            setDefibEkgKey(null);
+            setDefibBusy(null);
+          }}
+          onSetBusy={setDefibBusy as any}
+          onSetDisplay={setDefibDisplay}
+          onSetEkgKey={setDefibEkgKey}
+          onLogDefib={async () => {}}
+          sessionRelNowMs={() => Math.max(0, Date.now() - demoStartedAt)}
+        />
+      </SafeAreaView>
+    );
+  }
 
   if (screen === "settings") {
     return (
@@ -1145,7 +1204,6 @@ if (screen === "defibDemo") {
       </SafeAreaView>
     );
   }
-
 
   if (screen === "history") {
     return (
@@ -1178,74 +1236,77 @@ if (screen === "defibDemo") {
     );
   }
 
-if (screen === "medicalCases") {
-  return (
-    <CaseListScreen
-      title="Medicinske cases"
-      profile={profile}
-      allCases={medicalCases}
-      loadingCases={loadingCases}
-      onBack={() => setScreen("casesHub")}
-      onPickCase={(c) => {
-        setCaseListBackScreen("medicalCases");
-        setSelectedCaseTemplate(c);
-        setCaseCategory(categoryForScenario(c));
-        setSetupSex(c.patientInfo?.sex ?? "M");
-        setSetupAge(c.patientInfo?.age ?? 50);
-        setUnits({ ambulancer: 1, akutbil: 0, laegebil: 0 });
-        setFacilitatorsCount(1);
-        setScreen("caseSetup");
-      }}
-    />
-  );
-}
+  if (screen === "medicalCases") {
+    return (
+      <CaseListScreen
+        title="Medicinske cases"
+        profile={profile}
+        allCases={medicalCases}
+        loadingCases={loadingCases}
+        onBack={() => setScreen("casesHub")}
+        onPickCase={(c) => {
+          setCaseListBackScreen("medicalCases");
+          setSelectedCaseTemplate(c);
+          setCaseCategory(categoryForScenario(c));
+          setSetupSex(c.patientInfo?.sex ?? "M");
+          setSetupAge(c.patientInfo?.age ?? 50);
+          setUnits({ ambulancer: 1, akutbil: 0, laegebil: 0 });
+          setFacilitatorsCount(1);
+          setScreen("caseSetup");
+        }}
+      />
+    );
+  }
 
-if (screen === "traumaCases") {
-  return (
-    <TraumeCaseScreen
-      profile={profile}
-      allCases={traumaCases}
-      loadingCases={loadingCases}
-      onBack={() => setScreen("casesHub")}
-      onPickCase={(c) => {
-        setCaseListBackScreen("traumaCases");
-        setSelectedCaseTemplate(c);
-        setSetupSex(c.patientInfo?.sex ?? "M");
-        setSetupAge(c.patientInfo?.age ?? 50);
-        setUnits({ ambulancer: 1, akutbil: 0, laegebil: 0 });
-        setFacilitatorsCount(1);
-        setCaseCategory(categoryForScenario(c));
-        setScreen("caseSetup");
-      }}
-    />
-  );
-}
+  if (screen === "traumaCases") {
+    return (
+      <TraumeCaseScreen
+        profile={profile}
+        allCases={traumaCases}
+        loadingCases={loadingCases}
+        onBack={() => setScreen("casesHub")}
+        onPickCase={(c) => {
+          setCaseListBackScreen("traumaCases");
+          setSelectedCaseTemplate(c);
+          setSetupSex(c.patientInfo?.sex ?? "M");
+          setSetupAge(c.patientInfo?.age ?? 50);
+          setUnits({ ambulancer: 1, akutbil: 0, laegebil: 0 });
+          setFacilitatorsCount(1);
+          setCaseCategory(categoryForScenario(c));
+          setScreen("caseSetup");
+        }}
+      />
+    );
+  }
 
-if (screen === "hlrCases") {
-  return (
-    <HlrCaseScreen
-      profile={profile}
-      allCases={hlrCases}
-      loadingCases={loadingCases}
-      onBack={() => setScreen("casesHub")}
-      onPickCase={(c) => {
-        setCaseListBackScreen("hlrCases");
-        setSelectedCaseTemplate(c);
-        setSetupSex(c.patientInfo?.sex ?? "M");
-        setSetupAge(c.patientInfo?.age ?? 50);
-        setUnits({ ambulancer: 1, akutbil: 0, laegebil: 0 });
-        setFacilitatorsCount(1);
-        setCaseCategory(categoryForScenario(c));
-        setScreen("caseSetup");
-      }}
-    />
-  );
-}
+  if (screen === "hlrCases") {
+    return (
+      <HlrCaseScreen
+        profile={profile}
+        allCases={hlrCases}
+        loadingCases={loadingCases}
+        onBack={() => setScreen("casesHub")}
+        onPickCase={(c) => {
+          setCaseListBackScreen("hlrCases");
+          setSelectedCaseTemplate(c);
+          setSetupSex(c.patientInfo?.sex ?? "M");
+          setSetupAge(c.patientInfo?.age ?? 50);
+          setUnits({ ambulancer: 1, akutbil: 0, laegebil: 0 });
+          setFacilitatorsCount(1);
+          setCaseCategory(categoryForScenario(c));
+          setScreen("caseSetup");
+        }}
+      />
+    );
+  }
 
-if (screen === "contact") {
-  return <ContactScreen onBack={() => setScreen("mainMenu")} />;
-}
+  if (screen === "contact") {
+    return <ContactScreen onBack={() => setScreen("mainMenu")} />;
+  }
 
+  if (screen === "documents") {
+    return <DocumentsScreen onBack={() => setScreen("mainMenu")} />;
+  }
 
   if (screen === "caseSetup") {
     return (
@@ -1261,9 +1322,9 @@ if (screen === "contact") {
         onSetFacilitatorsCount={setFacilitatorsCount}
         onBack={() => setScreen(caseListBackScreen)}
         onScanQr={() => {
-  setScanQrBackScreen("caseSetup");
-  setScreen("scanQr");
-}}
+          setScanQrBackScreen("caseSetup");
+          setScreen("scanQr");
+        }}
         onStartSoloCase={(derivedScenario) => {
           if (units.ambulancer + units.akutbil + units.laegebil <= 0) {
             Alert.alert("Ingen enheder", "Angiv mindst 1 enhed (fx 1 ambulance).");
@@ -1272,69 +1333,62 @@ if (screen === "contact") {
           startCase(derivedScenario);
         }}
         onCreateSessionInvite={async () => {
-  if (!profile || !selectedCaseTemplate) return;
+          if (!profile || !selectedCaseTemplate) return;
 
-  try {
-    const uid = auth.currentUser?.uid;
-    if (!uid) {
-      Alert.alert("Auth fejl", "Ingen bruger fundet (auth.currentUser er null).");
-      return;
-    }
+          try {
+            const uid = auth.currentUser?.uid;
+            if (!uid) {
+              Alert.alert("Auth fejl", "Ingen bruger fundet (auth.currentUser er null).");
+              return;
+            }
 
-    // Make a session id (safe for doc id)
-    const sid = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
+            const sid = `${Date.now()}_${Math.random().toString(36).slice(2, 10)}`;
 
-    // 1) Create session doc WITH ownerUid (required by the updated rules)
-    await setDoc(doc(db, "sessions", sid), {
-  createdByUid: uid,
-  createdAt: serverTimestamp(),
-  status: "SETUP",
-  orgId: profile.orgId,
-  caseId: selectedCaseTemplate.id,
-  facilitatorsCount,
-  units,
-  patient: { sex: setupSex, age: setupAge },
-});
+            await setDoc(doc(db, "sessions", sid), {
+              createdByUid: uid,
+              createdAt: serverTimestamp(),
+              status: "SETUP",
+              orgId: profile.orgId,
+              caseId: selectedCaseTemplate.id,
+              facilitatorsCount,
+              units,
+              patient: { sex: setupSex, age: setupAge },
+            });
 
+            await setDoc(doc(db, "sessions", sid, "members", uid), {
+              role: "facilitator",
+              createdAt: serverTimestamp(),
+              displayName: profile.displayName ?? null,
+              orgId: profile.orgId ?? null,
+            });
 
-    // 2) Immediately create your own membership doc (prevents "read requires member" deadlock)
-    await setDoc(doc(db, "sessions", sid, "members", uid), {
-      role: "facilitator",
-      createdAt: serverTimestamp(),
-      displayName: profile.displayName ?? null,
-      orgId: profile.orgId ?? null,
-    });
-
-    setSessionId(sid);
-    await ensureSessionListener(sid);
-    setScreen("inviteQr");
-  } catch (e: any) {
-    console.error(e);
-    Alert.alert("Session fejl", e?.message ?? "Kunne ikke oprette session.");
-  }
-}}
-
+            setSessionId(sid);
+            await ensureSessionListener(sid);
+            setScreen("inviteQr");
+          } catch (e: any) {
+            console.error(e);
+            Alert.alert("Session fejl", e?.message ?? "Kunne ikke oprette session.");
+          }
+        }}
       />
     );
   }
 
-  if (screen === "documents") {
-  return <DocumentsScreen onBack={() => setScreen("mainMenu")} />;
+if (screen === "inviteQr") {
+  const fac = sessionId ? buildJoinUrls(sessionId, "facilitator") : null;
+  const def = sessionId ? buildJoinUrls(sessionId, "defib") : null;
+
+  return (
+    <InviteQrScreen
+      sessionId={sessionId}
+      facNativeUrl={fac?.nativeUrl ?? null}
+      facWebUrl={fac?.webUrl ?? null}
+      defNativeUrl={def?.nativeUrl ?? null}
+      defWebUrl={def?.webUrl ?? null}
+      onBack={() => setScreen("caseSetup")}
+    />
+  );
 }
-
-  if (screen === "inviteQr") {
-    const facUrl = sessionId ? buildJoinUrl(sessionId, "facilitator") : null;
-    const defUrl = sessionId ? buildJoinUrl(sessionId, "defib") : null;
-
-    return (
-      <InviteQrScreen
-        sessionId={sessionId}
-        facUrl={facUrl}
-        defUrl={defUrl}
-        onBack={() => setScreen("caseSetup")}
-      />
-    );
-  }
 
   if (screen === "scanQr") {
     return (
@@ -1345,9 +1399,7 @@ if (screen === "contact") {
         onParsedInvite={({ sessionId: sid, role }) => {
           setPendingJoinSessionId(sid);
           setPendingJoinRole(role);
-
-          if (role === "DEFIB") setScreen("defib");
-          else setScreen("pickFocus");
+          // ✅ join driver effect navigates when auth is ready
         }}
       />
     );
@@ -1393,7 +1445,7 @@ if (screen === "contact") {
         sessionDoc={sessionDoc}
         liveState={liveState}
         defibOn={defibOn}
-        defibBusy={defibBusy}
+        defibBusy={defibBusy as any}
         defibDisplay={defibDisplay}
         defibEkgKey={defibEkgKey}
         onBack={() => setScreen("mainMenu")}
@@ -1403,7 +1455,7 @@ if (screen === "contact") {
           setDefibEkgKey(null);
           setDefibBusy(null);
         }}
-        onSetBusy={(v) => setDefibBusy(v)}
+        onSetBusy={(v) => setDefibBusy(v as any)}
         onSetDisplay={(s) => setDefibDisplay(s)}
         onSetEkgKey={(k) => setDefibEkgKey(k)}
         onLogDefib={async (type, payload, note) => {
@@ -1436,8 +1488,7 @@ if (screen === "contact") {
 
   if (screen === "summary") {
     const { evaluated } = evaluation;
-    const roleLower = (profile?.role ?? "").toLowerCase();
-    const allowGrade = roleLower === "student";
+    const allowGrade = (profile?.role ?? "").toLowerCase() === "student";
 
     return (
       <SummaryScreen
@@ -1447,7 +1498,7 @@ if (screen === "contact") {
         runId={runId}
         elapsedMs={elapsedMs}
         mergedTimeline={mergedTimeline}
-        evaluated={evaluated}
+        evaluated={evaluated as any}
         samplerState={samplerState}
         opqrstState={opqrstState}
         midasheState={midasheState}
@@ -1466,15 +1517,15 @@ if (screen === "contact") {
           setScreen("caseSetup");
         }}
         onBackToCases={() => {
-  setRunning(false);
-  setScenario(null);
-  setCurrentState(null);
-  setLog([]);
-  setElapsedMs(0);
-  setRunId(null);
-  setRunStartedAtEpochMs(null);
-  setScreen("casesHub");
-}}
+          setRunning(false);
+          setScenario(null);
+          setCurrentState(null);
+          setLog([]);
+          setElapsedMs(0);
+          setRunId(null);
+          setRunStartedAtEpochMs(null);
+          setScreen("casesHub");
+        }}
         onRunAgain={() => {
           setRunning(false);
           setScreen("caseSetup");
@@ -1486,62 +1537,51 @@ if (screen === "contact") {
   // DEFAULT: CASE DETAIL
   return (
     <CaseDetailScreen
-  mode={caseCategory}
-  scenario={scenario!}
-  currentState={currentState!}
-  elapsedMs={elapsedMs}
-  running={running}
-  popupText={popupText}
-
-  selectedLetter={selectedLetter}
-  setSelectedLetter={setSelectedLetter}
-
-  abcdeActionsExpanded={abcdeActionsExpanded}
-  setAbcdeActionsExpanded={setAbcdeActionsExpanded}
-
-  samplerExpanded={samplerExpanded}
-  setSamplerExpanded={setSamplerExpanded}
-  opqrstExpanded={opqrstExpanded}
-  setOpqrstExpanded={setOpqrstExpanded}
-  midasheExpanded={midasheExpanded}
-  setMidasheExpanded={setMidasheExpanded}
-
-  medExpanded={medExpanded}
-  setMedExpanded={setMedExpanded}
-
-  samplerState={samplerState}
-  setSamplerState={setSamplerState}
-  opqrstState={opqrstState}
-  setOpqrstState={setOpqrstState}
-  midasheState={midasheState}
-  setMidasheState={setMidasheState}
-
-  selectedMedication={selectedMedication}
-  setSelectedMedication={setSelectedMedication}
-  selectedDose={selectedDose}
-  setSelectedDose={setSelectedDose}
-  selectedOxygenFlow={selectedOxygenFlow}
-  setSelectedOxygenFlow={setSelectedOxygenFlow}
-
-  onLogTriage={handleLogTriage}
-
-  cprLevel={cprLevel}
-  onLogCprCallout={handleLogCprCallout}
-
-  onRegisterAssistance={handleRegisterAssistance}
-
-  onBackToSetup={() => {
-    setRunning(false);
-    setScreen("caseSetup");
-  }}
-  onStartTimer={startTimer}
-  onActionPress={handleActionPress}
-  onRegisterMedication={handleRegisterMedication}
-  onFinishCaseToSummary={() => {
-    setRunning(false);
-    setScreen("summary");
-  }}
-/>
-
+      mode={caseCategory}
+      scenario={scenario!}
+      currentState={currentState!}
+      elapsedMs={elapsedMs}
+      running={running}
+      popupText={popupText}
+      selectedLetter={selectedLetter}
+      setSelectedLetter={setSelectedLetter}
+      abcdeActionsExpanded={abcdeActionsExpanded}
+      setAbcdeActionsExpanded={setAbcdeActionsExpanded}
+      samplerExpanded={samplerExpanded}
+      setSamplerExpanded={setSamplerExpanded}
+      opqrstExpanded={opqrstExpanded}
+      setOpqrstExpanded={setOpqrstExpanded}
+      midasheExpanded={midasheExpanded}
+      setMidasheExpanded={setMidasheExpanded}
+      medExpanded={medExpanded}
+      setMedExpanded={setMedExpanded}
+      samplerState={samplerState}
+      setSamplerState={setSamplerState}
+      opqrstState={opqrstState}
+      setOpqrstState={setOpqrstState}
+      midasheState={midasheState}
+      setMidasheState={setMidasheState}
+      selectedMedication={selectedMedication}
+      setSelectedMedication={setSelectedMedication}
+      selectedDose={selectedDose}
+      setSelectedDose={setSelectedDose}
+      selectedOxygenFlow={selectedOxygenFlow}
+      setSelectedOxygenFlow={setSelectedOxygenFlow}
+      onLogTriage={handleLogTriage}
+      cprLevel={cprLevel}
+      onLogCprCallout={handleLogCprCallout}
+      onRegisterAssistance={handleRegisterAssistance}
+      onBackToSetup={() => {
+        setRunning(false);
+        setScreen("caseSetup");
+      }}
+      onStartTimer={startTimer}
+      onActionPress={handleActionPress}
+      onRegisterMedication={handleRegisterMedication}
+      onFinishCaseToSummary={() => {
+        setRunning(false);
+        setScreen("summary");
+      }}
+    />
   );
 }

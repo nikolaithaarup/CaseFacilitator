@@ -1,11 +1,16 @@
 // src/firebase/firebase.ts
 import { getApp, getApps, initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
+import { Platform } from "react-native";
 
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { getAuth, getReactNativePersistence, initializeAuth, type Auth } from "firebase/auth";
+import {
+  getAuth,
+  getReactNativePersistence,
+  initializeAuth,
+  type Auth,
+} from "firebase/auth";
 
-// 🔥 Your Firebase web config
 const firebaseConfig = {
   apiKey: "AIzaSyATGKw7iPS1cp1YbMe_JdQ_ob6W3p136wM",
   authDomain: "casefacilitator.firebaseapp.com",
@@ -20,17 +25,21 @@ const app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 
 export const db = getFirestore(app);
 
-// ✅ React Native Auth with persistent storage
-// Fast refresh safe:
-// - First time: initializeAuth(...)
-// - Next reloads: getAuth(app)
+// ✅ Correct per-platform Auth init
 let auth: Auth;
-try {
-  auth = initializeAuth(app, {
-    persistence: getReactNativePersistence(AsyncStorage),
-  });
-} catch (e: any) {
+
+if (Platform.OS === "web") {
+  // Web should use normal getAuth; persistence is set via setPersistence() elsewhere
   auth = getAuth(app);
+} else {
+  // Native: initializeAuth with AsyncStorage persistence
+  try {
+    auth = initializeAuth(app, {
+      persistence: getReactNativePersistence(AsyncStorage),
+    });
+  } catch {
+    auth = getAuth(app);
+  }
 }
 
 export { auth };
