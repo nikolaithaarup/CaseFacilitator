@@ -7,14 +7,10 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 // Firebase
 import {
-  browserLocalPersistence,
   browserSessionPersistence,
-  EmailAuthProvider,
-  linkWithCredential,
   onAuthStateChanged,
   setPersistence,
   signInAnonymously,
-  signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
 import {
@@ -97,8 +93,10 @@ import { DefibScreen } from "../src/screens/DefibScreen";
 import { DocumentsScreen } from "../src/screens/DocumentsScreen";
 import { HlrCaseScreen } from "../src/screens/HlrCaseScreen";
 import { InviteQrScreen } from "../src/screens/InviteQrScreen";
-import { LandingScreen } from "../src/screens/LandingScreen";
+import { PortalRequiredScreen } from "../src/screens/PortalRequiredScreen";
 import { MainMenuScreen } from "../src/screens/MainMenuScreen";
+import { useStaffAccess } from "./_layout";
+import { endPortalSession } from "../src/services/portalBridge";
 import { PickFocusScreen } from "../src/screens/PickFocusScreen";
 import { RunDetailScreen } from "../src/screens/RunDetailScreen";
 import { RunHistoryScreen } from "../src/screens/RunHistoryScreen";
@@ -239,6 +237,8 @@ function buildDemoVitals(_tSec: number) {
 
 // ---------- Component ----------
 export default function Index() {
+  const staffAccess = useStaffAccess();
+  const isStaffAuthorised = staffAccess === "AUTHORISED_STAFF";
   // Auth
   const [authReady, setAuthReady] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
@@ -405,57 +405,6 @@ export default function Index() {
   // Camera permission (QR scanner)
   const [perm, requestPerm] = useCameraPermissions();
 
-  // ---------- Auth helpers ----------
-  const usernameToEmail = (usernameRaw: string) => {
-    const u = (usernameRaw || "").trim().toLowerCase();
-    // ✅ If it already looks like an email, use it directly
-    if (u.includes("@")) return u;
-    return `${u}@casefacilitator.local`;
-  };
-
-  async function signInWithUsernamePassword(
-    username: string,
-    password: string,
-  ) {
-    const email = usernameToEmail(username);
-
-    try {
-      const u = auth.currentUser;
-
-      // ✅ If we currently have an anonymous user on this tab,
-      // convert it into the real account WITHOUT signing out (prevents cross-tab logout).
-      if (u?.isAnonymous) {
-        const cred = EmailAuthProvider.credential(email, password);
-
-        try {
-          await linkWithCredential(u, cred);
-          return; // linked successfully = now signed in as email user
-        } catch (e: any) {
-          // If the email is already used elsewhere, linking can fail.
-          // In that case: just sign in normally (still avoid signOut).
-          const code = e?.code ?? "";
-          if (
-            code !== "auth/credential-already-in-use" &&
-            code !== "auth/email-already-in-use"
-          ) {
-            console.warn("linkWithCredential failed:", e);
-            // fall through to normal sign-in anyway
-          }
-        }
-      }
-
-      // ✅ Normal login
-      await signInWithEmailAndPassword(auth, email, password);
-    } catch (e: any) {
-      console.warn("Login failed:", e);
-      Alert.alert(
-        "Login fejl",
-        e?.message ?? e?.code ?? "Ukendt fejl (se console).",
-      );
-      throw e;
-    }
-  }
-
   function cleanupSessionListener() {
     if (sessionUnsubRef.current) {
       sessionUnsubRef.current();
@@ -469,6 +418,7 @@ export default function Index() {
 
   async function doLogout() {
     try {
+      await endPortalSession().catch(() => {});
       await signOut(auth);
     } finally {
       cleanupSessionListener();
@@ -509,13 +459,6 @@ export default function Index() {
     if (isTraumaCase(c)) return "TRAUMA";
     return "MEDICAL";
   }
-
-  useEffect(() => {
-    if (Platform.OS !== "web") return;
-    setPersistence(auth, browserLocalPersistence).catch((error) => {
-      console.warn("setPersistence failed (web):", error);
-    });
-  }, []);
 
   const hadUserRef = useRef(false);
 
@@ -575,7 +518,7 @@ export default function Index() {
       }
     }
 
-    // Facilitator requires login
+    // Permanent facilitators must arrive with a restored Portal product session.
     setScreen("landing");
   }
 
@@ -589,10 +532,11 @@ export default function Index() {
 
       // if still no user (facilitator without login), stop here
       if (!auth.currentUser) return;
+      if (pendingJoinRole === "FACILITATOR" && !isStaffAuthorised) return;
 
       setScreen(pendingJoinRole === "DEFIB" ? "defib" : "pickFocus");
     })();
-  }, [pendingJoinSessionId, pendingJoinRole, authReady]);
+  }, [pendingJoinSessionId, pendingJoinRole, authReady, isStaffAuthorised]);
 
   // Demo vitals ticker
   useEffect(() => {
@@ -629,6 +573,13 @@ export default function Index() {
       if (!authReady) return;
 
       const user = auth.currentUser;
+      if (user?.isAnonymous || !isStaffAuthorised) {
+        if (pendingJoinRole !== "DEFIB") {
+          setProfile(null);
+          setAllCases([]);
+        }
+        return;
+      }
       if (!user) {
         if (cancelled) return;
 
@@ -694,7 +645,7 @@ export default function Index() {
     return () => {
       cancelled = true;
     };
-  }, [authReady, isAuthed]);
+  }, [authReady, isAuthed, isStaffAuthorised, pendingJoinRole]);
 
   // ---------- Deep link handler (native + web Linking) ----------
   useEffect(() => {
@@ -1205,19 +1156,7 @@ export default function Index() {
 
   // ---------- Render ----------
   if (screen === "landing") {
-    return (
-      <LandingScreen
-        authReady={authReady}
-        onLogin={async (u, p) => {
-          // ✅ extra guard against “tap and nothing happens”
-          try {
-            await signInWithUsernamePassword(u, p);
-          } catch {
-            // already alerted in signInWithUsernamePassword
-          }
-        }}
-      />
-    );
+    return <PortalRequiredScreen />;
   }
 
   if (screen === "mainMenu") {

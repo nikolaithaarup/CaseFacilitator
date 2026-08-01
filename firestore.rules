@@ -6,8 +6,29 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function facilitatorGrant() {
+      return get(/databases/$(database)/documents/facilitatorAccessGrants/$(request.auth.uid));
+    }
+
+    function hasConnectedFacilitatorAccess(sessionId) {
+      return signedIn()
+        && request.auth.token.firebase.sign_in_provider != "anonymous"
+        && request.auth.token.facilitatorConnected == true
+        && request.auth.token.facilitatorSessionId == sessionId
+        && facilitatorGrant().data.active == true
+        && facilitatorGrant().data.subjectType == "STAFF"
+        && facilitatorGrant().data.capability == "INSTRUCTOR"
+        && facilitatorGrant().data.trainingSessionId == sessionId
+        && facilitatorGrant().data.facilitatorSessionId == sessionId
+        && facilitatorGrant().data.leaseExpiresAt > request.time
+        && facilitatorGrant().data.revocationVersion == request.auth.token.facilitatorRevocationVersion
+        && facilitatorGrant().data.accessBinding == request.auth.token.facilitatorAccessBinding;
+    }
+
     function hasTrustedInstructorIdentity() {
-      return signedIn() && request.auth.token.facilitatorInstructor == true;
+      return signedIn()
+        && request.auth.token.facilitatorSessionId is string
+        && hasConnectedFacilitatorAccess(request.auth.token.facilitatorSessionId);
     }
 
     function session(sessionId) {
@@ -21,7 +42,9 @@ service cloud.firestore {
     function hasActiveMembership(sessionId) {
       return signedIn()
         && membership(sessionId).data.active == true
-        && membership(sessionId).data.uid == request.auth.uid;
+        && membership(sessionId).data.uid == request.auth.uid
+        && (!(membership(sessionId).data.role in ["INSTRUCTOR_LEAD", "INSTRUCTOR_ASSISTANT"])
+          || hasConnectedFacilitatorAccess(sessionId));
     }
 
     function hasRole(sessionId, role) {
@@ -148,6 +171,10 @@ service cloud.firestore {
     match /simulationCases/{caseId} {
       allow read: if hasTrustedInstructorIdentity();
       allow write: if false;
+    }
+
+    match /facilitatorAccessGrants/{uid} {
+      allow read, write: if false;
     }
 
     match /simulationSessions/{sessionId} {

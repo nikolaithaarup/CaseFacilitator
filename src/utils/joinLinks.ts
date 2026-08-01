@@ -24,7 +24,7 @@ export function buildJoinUrl(
   role: "facilitator" | "defib",
 ): string {
   if (Platform.OS === "web") {
-    return Linking.createURL("/", {
+    return Linking.createURL("join", {
       queryParams: queryParams(sessionId, role),
     });
   }
@@ -56,12 +56,12 @@ export function buildJoinUrls(
     typeof window !== "undefined" &&
     window.location?.origin
   ) {
-    const url = new URL("/", window.location.origin);
+    const url = new URL("/join", window.location.origin);
     url.searchParams.set("sessionId", sessionId);
     url.searchParams.set("role", role);
     webUrl = url.toString();
   } else {
-    webUrl = Linking.createURL("/", {
+    webUrl = Linking.createURL("join", {
       queryParams: queryParams(sessionId, role),
     });
   }

@@ -23,7 +23,7 @@ Start here:
 - `src/integrations/__tests__/deviceEvents.test.ts`
 - `src/services/sessionEvents.ts`
 - `src/screens/DefibScreen.tsx`
-- `src/screens/LandingScreen.tsx`
+- Portal access is enforced by `app/_layout.tsx` and `src/screens/PortalRequiredScreen.tsx`.
 - `src/components/MenuTile.tsx`
 - `docs/MODERNIZATION_AUDIT.md`
 - `docs/DEVICE_EVENT_CONTRACT.md`

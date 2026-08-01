@@ -6,7 +6,7 @@ const {
   assertSucceeds,
   initializeTestEnvironment,
 } = require("@firebase/rules-unit-testing");
-const { doc, getDoc, setDoc, updateDoc } = require("firebase/firestore");
+const { Timestamp, deleteDoc, doc, getDoc, setDoc, updateDoc } = require("firebase/firestore");
 
 const PROJECT_ID = "demo-synapse-facilitator";
 const fixtures = JSON.parse(
@@ -60,8 +60,32 @@ const releasedDocument = {
 };
 
 function dbFor(uid, token = {}) {
-  return environment.authenticatedContext(uid, token).firestore();
+  const staff = ["lead-a", "assistant-a", "lead-b", "new-lead"].includes(uid);
+  const sessionId = uid === "lead-b" ? "session-b" : uid === "new-lead" ? "session-c" : "session-a";
+  const staffToken = staff ? {
+    firebase: { sign_in_provider: "custom" },
+    facilitatorConnected: true,
+    facilitatorSessionId: sessionId,
+    facilitatorRevocationVersion: 1,
+    facilitatorAccessBinding: `binding-${uid}`,
+  } : {};
+  return environment.authenticatedContext(uid, { ...staffToken, ...token }).firestore();
 }
+
+const grantDocument = (uid, sessionId, overrides = {}) => ({
+  active: true,
+  organisationId: sessionId === "session-b" ? "fictional-org-b" : "fictional-org-a",
+  trainingSessionId: sessionId,
+  facilitatorSessionId: sessionId,
+  subjectType: "STAFF",
+  subjectId: uid,
+  capability: "INSTRUCTOR",
+  authorisedRole: "INSTRUCTOR_LEAD",
+  leaseExpiresAt: Timestamp.fromDate(new Date("2099-01-01T00:00:00.000Z")),
+  revocationVersion: 1,
+  accessBinding: `binding-${uid}`,
+  ...overrides,
+});
 
 before(async () => {
   environment = await initializeTestEnvironment({
@@ -83,6 +107,9 @@ beforeEach(async () => {
         membershipDocument(fixture),
       );
     }
+    await setDoc(doc(db, "facilitatorAccessGrants", "lead-a"), grantDocument("lead-a", "session-a"));
+    await setDoc(doc(db, "facilitatorAccessGrants", "assistant-a"), grantDocument("assistant-a", "session-a", { authorisedRole: "INSTRUCTOR_ASSISTANT" }));
+    await setDoc(doc(db, "facilitatorAccessGrants", "lead-b"), grantDocument("lead-b", "session-b"));
     await setDoc(doc(db, "simulationSessions", "session-a", "instructorTruth", "current"), truthDocument);
   });
 });
@@ -103,13 +130,48 @@ describe("instructor authority", () => {
       capacity: { assistantInstructors: 1, learnerUnits: 2, monitorDevices: 1 },
       createdAtEpochMs: 1_700_000_004_000,
     };
-    await assertSucceeds(setDoc(
-      doc(dbFor("new-lead", { facilitatorInstructor: true }), "simulationSessions", "session-c"),
-      newSession,
-    ));
+    await environment.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), "facilitatorAccessGrants", "new-lead"), grantDocument("new-lead", "session-c"));
+    });
+    await assertSucceeds(setDoc(doc(dbFor("new-lead"), "simulationSessions", "session-c"), newSession));
     await assertFails(setDoc(
       doc(dbFor("learner-outsider"), "simulationSessions", "session-d"),
       { ...newSession, leadInstructorUid: "learner-outsider" },
+    ));
+  });
+
+  test("connected staff grant is mandatory, current, unexpired and session-bound", async () => {
+    const truth = doc(dbFor("lead-a"), "simulationSessions", "session-a", "instructorTruth", "current");
+    await assertSucceeds(getDoc(truth));
+    const cases = [
+      null,
+      grantDocument("lead-a", "session-a", { active: false }),
+      grantDocument("lead-a", "session-a", { leaseExpiresAt: Timestamp.fromDate(new Date("2000-01-01T00:00:00.000Z")) }),
+      grantDocument("lead-a", "session-a", { revocationVersion: 2 }),
+      grantDocument("lead-a", "session-a", { trainingSessionId: "session-b", facilitatorSessionId: "session-b" }),
+    ];
+    for (const grant of cases) {
+      await environment.withSecurityRulesDisabled(async (context) => {
+        const ref = doc(context.firestore(), "facilitatorAccessGrants", "lead-a");
+        if (grant) await setDoc(ref, grant);
+        else await deleteDoc(ref);
+      });
+      await assertFails(getDoc(doc(dbFor("lead-a"), "simulationSessions", "session-a", "instructorTruth", "current")));
+    }
+  });
+
+  test("Portal revocation immediately denies the next protected operation", async () => {
+    await assertSucceeds(getDoc(
+      doc(dbFor("lead-a"), "simulationSessions", "session-a", "instructorTruth", "current"),
+    ));
+    await environment.withSecurityRulesDisabled(async (context) => {
+      await updateDoc(doc(context.firestore(), "facilitatorAccessGrants", "lead-a"), {
+        active: false,
+        revocationVersion: 2,
+      });
+    });
+    await assertFails(getDoc(
+      doc(dbFor("lead-a"), "simulationSessions", "session-a", "instructorTruth", "current"),
     ));
   });
 

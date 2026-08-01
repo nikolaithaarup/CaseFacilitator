@@ -24,6 +24,14 @@ function required(name) {
   return value;
 }
 
+export function verifyServiceBearer(req, secretName) {
+  const supplied = String(req.headers.authorization || "").replace(/^Bearer\s+/i, "");
+  const expected = required(secretName);
+  const a = Buffer.from(supplied);
+  const b = Buffer.from(expected);
+  return a.length === b.length && crypto.timingSafeEqual(a, b);
+}
+
 export function admin() {
   if (!getApps().length) {
     const raw = required("FIREBASE_SERVICE_ACCOUNT_JSON");
@@ -106,6 +114,29 @@ export function binding(entitlement) {
       `${entitlement.launchId}:${entitlement.organisationId}:${entitlement.trainingSessionId}:${entitlement.subjectId}:${entitlement.revocationVersion}`,
     )
     .digest("hex");
+}
+
+export function validateFacilitatorGrant(grant, session, nowMillis = Date.now()) {
+  const leaseMillis = grant?.leaseExpiresAt?.toMillis?.() ?? 0;
+  return Boolean(
+    grant?.active === true &&
+    grant.subjectType === "STAFF" &&
+    grant.capability === "INSTRUCTOR" &&
+    grant.trainingSessionId === session.facilitatorSessionId &&
+    grant.facilitatorSessionId === session.facilitatorSessionId &&
+    grant.revocationVersion === session.revocationVersion &&
+    grant.accessBinding === session.accessBinding &&
+    leaseMillis > nowMillis
+  );
+}
+
+export async function requireActiveFacilitatorGrant(db, session) {
+  const snapshot = await db.doc(`facilitatorAccessGrants/${session.firebaseUid}`).get();
+  if (!snapshot.exists) return { ok: false, status: 401, error: "GRANT_MISSING" };
+  const grant = snapshot.data();
+  return validateFacilitatorGrant(grant, session)
+    ? { ok: true, grant }
+    : { ok: false, status: 403, error: "GRANT_REVOKED_OR_EXPIRED" };
 }
 export async function redeemWithPortal({
   code,

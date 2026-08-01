@@ -1,6 +1,14 @@
 {
   "indexes": [
     {
+      "collectionGroup": "facilitatorAccessGrants",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "organisationId", "order": "ASCENDING" },
+        { "fieldPath": "trainingSessionId", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "learnerProjection",
       "queryScope": "COLLECTION",
       "fields": [

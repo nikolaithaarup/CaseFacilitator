@@ -99,7 +99,7 @@ New display branding is centralized in `BrandMark`: “Synapse” is white and �
 | npm | `casefacilitator` | Preserve |
 | Expo/native | name/slug `CaseFacilitator`, scheme `casefacilitator`, Android ID | Preserve until migration plan |
 | Firebase | project/auth/storage `casefacilitator` | Preserve; emulator uses separate demo ID |
-| Authentication | `@casefacilitator.local` alias | Preserve for login compatibility |
+| Authentication | Portal-issued Firebase custom token | Required for permanent staff access |
 | Local persistence | `casefacilitator:runs` | Preserve to retain history |
 | Deep links/QR | legacy URI scheme and copy | Preserve until dual-scheme migration |
 | UI/technical comments | legacy login, modal, contact, scan copy/comments | Classified display debt; no broad rename here |

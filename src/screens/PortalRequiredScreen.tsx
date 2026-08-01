@@ -1,12 +1,13 @@
 import * as Linking from "expo-linking";
 import { Pressable, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { publicEnvironment } from "../config/env";
 import { BrandMark } from "../components/BrandMark";
+
+const PORTAL_LOGIN_URL = "https://portal.synapsestudio.dk/login";
 
 export function PortalRequiredScreen() {
   const openPortal = () => {
-    void Linking.openURL(publicEnvironment.access.portalUrl);
+    void Linking.openURL(PORTAL_LOGIN_URL);
   };
 
   return (
