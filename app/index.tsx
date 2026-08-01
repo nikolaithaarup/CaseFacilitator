@@ -1,14 +1,19 @@
 // app/index.tsx
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Linking from "expo-linking";
-import { useRouter } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Text, TouchableOpacity, View } from "react-native";
+import { Alert, Platform, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // Firebase
 import {
+  browserLocalPersistence,
+  browserSessionPersistence,
+  EmailAuthProvider,
+  linkWithCredential,
   onAuthStateChanged,
+  setPersistence,
+  signInAnonymously,
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
@@ -32,7 +37,7 @@ import { getDoseOptionsForMedication } from "../src/data/medications";
 
 // Utils
 import { stripUndefined } from "../src/utils/format";
-import { buildJoinUrl, parseJoinRole } from "../src/utils/joinLinks";
+import { buildJoinUrls, parseJoinRole } from "../src/utils/joinLinks";
 
 // Services
 import { saveRun } from "../src/services/runs";
@@ -61,23 +66,26 @@ import {
 } from "../src/services/sessionEvents";
 
 // Domain
+import { useSimulationLifecycle } from "../src/application/simulation/useSimulationLifecycle";
+import {
+  loadCasesWithFallback,
+  type CaseSourceMode,
+} from "../src/domain/cases/fallbackRepository";
+import { normalizeCaseScenario } from "../src/domain/cases/normalize";
 import type {
   AbcdeAction,
   AbcdeLetter,
   ActionLogEntry,
-  CaseScenario,
   CaseCategory,
+  CaseScenario,
   DoseStrength,
+  HlrLevel,
   Medication,
   MidasheLetter,
   OpqrstLetter,
   SamplerLetter,
-  HlrLevel,
 } from "../src/domain/cases/types";
-import { normalizeCaseScenario } from "../src/domain/cases/normalize";
-import { loadCasesWithFallback, type CaseSourceMode } from "../src/domain/cases/fallbackRepository";
 import type { SimulationCommand } from "../src/domain/simulation/types";
-import { useSimulationLifecycle } from "../src/application/simulation/useSimulationLifecycle";
 
 // Screens
 import { CaseDetailScreen } from "../src/screens/CaseDetailScreen";
@@ -125,8 +133,7 @@ type Screen =
   | "runDetail"
   | "settings"
   | "contact"
-  | "documents"
-  | "profile";
+  | "documents";
 
 type UnitsRunConfig = {
   ambulancer: number;
@@ -180,12 +187,12 @@ async function loadAllCasesFromFirestore(): Promise<CaseScenario[]> {
   });
 
   cases.sort((a, b) =>
-    String(a.title || "").localeCompare(String(b.title || ""))
+    String(a.title || "").localeCompare(String(b.title || "")),
   );
   return cases;
 }
 
-// Heuristic: tag HLR cases without changing your DB schema yet
+// Heuristic: tag HLR cases without changing DB schema yet
 function isHlrCase(c: CaseScenario): boolean {
   const t = `${c.caseType ?? ""} ${c.title ?? ""} ${
     c.subtitle ?? ""
@@ -232,8 +239,6 @@ function buildDemoVitals(_tSec: number) {
 
 // ---------- Component ----------
 export default function Index() {
-  const router = useRouter();
-
   // Auth
   const [authReady, setAuthReady] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
@@ -251,7 +256,8 @@ export default function Index() {
   const [selectedCaseTemplate, setSelectedCaseTemplate] =
     useState<CaseScenario | null>(null);
   const [caseCategory, setCaseCategory] = useState<CaseCategory>("MEDICAL");
-  const [caseSourceMode, setCaseSourceMode] = useState<CaseSourceMode>("REMOTE_CANONICAL");
+  const [caseSourceMode, setCaseSourceMode] =
+    useState<CaseSourceMode>("REMOTE_CANONICAL");
   const [hlrMode, setHlrMode] = useState<HlrLevel>("BLS");
 
   // Run browsing
@@ -270,7 +276,7 @@ export default function Index() {
 
   const [demoStartedAt, setDemoStartedAt] = useState<number>(() => Date.now());
   const [demoLiveState, setDemoLiveState] = useState<SessionLiveState | null>(
-    null
+    null,
   );
 
   // Session / pairing
@@ -281,6 +287,14 @@ export default function Index() {
   const [pendingJoinSessionId, setPendingJoinSessionId] = useState<
     string | null
   >(null);
+  const [pendingJoinRole, setPendingJoinRole] = useState<
+    "FACILITATOR" | "DEFIB"
+  >("FACILITATOR");
+
+  const pendingJoinRef = useRef<string | null>(null);
+  useEffect(() => {
+    pendingJoinRef.current = pendingJoinSessionId;
+  }, [pendingJoinSessionId]);
   // Live state for defib
   const [liveState, setLiveState] = useState<SessionLiveState | null>(null);
   const [pickedFocus, setPickedFocus] = useState<FacilitatorFocus>("ALL");
@@ -290,8 +304,14 @@ export default function Index() {
 
   const simulation = useSimulationLifecycle();
   const {
-    scenario, currentState, simulationState, log, transitionFeedback,
-    startSimulation, resetSimulation, applyCommand,
+    scenario,
+    currentState,
+    simulationState,
+    log,
+    transitionFeedback,
+    startSimulation,
+    resetSimulation,
+    applyCommand,
   } = simulation;
 
   // Run/timer/log
@@ -302,7 +322,7 @@ export default function Index() {
   // Run identity
   const [runId, setRunId] = useState<string | null>(null);
   const [runStartedAtEpochMs, setRunStartedAtEpochMs] = useState<number | null>(
-    null
+    null,
   );
 
   // Acronyms
@@ -352,7 +372,7 @@ export default function Index() {
     useState<Medication | null>(null);
   const [selectedDose, setSelectedDose] = useState<DoseStrength | null>(null);
   const [selectedOxygenFlow, setSelectedOxygenFlow] = useState<number | null>(
-    null
+    null,
   );
 
   const [popupText, setPopupText] = useState<string | null>(null);
@@ -366,7 +386,6 @@ export default function Index() {
     | "ETCO2"
     | "BS"
     | "TEMP"
-    | "EKG4"
     | "EKG12"
     | "CHARGE"
     | "SHOCK"
@@ -396,28 +415,44 @@ export default function Index() {
 
   async function signInWithUsernamePassword(
     username: string,
-    password: string
+    password: string,
   ) {
     const email = usernameToEmail(username);
 
     try {
-      // ✅ If we previously auto-signed-in anonymously (device/defib),
-      // sign out first so email login is clean and predictable.
-      if (auth.currentUser?.isAnonymous) {
-        await signOut(auth);
+      const u = auth.currentUser;
+
+      // ✅ If we currently have an anonymous user on this tab,
+      // convert it into the real account WITHOUT signing out (prevents cross-tab logout).
+      if (u?.isAnonymous) {
+        const cred = EmailAuthProvider.credential(email, password);
+
+        try {
+          await linkWithCredential(u, cred);
+          return; // linked successfully = now signed in as email user
+        } catch (e: any) {
+          // If the email is already used elsewhere, linking can fail.
+          // In that case: just sign in normally (still avoid signOut).
+          const code = e?.code ?? "";
+          if (
+            code !== "auth/credential-already-in-use" &&
+            code !== "auth/email-already-in-use"
+          ) {
+            console.warn("linkWithCredential failed:", e);
+            // fall through to normal sign-in anyway
+          }
+        }
       }
 
+      // ✅ Normal login
       await signInWithEmailAndPassword(auth, email, password);
     } catch (e: any) {
       console.warn("Login failed:", e);
-
-      // ✅ Make the error visible (otherwise it looks like “nothing happens”)
       Alert.alert(
         "Login fejl",
-        e?.message ?? e?.code ?? "Ukendt fejl (se console)."
+        e?.message ?? e?.code ?? "Ukendt fejl (se console).",
       );
-
-      throw e; // optional, but useful if LandingScreen wants to handle it too
+      throw e;
     }
   }
 
@@ -443,10 +478,10 @@ export default function Index() {
       setSessionDoc(null);
       setLiveState(null);
 
-      // ✅ clear deep-link join intent
       setPendingJoinSessionId(null);
+      setPendingJoinRole("FACILITATOR");
 
-      // ✅ reset defib UI state
+      // Reset defibrillator UI state.
       setDefibOn(false);
       setDefibBusy(null);
       setDefibDisplay("");
@@ -470,16 +505,27 @@ export default function Index() {
   function categoryForScenario(c: CaseScenario): CaseCategory {
     if (c.category) return c.category;
 
-    // fallback heuristics
     if (isHlrCase(c)) return "HLR";
     if (isTraumaCase(c)) return "TRAUMA";
     return "MEDICAL";
   }
 
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+    setPersistence(auth, browserLocalPersistence).catch((error) => {
+      console.warn("setPersistence failed (web):", error);
+    });
+  }, []);
+
+  const hadUserRef = useRef(false);
+
   // ---------- Auth bootstrap ----------
   useEffect(() => {
     const unsub = onAuthStateChanged(auth, (user) => {
-      setIsAuthed(!!user);
+      const hasUser = !!user;
+      if (hasUser) hadUserRef.current = true;
+
+      setIsAuthed(hasUser);
       setAuthReady(true);
 
       console.log("AUTH:", {
@@ -492,6 +538,63 @@ export default function Index() {
     return () => unsub();
   }, []);
 
+  // ✅ Web-only: read query params on first load
+  // Example: http://192.168.x.x:8081/--/join?sessionId=...&role=defib
+  useEffect(() => {
+    if (Platform.OS !== "web") return;
+
+    try {
+      const u = new URL(window.location.href);
+      const sid = u.searchParams.get("sessionId");
+      const roleRaw = u.searchParams.get("role");
+
+      if (sid) {
+        const role = parseJoinRole(roleRaw);
+        setPendingJoinSessionId(sid);
+        setPendingJoinRole(role);
+        // ✅ Don't hard-navigate here; let join driver effect do it once auth is ready
+      }
+    } catch (e) {
+      console.warn("web url parse failed", e);
+    }
+  }, []);
+
+  async function ensureAuthForJoin(role: "FACILITATOR" | "DEFIB") {
+    if (auth.currentUser) return;
+
+    // ✅ Defib should not require credentials: use anonymous auth
+    if (role === "DEFIB") {
+      try {
+        if (Platform.OS === "web") {
+          await setPersistence(auth, browserSessionPersistence).catch(() => {});
+        }
+        await signInAnonymously(auth);
+        return;
+      } catch (e) {
+        console.warn("anonymous sign-in failed:", e);
+      }
+    }
+
+    // Facilitator requires login
+    setScreen("landing");
+  }
+
+  // ✅ Join driver: once we have a pending join and auth is ready, navigate safely
+  useEffect(() => {
+    (async () => {
+      if (!pendingJoinSessionId) return;
+      if (!authReady) return;
+
+      await ensureAuthForJoin(pendingJoinRole);
+
+      // if still no user (facilitator without login), stop here
+      if (!auth.currentUser) return;
+
+      setScreen(pendingJoinRole === "DEFIB" ? "defib" : "pickFocus");
+    })();
+  }, [pendingJoinSessionId, pendingJoinRole, authReady]);
+
+  // Demo vitals ticker
   useEffect(() => {
     if (screen !== "defibDemo") return;
 
@@ -501,11 +604,16 @@ export default function Index() {
     const id = setInterval(() => {
       const tSec = Math.max(0, Math.floor((Date.now() - startedAt) / 1000));
       const vitals = buildDemoVitals(tSec);
-      const rhythmKey = "SINUS";
       setDemoLiveState({
         vitals,
-        abcde: { A: "", B: "", C: "", D: "", E: "" },
-        rhythmKey,
+        abcde: {
+          A: "",
+          B: "",
+          C: "",
+          D: "",
+          E: "",
+        },
+        rhythmKey: "SINUS",
         updatedAt: Date.now(),
       });
     }, 900);
@@ -513,82 +621,82 @@ export default function Index() {
     return () => clearInterval(id);
   }, [screen]);
 
-  // When auth changes, load profile + cases once
+  // When auth changes, load profile + cases once (and don't stomp join flow)
   useEffect(() => {
     let cancelled = false;
 
     (async () => {
       if (!authReady) return;
 
-      if (!isAuthed || !auth.currentUser) {
+      const user = auth.currentUser;
+      if (!user) {
         if (cancelled) return;
+
         setProfile(null);
         setAllCases([]);
-        setScreen("landing");
+
+        // ✅ Only go to landing if we truly don't have a user session
+        // If we've previously had a user, ignore transient web flicker
+        if (!hadUserRef.current) {
+          setScreen("landing");
+        }
+
         return;
       }
 
       try {
-        const uid = auth.currentUser.uid;
-
+        const uid = user.uid;
         const p = await getUserProfile(uid);
-
-        if (!p) {
-          // ✅ If this is an anonymous device (e.g. DEFIB monitor), do NOT force profile onboarding.
-          if (auth.currentUser?.isAnonymous) {
-            // allow app to continue without profile
-            setProfile({
-              uid,
-              displayName: "Device",
-              role: "defib_device",
-              orgId: "unknown",
-            });
-
-            // You can choose where to send anonymous devices:
-            // - landing: forces them to scan QR
-            // - mainMenu: if you want them to browse
-            setScreen("landing");
-            return;
-          }
-
-          // Non-anonymous users must onboard profile
-          router.replace("/profile");
-          return;
-        }
 
         if (cancelled) return;
 
-        setProfile({
-          uid,
-          displayName: p.displayName ?? "Bruger",
-          role: p.role ?? "unknown",
-          orgId: p.orgId ?? "unknown",
-        });
+        // ✅ Don’t block app if profile missing (debug-friendly)
+        if (!p) {
+          setProfile({
+            uid,
+            displayName: user.email ?? "Bruger",
+            role: "unknown",
+            orgId: "unknown",
+          });
+        } else {
+          setProfile({
+            uid,
+            displayName: p.displayName ?? "Bruger",
+            role: p.role ?? "unknown",
+            orgId: p.orgId ?? "unknown",
+          });
+        }
 
         setLoadingCases(true);
-        const sourcedCases = await loadCasesWithFallback(loadAllCasesFromFirestore);
+        const sourcedCases = await loadCasesWithFallback(
+          loadAllCasesFromFirestore,
+        );
         if (cancelled) return;
 
         setAllCases(sourcedCases.cases);
         setCaseSourceMode(sourcedCases.mode);
         setLoadingCases(false);
 
-        setScreen("mainMenu");
+        // ✅ CRITICAL: don't stomp join navigation
+        if (!pendingJoinRef.current) {
+          setScreen("mainMenu");
+        }
       } catch (e) {
         console.warn("bootstrap failed:", e);
         if (cancelled) return;
+
         setLoadingCases(false);
         Alert.alert("Fejl", "Kunne ikke hente brugerprofil eller cases.");
-        setScreen("landing");
+        if (!pendingJoinRef.current) setScreen("landing");
       }
     })();
 
     return () => {
       cancelled = true;
     };
-  }, [authReady, isAuthed, router]);
+  }, [authReady, isAuthed]);
 
-  // ---------- Deep link handler ----------
+  // ---------- Deep link handler (native + web Linking) ----------
   useEffect(() => {
     const handleUrl = (url: string) => {
       const parsed = Linking.parse(url);
@@ -599,7 +707,6 @@ export default function Index() {
       const sid = (parsed.queryParams?.sessionId as string) || null;
       const role = parseJoinRole(parsed.queryParams?.role);
 
-      // Accept both /join and / (root) as “join” when query params exist
       const isJoin =
         route === "join" ||
         route === "--/join" ||
@@ -608,15 +715,13 @@ export default function Index() {
 
       if (isJoin && sid) {
         setPendingJoinSessionId(sid);
-
-        if (role === "DEFIB") setScreen("defib");
-        else setScreen("pickFocus");
+        setPendingJoinRole(role);
+        // The join driver navigates once authentication is ready.
       }
     };
 
     const sub = Linking.addEventListener("url", (e) => handleUrl(e.url));
     Linking.getInitialURL().then((url) => url && handleUrl(url));
-
     return () => sub.remove();
   }, []);
 
@@ -633,14 +738,15 @@ export default function Index() {
       sid,
       (data) => {
         setSessionDoc(data);
-        if (data?.hlrMode === "BLS" || data?.hlrMode === "ALS") setHlrMode(data.hlrMode);
+        if (data?.hlrMode === "BLS" || data?.hlrMode === "ALS")
+          setHlrMode(data.hlrMode);
       },
-      (e) => console.warn("Session listen error:", e)
+      (e) => console.warn("Session listen error:", e),
     );
     liveUnsubRef.current = listenLiveState(
       sid,
       (st) => setLiveState(st),
-      (e) => console.warn("Live state listen error:", e)
+      (e) => console.warn("Live state listen error:", e),
     );
   }
 
@@ -655,12 +761,16 @@ export default function Index() {
     }).catch((e) => console.warn("publishLiveState error:", e));
   }, [sessionId, scenario, currentState]);
 
-  // Auto-join defib when landing on defib screen via QR/deeplink
+  // Auto-join defib when landing on defib screen via QR/deeplink/web query
   useEffect(() => {
     (async () => {
       if (screen !== "defib") return;
       const sid = pendingJoinSessionId;
       if (!sid) return;
+
+      // ✅ Must be authed (anonymous ok)
+      if (!authReady) return;
+      if (!auth.currentUser) return;
 
       try {
         const docSnap = await joinSession({ sessionId: sid, role: "DEFIB" });
@@ -671,13 +781,13 @@ export default function Index() {
         console.error(e);
         Alert.alert(
           "Defib join fejl",
-          e?.message ?? "Kunne ikke joine session."
+          e?.message ?? "Kunne ikke joine session.",
         );
         setScreen("landing");
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [screen, pendingJoinSessionId]);
+  }, [screen, pendingJoinSessionId, authReady, isAuthed]);
 
   // Realtime legacy compatibility subscription. Canonical persistence remains opt-in.
   useEffect(() => {
@@ -685,10 +795,8 @@ export default function Index() {
       setRemoteEvents([]);
       return;
     }
-    return listenSessionEvents(
-      sessionId,
-      setRemoteEvents,
-      (error) => console.warn("listenSessionEvents:", error),
+    return listenSessionEvents(sessionId, setRemoteEvents, (error) =>
+      console.warn("listenSessionEvents:", error),
     );
   }, [sessionId]);
 
@@ -791,7 +899,7 @@ export default function Index() {
     if (locked) {
       Alert.alert(
         "Start casen først",
-        "Tryk på 'GO – start timer' før du bruger funktionerne."
+        "Tryk på 'GO – start timer' før du bruger funktionerne.",
       );
       return true;
     }
@@ -847,7 +955,7 @@ export default function Index() {
       if (!doseMeta) {
         Alert.alert(
           "Fejl",
-          "Kunne ikke beregne dosis for det valgte præparat."
+          "Kunne ikke beregne dosis for det valgte præparat.",
         );
         return;
       }
@@ -944,18 +1052,18 @@ export default function Index() {
       type === "ARREST_RECOGNIZED"
         ? "CPR: Cardiac arrest erkendt."
         : type === "CPR_STARTED"
-        ? "CPR: HLR startet."
-        : type === "PADS_ON"
-        ? "CPR: Pads påsat."
-        : type === "RHYTHM_CHECK"
-        ? "CPR: Rytmetjek."
-        : type === "AIRWAY"
-        ? "CPR: Luftvej håndteret."
-        : type === "IV_IO"
-        ? "CPR: IV/IO etableret."
-        : type === "ROSC"
-        ? "CPR: ROSC."
-        : `CPR: ${type}`;
+          ? "CPR: HLR startet."
+          : type === "PADS_ON"
+            ? "CPR: Pads påsat."
+            : type === "RHYTHM_CHECK"
+              ? "CPR: Rytmetjek."
+              : type === "AIRWAY"
+                ? "CPR: Luftvej håndteret."
+                : type === "IV_IO"
+                  ? "CPR: IV/IO etableret."
+                  : type === "ROSC"
+                    ? "CPR: ROSC."
+                    : `CPR: ${type}`;
 
     executeSimulationCommand({
       type: "CPR",
@@ -993,14 +1101,17 @@ export default function Index() {
     // same module instance as a case, apply any matching case transition while
     // retaining the existing Firestore event as the timeline source.
     if (scenario && simulationState) {
-      applyCommand({
-        type: "DEFIBRILLATOR",
-        commandId: `${Date.now()}_${type}`,
-        actionId: mapDefibEventToActionId(type),
-        occurredAtMs,
-        description: note ?? type,
-        metadata: { source: "DEFIB", originalType: type, payload },
-      }, { recordLog: false });
+      applyCommand(
+        {
+          type: "DEFIBRILLATOR",
+          commandId: `${Date.now()}_${type}`,
+          actionId: mapDefibEventToActionId(type),
+          occurredAtMs,
+          description: note ?? type,
+          metadata: { source: "DEFIB", originalType: type, payload },
+        },
+        { recordLog: false },
+      );
     }
   }
 
@@ -1008,8 +1119,6 @@ export default function Index() {
     if (!scenario) return;
 
     const uid = auth.currentUser?.uid ?? null;
-
-    // Grade allowed only for students (simple rule for now)
     const allowGrade = (profile?.role ?? "").toLowerCase() === "student";
 
     const payload = stripUndefined({
@@ -1023,7 +1132,6 @@ export default function Index() {
       caseTitle: scenario.title ?? null,
       patient: scenario.patientInfo ?? null,
 
-      // No org picker — org info is read-only from profile
       orgId: profile?.orgId ?? null,
       user: {
         uid,
@@ -1120,9 +1228,18 @@ export default function Index() {
     return (
       <SafeAreaView style={styles.container}>
         <MainMenuScreen
-          profileLabel={caseSourceMode === "LOCAL_FICTIONAL_FALLBACK" ? `${who} · LOCAL FICTIONAL MODE` : who}
+          profileLabel={
+            caseSourceMode === "LOCAL_FICTIONAL_FALLBACK"
+              ? `${who} · LOCAL FICTIONAL MODE`
+              : who
+          }
           onLogout={doLogout}
-          onOpenProfile={() => router.push("/profile")}
+          onOpenProfile={() => {
+            Alert.alert(
+              "Profile",
+              "Profile screen not wired in this state-machine version yet.",
+            );
+          }}
           onOpenCases={() => setScreen("casesHub")}
           onOpenScanQr={() => {
             setScanQrBackScreen("mainMenu");
@@ -1322,6 +1439,10 @@ export default function Index() {
     return <ContactScreen onBack={() => setScreen("mainMenu")} />;
   }
 
+  if (screen === "documents") {
+    return <DocumentsScreen onBack={() => setScreen("mainMenu")} />;
+  }
+
   if (screen === "caseSetup") {
     return (
       <CaseSetupScreen
@@ -1345,7 +1466,7 @@ export default function Index() {
           if (units.ambulancer + units.akutbil + units.laegebil <= 0) {
             Alert.alert(
               "Ingen enheder",
-              "Angiv mindst 1 enhed (fx 1 ambulance)."
+              "Angiv mindst 1 enhed (fx 1 ambulance).",
             );
             return;
           }
@@ -1359,7 +1480,7 @@ export default function Index() {
             if (!uid) {
               Alert.alert(
                 "Auth fejl",
-                "Ingen bruger fundet (auth.currentUser er null)."
+                "Ingen bruger fundet (auth.currentUser er null).",
               );
               return;
             }
@@ -1397,7 +1518,7 @@ export default function Index() {
             console.error(e);
             Alert.alert(
               "Session fejl",
-              e?.message ?? "Kunne ikke oprette session."
+              e?.message ?? "Kunne ikke oprette session.",
             );
           }
         }}
@@ -1405,19 +1526,17 @@ export default function Index() {
     );
   }
 
-  if (screen === "documents") {
-    return <DocumentsScreen onBack={() => setScreen("mainMenu")} />;
-  }
-
   if (screen === "inviteQr") {
-    const facUrl = sessionId ? buildJoinUrl(sessionId, "facilitator") : null;
-    const defUrl = sessionId ? buildJoinUrl(sessionId, "defib") : null;
+    const fac = sessionId ? buildJoinUrls(sessionId, "facilitator") : null;
+    const def = sessionId ? buildJoinUrls(sessionId, "defib") : null;
 
     return (
       <InviteQrScreen
         sessionId={sessionId}
-        facUrl={facUrl}
-        defUrl={defUrl}
+        facNativeUrl={fac?.nativeUrl ?? null}
+        facWebUrl={fac?.webUrl ?? null}
+        defNativeUrl={def?.nativeUrl ?? null}
+        defWebUrl={def?.webUrl ?? null}
         onBack={() => setScreen("caseSetup")}
       />
     );
@@ -1431,9 +1550,8 @@ export default function Index() {
         onBack={() => setScreen(scanQrBackScreen)}
         onParsedInvite={({ sessionId: sid, role }) => {
           setPendingJoinSessionId(sid);
-
-          if (role === "DEFIB") setScreen("defib");
-          else setScreen("pickFocus");
+          setPendingJoinRole(role);
+          // ✅ join driver effect navigates when auth is ready
         }}
       />
     );
@@ -1465,7 +1583,7 @@ export default function Index() {
 
             Alert.alert(
               "Joined",
-              `Du er nu i sessionen.\nFokus: ${pickedFocus}`
+              `Du er nu i sessionen.\nFokus: ${pickedFocus}`,
             );
             setScreen("caseSetup");
           } catch (e: any) {
@@ -1485,7 +1603,7 @@ export default function Index() {
         sessionDoc={sessionDoc}
         liveState={liveState}
         defibOn={defibOn}
-        defibBusy={defibBusy}
+        defibBusy={defibBusy as any}
         defibDisplay={defibDisplay}
         defibEkgKey={defibEkgKey}
         onBack={() => setScreen("mainMenu")}
@@ -1495,7 +1613,7 @@ export default function Index() {
           setDefibEkgKey(null);
           setDefibBusy(null);
         }}
-        onSetBusy={(v) => setDefibBusy(v)}
+        onSetBusy={(v) => setDefibBusy(v as any)}
         onSetDisplay={(s) => setDefibDisplay(s)}
         onSetEkgKey={(k) => setDefibEkgKey(k)}
         onLogDefib={handleDefibAction}
@@ -1524,8 +1642,7 @@ export default function Index() {
 
   if (screen === "summary") {
     const { evaluated } = evaluation;
-    const roleLower = (profile?.role ?? "").toLowerCase();
-    const allowGrade = roleLower === "student";
+    const allowGrade = (profile?.role ?? "").toLowerCase() === "student";
 
     return (
       <SummaryScreen
@@ -1534,7 +1651,7 @@ export default function Index() {
         runId={runId}
         elapsedMs={elapsedMs}
         mergedTimeline={mergedTimeline}
-        evaluated={evaluated}
+        evaluated={evaluated as any}
         samplerState={samplerState}
         opqrstState={opqrstState}
         midasheState={midasheState}
@@ -1617,7 +1734,9 @@ export default function Index() {
       onFinishCaseToSummary={() => {
         setRunning(false);
         if (sessionId && sessionDoc?.createdByUid === auth.currentUser?.uid) {
-          setSessionFinished(sessionId).catch((error) => console.warn("setSessionFinished:", error));
+          setSessionFinished(sessionId).catch((error) =>
+            console.warn("setSessionFinished:", error),
+          );
         }
         setScreen("summary");
       }}
