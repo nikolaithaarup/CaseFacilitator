@@ -68,7 +68,10 @@ export function decodeSession(req) {
     b = Buffer.from(expected);
   if (a.length !== b.length || !crypto.timingSafeEqual(a, b)) return null;
   const value = JSON.parse(Buffer.from(encoded, "base64url").toString("utf8"));
-  if (!value?.leaseExpiresAt || Date.parse(value.leaseExpiresAt) <= Date.now())
+  if (
+    !value?.session?.leaseExpiresAt ||
+    Date.parse(value.session.leaseExpiresAt) <= Date.now()
+  )
     return null;
   return value;
 }
