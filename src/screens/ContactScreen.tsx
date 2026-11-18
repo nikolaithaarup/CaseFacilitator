@@ -1,158 +1,85 @@
-// src/screens/ContactScreen.tsx
-import Constants from "expo-constants";
-import * as Device from "expo-device";
-import { useMemo, useState } from "react";
-import {
-    Alert,
-    Platform,
-    Pressable,
-    ScrollView,
-    Text,
-    TextInput,
-    View,
-} from "react-native";
+import * as Linking from "expo-linking";
+import { useState } from "react";
+import { Alert, Pressable, ScrollView, StyleSheet, Text, TextInput } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-// Reuse your CaseFacilitator styles
-import { styles } from "../styles/indexStyles";
-
-// ✅ Set this to your CaseFacilitator backend base URL
-const API_BASE_URL = "https://flashmedic-backend.onrender.com";
-// Endpoint expected: POST /contact/send
+const CONTACT_EMAIL = "contact@synapsestudio.dk";
 
 export function ContactScreen({ onBack }: { onBack: () => void }) {
-  const [contactName, setContactName] = useState("");
-  const [contactEmail, setContactEmail] = useState("");
-  const [contactMessage, setContactMessage] = useState("");
-  const [sending, setSending] = useState(false);
+  const [message, setMessage] = useState("");
 
-  const appName = Constants.expoConfig?.name ?? "CaseFacilitator";
-  const appVersion = Constants.expoConfig?.version ?? "ukendt version";
-
-  const deviceInfo = useMemo(() => {
-    const parts = [
-      Device.manufacturer,
-      Device.modelName,
-      Device.osName,
-      Device.osVersion,
-    ].filter(Boolean);
-    return parts.join(" ");
-  }, []);
-
-  const handleSend = async () => {
-    if (!contactMessage.trim()) {
-      Alert.alert("Fejl", "Skriv venligst en besked.");
+  const composeEmail = async () => {
+    if (!message.trim()) {
+      Alert.alert("Mangler besked", "Skriv en kort besked først.");
       return;
     }
 
-    setSending(true);
+    const subject = encodeURIComponent("Feedback til SynapseFacilitator");
+    const body = encodeURIComponent(message.trim());
     try {
-      const res = await fetch(`${API_BASE_URL}/contact/send`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name: contactName.trim() || null,
-          email: contactEmail.trim() || null,
-          message: contactMessage.trim(),
-          appName,
-          appVersion,
-          platform: Platform.OS,
-          deviceInfo: deviceInfo || "Ukendt enhed",
-        }),
-      });
-
-      if (!res.ok) throw new Error("Serverfejl");
-
-      Alert.alert("Tak!", "Din besked er sendt til udvikleren.");
-      setContactName("");
-      setContactEmail("");
-      setContactMessage("");
-      onBack();
+      await Linking.openURL(`mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`);
+      // Opening a mail client does not prove that the user sent the message.
     } catch {
-      Alert.alert("Fejl", "Kunne ikke sende beskeden. Tjek internet og prøv igen.");
-    } finally {
-      setSending(false);
+      Alert.alert("Kunne ikke åbne mail", `Skriv direkte til ${CONTACT_EMAIL}.`);
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Header: same pattern as your other pages */}
-      <View style={styles.headerRow}>
-        <Pressable onPress={onBack} style={styles.smallButton}>
-          <Text style={styles.smallButtonText}>←</Text>
+    <SafeAreaView style={s.page}>
+      <ScrollView contentContainerStyle={s.content} keyboardShouldPersistTaps="handled">
+        <Pressable accessibilityRole="button" onPress={onBack} style={s.back}>
+          <Text style={s.backText}>← Tilbage</Text>
         </Pressable>
-
-        <View style={{ flex: 1 }}>
-          <Text style={styles.title}>Kontakt</Text>
-          <Text style={styles.subtitle}>Send feedback til CaseFacilitator-teamet</Text>
-        </View>
-      </View>
-
-      {/* Content starts lower than the header */}
-      <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 16,
-          paddingTop: 18, // <-- pushes content down a bit
-          paddingBottom: 40,
-        }}
-        keyboardShouldPersistTaps="handled"
-      >
-        <Text style={[styles.text, { marginTop: 4 }]}>
-          App: {appName} – v{appVersion}{"\n"}
-          Enhed: {deviceInfo || "Ukendt enhed"} ({Platform.OS})
+        <Text style={s.eyebrow}>SYNAPSE STUDIO</Text>
+        <Text style={s.title}>Kontakt</Text>
+        <Text style={s.description}>
+          Har du fundet en fejl eller har du et forslag til undervisningen? Skriv til os.
         </Text>
 
-        <Text style={[styles.text, { marginTop: 14 }]}>
-          Ris, ros og konkrete forbedringsforslag modtages meget gerne — det gør appen bedre for alle.
-        </Text>
-
-        <Text style={[styles.text, { marginTop: 22 }]}>Navn (valgfri)</Text>
+        <Text style={s.label}>Besked</Text>
         <TextInput
-          value={contactName}
-          onChangeText={setContactName}
-          style={styles.textInput}
-          placeholder="Fx Nikolai"
-          placeholderTextColor="#adb5bd"
-        />
-
-        <Text style={[styles.text, { marginTop: 14 }]}>Email (valgfri)</Text>
-        <TextInput
-          value={contactEmail}
-          onChangeText={setContactEmail}
-          style={styles.textInput}
-          placeholder="Fx nikolai@example.com"
-          placeholderTextColor="#adb5bd"
-          keyboardType="email-address"
-          autoCapitalize="none"
-        />
-
-        <Text style={[styles.text, { marginTop: 14 }]}>Besked</Text>
-        <TextInput
-          value={contactMessage}
-          onChangeText={setContactMessage}
-          style={[
-            styles.textInput,
-            {
-              height: 140,
-              textAlignVertical: "top",
-            },
-          ]}
-          placeholder="Skriv din besked her..."
-          placeholderTextColor="#adb5bd"
+          accessibilityLabel="Din besked"
+          value={message}
+          onChangeText={setMessage}
           multiline
+          style={s.input}
+          textAlignVertical="top"
+          placeholder="Hvad kan forbedres?"
+          placeholderTextColor="#819eab"
         />
-
+        <Text style={s.note}>
+          Undlad patientoplysninger, følsomme helbredsdata og fortroligt arbejdsmateriale.
+        </Text>
         <Pressable
-          style={[styles.button, { marginTop: 18, opacity: sending ? 0.7 : 1 }]}
-          onPress={handleSend}
-          disabled={sending}
+          accessibilityRole="button"
+          onPress={() => void composeEmail()}
+          style={({ pressed }) => [s.button, pressed && { opacity: 0.85 }]}
         >
-          <Text style={styles.buttonText}>{sending ? "SENDER..." : "SEND"}</Text>
+          <Text style={s.buttonText}>Åbn mailapp</Text>
+        </Pressable>
+        <Pressable accessibilityRole="link" onPress={() => void Linking.openURL(`mailto:${CONTACT_EMAIL}`)} style={s.mailLink}>
+          <Text style={s.mailText}>{CONTACT_EMAIL}</Text>
         </Pressable>
       </ScrollView>
     </SafeAreaView>
   );
 }
+
+const s = StyleSheet.create({
+  page: { flex: 1, backgroundColor: "#07131d" },
+  content: { flexGrow: 1, width: "100%", maxWidth: 620, alignSelf: "center", paddingHorizontal: 22, paddingTop: 22, paddingBottom: 36 },
+  back: { minHeight: 44, alignSelf: "flex-start", justifyContent: "center" },
+  backText: { color: "#c1d4db", fontSize: 15 },
+  eyebrow: { marginTop: 28, color: "#4de3c7", fontWeight: "800", fontSize: 12, letterSpacing: 1.3 },
+  title: { marginTop: 9, fontSize: 30, fontWeight: "800", color: "#f8fafc" },
+  description: { marginTop: 12, color: "#b3c7cf", fontSize: 16, lineHeight: 25 },
+  label: { marginTop: 28, color: "#f1f5f9", fontSize: 15, fontWeight: "700" },
+  input: { marginTop: 10, minHeight: 145, borderWidth: 1, borderColor: "#355663", borderRadius: 13, color: "#f1f5f9", paddingHorizontal: 15, paddingVertical: 14, fontSize: 16, lineHeight: 23, backgroundColor: "#0b202b" },
+  note: { marginTop: 14, color: "#9cb4bd", fontSize: 13, lineHeight: 21 },
+  button: { marginTop: 25, backgroundColor: "#45d5c3", minHeight: 52, borderRadius: 13, alignItems: "center", justifyContent: "center" },
+  buttonText: { color: "#092523", fontSize: 16, fontWeight: "800" },
+  mailLink: { minHeight: 50, alignItems: "center", justifyContent: "center" },
+  mailText: { color: "#b8d0d8", fontSize: 14 },
+});
 
 export default ContactScreen;
