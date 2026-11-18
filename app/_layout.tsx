@@ -12,6 +12,7 @@ import {
   isAuthoritativePortalDenial,
   revalidatePortalSession,
   restorePortalSession,
+  type FacilitatorBridgeSession,
 } from "../src/services/portalBridge";
 import {
   isValidDefibJoinRequest,
@@ -20,6 +21,9 @@ import {
 
 const StaffAccessContext = createContext<StaffAccessState>("AUTH_BOOTSTRAPPING");
 export const useStaffAccess = () => useContext(StaffAccessContext);
+
+const PortalSessionContext = createContext<FacilitatorBridgeSession | null>(null);
+export const usePortalSession = () => useContext(PortalSessionContext);
 
 export { ErrorBoundary } from "expo-router";
 
@@ -62,6 +66,7 @@ function RootLayoutNav() {
     params.role,
   );
   const [accessState, setAccessState] = useState<StaffAccessState>("AUTH_BOOTSTRAPPING");
+  const [portalSession, setPortalSession] = useState<FacilitatorBridgeSession | null>(null);
   const [connectionIssue, setConnectionIssue] = useState(false);
 
   useEffect(() => {
@@ -75,8 +80,9 @@ function RootLayoutNav() {
     setAccessState("AUTH_BOOTSTRAPPING");
     const restore = async () => {
       try {
-        await restorePortalSession();
+        const session = await restorePortalSession();
         if (active) {
+          setPortalSession(session);
           setConnectionIssue(false);
           setAccessState("AUTHORISED_STAFF");
         }
@@ -84,6 +90,8 @@ function RootLayoutNav() {
         if (!active) return;
         if (isAuthoritativePortalDenial(error)) {
           await signOut(auth).catch(() => {});
+          if (!active) return;
+          setPortalSession(null);
           setConnectionIssue(false);
           setAccessState("ACCESS_REQUIRED");
         } else {
@@ -105,17 +113,25 @@ function RootLayoutNav() {
     let retry: ReturnType<typeof setTimeout> | undefined;
     const revalidate = async () => {
       try {
-        await revalidatePortalSession();
-        if (active) setConnectionIssue(false);
+        const session = await revalidatePortalSession();
+        if (active) {
+          setPortalSession(session);
+          setConnectionIssue(false);
+        }
       } catch (error) {
         if (!active) return;
         if (isAuthoritativePortalDenial(error)) {
           await signOut(auth).catch(() => {});
+          if (!active) return;
+          setPortalSession(null);
           setConnectionIssue(false);
           setAccessState("ACCESS_REQUIRED");
         } else {
           setConnectionIssue(true);
-          retry = setTimeout(revalidate, 5_000);
+          if (!retry) retry = setTimeout(() => {
+            retry = undefined;
+            void revalidate();
+          }, 5_000);
         }
       }
     };
@@ -145,6 +161,7 @@ function RootLayoutNav() {
 
   return (
     <StaffAccessContext.Provider value={accessState}>
+      <PortalSessionContext.Provider value={portalSession}>
       <View style={gateStyles.stack}>
         <Stack
           screenOptions={{
@@ -171,6 +188,7 @@ function RootLayoutNav() {
           </View>
         ) : null}
       </View>
+      </PortalSessionContext.Provider>
     </StaffAccessContext.Provider>
   );
 }
