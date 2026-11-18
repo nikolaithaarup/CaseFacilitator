@@ -26,9 +26,7 @@ export function CaseListScreen({
   onBack: () => void;
   onPickCase: (c: CaseScenario) => void;
 }) {
-  const who = profile
-    ? `${profile.displayName ?? "Bruger"} • ${profile.orgId ?? "org?"} • ${profile.role ?? "role?"}`
-    : "Ingen profil indlæst";
+  const who = "Vælg et scenarie";
 
   return (
     <SafeAreaView style={styles.container}>
@@ -61,7 +59,7 @@ export function CaseListScreen({
             </TouchableOpacity>
           ))}
 
-          {allCases.length === 0 && <Text style={styles.text}>Ingen cases fundet i Firestore.</Text>}
+          {allCases.length === 0 && <Text style={styles.text}>Ingen cases tilgængelige endnu.</Text>}
         </ScrollView>
       )}
     </SafeAreaView>
