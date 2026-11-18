@@ -1,191 +1,65 @@
-// src/screens/ProfileScreen.tsx
-import { useCallback, useEffect, useState } from "react";
-import {
-    ActivityIndicator,
-    Alert,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import * as Linking from "expo-linking";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { usePortalSession } from "../../app/_layout";
 
-import { auth } from "../firebase/firebase";
-import { getUserProfile } from "../services/users";
-import { styles } from "../styles/indexStyles";
-
-type UserProfile = {
-  uid: string;
-  displayName: string | null;
-  role: string | null;
-  orgId: string | null;
-};
-
-function prettyRole(role: string | null) {
-  const r = (role || "").toLowerCase();
-  if (r === "student") return "Student";
-  if (r === "facilitator") return "Facilitator";
-  if (r === "admin") return "Admin";
-  if (r === "defib_device") return "Defib device";
-  return role || "—";
-}
-
-function prettyOrg(orgId: string | null) {
-  if (!orgId) return "—";
-  const map: Record<string, string> = {
-    student: "Elev (ingen org)",
-    unord_hillerod: "U/Nord Hillerød",
-    unord_esbjerg: "U/Nord Esbjerg",
-    akutberedskabet: "Akutberedskabet",
-    falck: "Falck",
-  };
-  return map[orgId] ?? orgId;
-}
-
-export function ProfileScreen({
-  onBack,
-  onEdit, // optional: wire this to router.push("/profile-edit")
-}: {
-  onBack: () => void;
-  onEdit?: () => void;
-}) {
-  const [loading, setLoading] = useState(true);
-  const [p, setP] = useState<UserProfile | null>(null);
-
-  const load = useCallback(async () => {
-    try {
-      setLoading(true);
-
-      const uid = auth.currentUser?.uid;
-      if (!uid) {
-        setP(null);
-        return;
-      }
-
-      const prof = await getUserProfile(uid);
-      setP(
-        prof
-          ? {
-              uid,
-              displayName: prof.displayName ?? null,
-              role: (prof.role as any) ?? null,
-              orgId: prof.orgId ?? null,
-            }
-          : null
-      );
-    } catch (e: any) {
-      console.warn(e);
-      Alert.alert("Fejl", e?.message ?? "Kunne ikke hente profilen.");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-    (async () => {
-      if (cancelled) return;
-      await load();
-    })();
-    return () => {
-      cancelled = true;
-    };
-  }, [load]);
+export function ProfileScreen({ onBack }: { onBack: () => void; onEdit?: () => void }) {
+  const portalSession = usePortalSession();
 
   return (
-    <SafeAreaView style={styles.container}>
-      {/* Centered content column */}
-      <View style={{ flex: 1, alignItems: "center" }}>
-        <View style={{ width: "100%", maxWidth: 520, flex: 1 }}>
-          {/* Your in-app header */}
-          <View style={styles.headerRow}>
-            <TouchableOpacity onPress={onBack} style={styles.smallButton}>
-              <Text style={styles.smallButtonText}>←</Text>
-            </TouchableOpacity>
+    <SafeAreaView style={s.page}>
+      <ScrollView contentContainerStyle={s.content}>
+        <Pressable accessibilityRole="button" accessibilityLabel="Tilbage" onPress={onBack} style={s.back}>
+          <Text style={s.backText}>← Tilbage</Text>
+        </Pressable>
+        <Text style={s.eyebrow}>SYNAPSEPORTAL</Text>
+        <Text style={s.title}>Min konto</Text>
+        <Text style={s.description}>
+          Din adgang til SynapseFacilitator administreres via SynapsePortal.
+        </Text>
 
-            <View style={{ flex: 1, alignItems: "center" }}>
-              <Text style={styles.title}>Profil</Text>
-              <Text style={styles.subtitle}>Din brugerinfo</Text>
-            </View>
-
-            {/* Keep spacing symmetric so the title stays centered */}
-            <View style={{ width: 44 }}>
-              {onEdit ? (
-                <TouchableOpacity onPress={onEdit} style={styles.smallButton}>
-                  <Text style={styles.smallButtonText}>✏️</Text>
-                </TouchableOpacity>
-              ) : null}
-            </View>
+        <View style={s.details}>
+          <View style={s.detail}>
+            <Text style={s.label}>Adgang</Text>
+            <Text style={s.value}>{portalSession ? "Aktiv instruktøradgang" : "Kontrolleres via Portal"}</Text>
           </View>
-
-          {loading ? (
-            <View style={{ marginTop: 20, alignItems: "center" }}>
-              <ActivityIndicator />
-              <Text style={[styles.textSmall, { marginTop: 10 }]}>Henter profil…</Text>
-            </View>
-          ) : !p ? (
-            <View style={{ marginTop: 20 }}>
-              <Text style={styles.text}>Profil ikke fundet.</Text>
-              <Text style={[styles.textSmall, { marginTop: 8 }]}>
-                Du er måske logget ud, eller profilen mangler i Firestore.
-              </Text>
-
-              <TouchableOpacity
-                style={[styles.button, { marginTop: 12, backgroundColor: "#60a5fa" }]}
-                onPress={load}
-              >
-                <Text style={styles.buttonText}>Prøv igen</Text>
-              </TouchableOpacity>
-            </View>
-          ) : (
-            <>
-              <ScrollView style={{ marginTop: 12 }}>
-                <View style={styles.card}>
-                  <Text style={styles.cardTitle}>Navn</Text>
-                  <Text style={styles.text}>{p.displayName || "—"}</Text>
-                </View>
-
-                <View style={styles.card}>
-                  <Text style={styles.cardTitle}>Organisation</Text>
-                  <Text style={styles.text}>{prettyOrg(p.orgId)}</Text>
-                  <Text style={[styles.textSmall, { marginTop: 6 }]}>
-                    orgId: {p.orgId ?? "—"}
-                  </Text>
-                </View>
-
-                <View style={styles.card}>
-                  <Text style={styles.cardTitle}>Rolle</Text>
-                  <Text style={styles.text}>{prettyRole(p.role)}</Text>
-                </View>
-
-                <View style={styles.card}>
-                  <Text style={styles.cardTitle}>Teknisk</Text>
-                  <Text style={styles.textSmall}>uid: {p.uid}</Text>
-                </View>
-              </ScrollView>
-
-              <View style={{ flexDirection: "row", gap: 10, marginTop: 12 }}>
-                <TouchableOpacity
-                  style={[styles.button, { flex: 1, backgroundColor: "#10b981" }]}
-                  onPress={() => {
-                    // quick copy-to-clipboard is optional; leaving out for now
-                    Alert.alert("OK", "Du kan tilføje copy her, hvis du vil.");
-                  }}
-                >
-                  <Text style={styles.buttonText}>Copy</Text>
-                </TouchableOpacity>
-
-                <TouchableOpacity
-                  style={[styles.button, { flex: 1, backgroundColor: "#60a5fa" }]}
-                  onPress={load}
-                >
-                  <Text style={styles.buttonText}>Refresh</Text>
-                </TouchableOpacity>
-              </View>
-            </>
-          )}
+          <View style={s.line} />
+          <View style={s.detail}>
+            <Text style={s.label}>Log ind</Text>
+            <Text style={s.value}>SynapsePortal</Text>
+          </View>
         </View>
-      </View>
+
+        <Pressable
+          accessibilityRole="link"
+          accessibilityLabel="Åbn kontoen i SynapsePortal"
+          style={({ pressed }) => [s.button, pressed && { opacity: 0.85 }]}
+          onPress={() => void Linking.openURL("https://portal.synapsestudio.dk/portal/account")}
+        >
+          <Text style={s.buttonText}>Administrer min konto ↗</Text>
+        </Pressable>
+        <Text style={s.note}>
+          Organisation, rolle og rettigheder ændres i Portal – ikke her.
+        </Text>
+      </ScrollView>
     </SafeAreaView>
   );
 }
+
+const s = StyleSheet.create({
+  page: { flex: 1, backgroundColor: "#07131d" },
+  content: { flexGrow: 1, width: "100%", maxWidth: 620, alignSelf: "center", paddingHorizontal: 22, paddingTop: 22, paddingBottom: 36 },
+  back: { minHeight: 44, justifyContent: "center", alignSelf: "flex-start", paddingRight: 18 },
+  backText: { color: "#c1d4db", fontSize: 15 },
+  eyebrow: { marginTop: 28, color: "#4de3c7", fontWeight: "800", fontSize: 12, letterSpacing: 1.3 },
+  title: { marginTop: 9, fontSize: 30, fontWeight: "800", color: "#f8fafc" },
+  description: { marginTop: 12, color: "#b3c7cf", fontSize: 16, lineHeight: 25 },
+  details: { marginTop: 26, borderTopWidth: 1, borderBottomWidth: 1, borderColor: "#29404b" },
+  detail: { paddingVertical: 19, flexDirection: "row", gap: 12, justifyContent: "space-between", alignItems: "center", flexWrap: "wrap" },
+  line: { height: 1, backgroundColor: "#29404b" },
+  label: { color: "#9fb7c3", fontSize: 14 },
+  value: { color: "#f1f5f9", fontSize: 14, fontWeight: "700" },
+  button: { marginTop: 28, minHeight: 52, borderRadius: 13, backgroundColor: "#45d5c3", justifyContent: "center", alignItems: "center", paddingHorizontal: 16 },
+  buttonText: { color: "#092523", fontSize: 15, fontWeight: "800" },
+  note: { marginTop: 20, color: "#8aa4b0", fontSize: 13, lineHeight: 21 },
+});
