@@ -1,6 +1,6 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
-import { signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { Stack, useGlobalSearchParams, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -106,6 +106,18 @@ function RootLayoutNav() {
       if (retry) clearTimeout(retry);
     };
   }, [isDefibJoin, isLaunchCallback]);
+
+  // Losing the authenticated identity (including explicit logout) closes the
+  // app gate immediately, rather than waiting for the next 60-second check.
+  useEffect(() => {
+    if (accessState !== "AUTHORISED_STAFF") return;
+    return onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        setPortalSession(null);
+        setAccessState("ACCESS_REQUIRED");
+      }
+    });
+  }, [accessState]);
 
   useEffect(() => {
     if (accessState !== "AUTHORISED_STAFF") return;
