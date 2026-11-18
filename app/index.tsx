@@ -1,6 +1,7 @@
 // app/index.tsx
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Linking from "expo-linking";
+import { router } from "expo-router";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Platform, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -95,7 +96,7 @@ import { HlrCaseScreen } from "../src/screens/HlrCaseScreen";
 import { InviteQrScreen } from "../src/screens/InviteQrScreen";
 import { PortalRequiredScreen } from "../src/screens/PortalRequiredScreen";
 import { MainMenuScreen } from "../src/screens/MainMenuScreen";
-import { useStaffAccess } from "./_layout";
+import { usePortalSession, useStaffAccess } from "./_layout";
 import { endPortalSession } from "../src/services/portalBridge";
 import { PickFocusScreen } from "../src/screens/PickFocusScreen";
 import { RunDetailScreen } from "../src/screens/RunDetailScreen";
@@ -239,6 +240,8 @@ function buildDemoVitals(_tSec: number) {
 export default function Index() {
   const staffAccess = useStaffAccess();
   const isStaffAuthorised = staffAccess === "AUTHORISED_STAFF";
+  const portalSession = usePortalSession();
+  const portalOrganisationId = portalSession?.descriptor.entitlement.organisationId ?? null;
   // Auth
   const [authReady, setAuthReady] = useState(false);
   const [isAuthed, setIsAuthed] = useState(false);
@@ -597,7 +600,11 @@ export default function Index() {
 
       try {
         const uid = user.uid;
-        const p = await getUserProfile(uid);
+        // Portal profiles are verified by the server. The legacy users collection
+        // is not readable under the product\'s strict Firestore security rules.
+        const p = portalSession
+          ? { displayName: "Underviser", role: "facilitator", orgId: portalOrganisationId }
+          : await getUserProfile(uid);
 
         if (cancelled) return;
 
@@ -645,7 +652,7 @@ export default function Index() {
     return () => {
       cancelled = true;
     };
-  }, [authReady, isAuthed, isStaffAuthorised, pendingJoinRole]);
+  }, [authReady, isAuthed, isStaffAuthorised, pendingJoinRole, portalOrganisationId, portalSession?.firebaseUid]);
 
   // ---------- Deep link handler (native + web Linking) ----------
   useEffect(() => {
@@ -1116,6 +1123,14 @@ export default function Index() {
 
       const effectiveRunId = payload.runId as string;
 
+      if (isStaffAuthorised) {
+        // Cloud history still uses legacy paths forbidden to Portal identities.
+        // The local copy was saved above; do not claim the cloud write worked.
+        Alert.alert("Gemt lokalt", "Opsummeringen er gemt på denne enhed. Synkronisering via SynapsePortal er endnu ikke tilgængelig.");
+        setFeedbackOpen(false);
+        return;
+      }
+
       await saveRun({
         runId: effectiveRunId,
         orgId: profile?.orgId ?? null, // keep field if backend expects it
@@ -1160,25 +1175,18 @@ export default function Index() {
   }
 
   if (screen === "mainMenu") {
-    const who = profile
-      ? `${profile.displayName} • ${profile.orgId} • ${profile.role}`
-      : "Ingen profil indlæst";
+    const who = profile?.displayName || "Underviser";
 
     return (
       <SafeAreaView style={styles.container}>
         <MainMenuScreen
           profileLabel={
             caseSourceMode === "LOCAL_FICTIONAL_FALLBACK"
-              ? `${who} · LOCAL FICTIONAL MODE`
+              ? `${who} · Indbyggede øvelsescases`
               : who
           }
           onLogout={doLogout}
-          onOpenProfile={() => {
-            Alert.alert(
-              "Profile",
-              "Profile screen not wired in this state-machine version yet.",
-            );
-          }}
+          onOpenProfile={() => router.push("/profile")}
           onOpenCases={() => setScreen("casesHub")}
           onOpenScanQr={() => {
             setScanQrBackScreen("mainMenu");
@@ -1208,9 +1216,7 @@ export default function Index() {
   }
 
   if (screen === "casesHub") {
-    const who = profile
-      ? `${profile.displayName} • ${profile.orgId} • ${profile.role}`
-      : "Ingen profil indlæst";
+    const who = profile?.displayName || "Underviser";
 
     return (
       <CasesHubScreen
@@ -1385,6 +1391,7 @@ export default function Index() {
   if (screen === "caseSetup") {
     return (
       <CaseSetupScreen
+        portalManaged={isStaffAuthorised}
         selectedCaseTemplate={selectedCaseTemplate}
         setupSex={setupSex}
         setupAge={setupAge}

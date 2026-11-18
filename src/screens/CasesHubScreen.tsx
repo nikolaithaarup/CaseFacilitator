@@ -35,7 +35,6 @@ export default function CasesHubScreen({
         <TouchableOpacity
           style={s.bigButton}
           onPress={() => {
-            console.log("CasesHub -> Medicinske");
             onOpenMedical();
           }}
         >
@@ -46,7 +45,6 @@ export default function CasesHubScreen({
         <TouchableOpacity
           style={s.bigButton}
           onPress={() => {
-            console.log("CasesHub -> Traume");
             onOpenTrauma();
           }}
         >
@@ -57,12 +55,11 @@ export default function CasesHubScreen({
         <TouchableOpacity
           style={s.bigButton}
           onPress={() => {
-            console.log("CasesHub -> HLR");
             onOpenHlr();
           }}
         >
           <Text style={s.bigTitle}>HLR</Text>
-          <Text style={s.bigSubtitle}>Genoplivning / cardiac arrest</Text>
+          <Text style={s.bigSubtitle}>Hjertelungeredning og hjertestop</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

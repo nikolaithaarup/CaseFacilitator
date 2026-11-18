@@ -1,6 +1,6 @@
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import { useFonts } from "expo-font";
-import { signOut } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
 import { Stack, useGlobalSearchParams, usePathname } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { createContext, useContext, useEffect, useState } from "react";
@@ -12,6 +12,7 @@ import {
   isAuthoritativePortalDenial,
   revalidatePortalSession,
   restorePortalSession,
+  type FacilitatorBridgeSession,
 } from "../src/services/portalBridge";
 import {
   isValidDefibJoinRequest,
@@ -20,6 +21,9 @@ import {
 
 const StaffAccessContext = createContext<StaffAccessState>("AUTH_BOOTSTRAPPING");
 export const useStaffAccess = () => useContext(StaffAccessContext);
+
+const PortalSessionContext = createContext<FacilitatorBridgeSession | null>(null);
+export const usePortalSession = () => useContext(PortalSessionContext);
 
 export { ErrorBoundary } from "expo-router";
 
@@ -62,6 +66,7 @@ function RootLayoutNav() {
     params.role,
   );
   const [accessState, setAccessState] = useState<StaffAccessState>("AUTH_BOOTSTRAPPING");
+  const [portalSession, setPortalSession] = useState<FacilitatorBridgeSession | null>(null);
   const [connectionIssue, setConnectionIssue] = useState(false);
 
   useEffect(() => {
@@ -75,8 +80,9 @@ function RootLayoutNav() {
     setAccessState("AUTH_BOOTSTRAPPING");
     const restore = async () => {
       try {
-        await restorePortalSession();
+        const session = await restorePortalSession();
         if (active) {
+          setPortalSession(session);
           setConnectionIssue(false);
           setAccessState("AUTHORISED_STAFF");
         }
@@ -84,6 +90,8 @@ function RootLayoutNav() {
         if (!active) return;
         if (isAuthoritativePortalDenial(error)) {
           await signOut(auth).catch(() => {});
+          if (!active) return;
+          setPortalSession(null);
           setConnectionIssue(false);
           setAccessState("ACCESS_REQUIRED");
         } else {
@@ -99,23 +107,43 @@ function RootLayoutNav() {
     };
   }, [isDefibJoin, isLaunchCallback]);
 
+  // Losing the authenticated identity (including explicit logout) closes the
+  // app gate immediately, rather than waiting for the next 60-second check.
+  useEffect(() => {
+    if (accessState !== "AUTHORISED_STAFF") return;
+    return onAuthStateChanged(auth, (user) => {
+      if (!user) {
+        setPortalSession(null);
+        setAccessState("ACCESS_REQUIRED");
+      }
+    });
+  }, [accessState]);
+
   useEffect(() => {
     if (accessState !== "AUTHORISED_STAFF") return;
     let active = true;
     let retry: ReturnType<typeof setTimeout> | undefined;
     const revalidate = async () => {
       try {
-        await revalidatePortalSession();
-        if (active) setConnectionIssue(false);
+        const session = await revalidatePortalSession();
+        if (active) {
+          setPortalSession(session);
+          setConnectionIssue(false);
+        }
       } catch (error) {
         if (!active) return;
         if (isAuthoritativePortalDenial(error)) {
           await signOut(auth).catch(() => {});
+          if (!active) return;
+          setPortalSession(null);
           setConnectionIssue(false);
           setAccessState("ACCESS_REQUIRED");
         } else {
           setConnectionIssue(true);
-          retry = setTimeout(revalidate, 5_000);
+          if (!retry) retry = setTimeout(() => {
+            retry = undefined;
+            void revalidate();
+          }, 5_000);
         }
       }
     };
@@ -145,6 +173,7 @@ function RootLayoutNav() {
 
   return (
     <StaffAccessContext.Provider value={accessState}>
+      <PortalSessionContext.Provider value={portalSession}>
       <View style={gateStyles.stack}>
         <Stack
           screenOptions={{
@@ -171,6 +200,7 @@ function RootLayoutNav() {
           </View>
         ) : null}
       </View>
+      </PortalSessionContext.Provider>
     </StaffAccessContext.Provider>
   );
 }
