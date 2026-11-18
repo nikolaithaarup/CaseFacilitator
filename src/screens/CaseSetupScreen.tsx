@@ -27,6 +27,7 @@ export function CaseSetupScreen({
   onStartSoloCase,
   onScanQr,
   onCreateSessionInvite,
+  portalManaged = false,
 }: {
   selectedCaseTemplate: CaseScenario | null;
 
@@ -46,6 +47,7 @@ export function CaseSetupScreen({
   onStartSoloCase: (derivedScenario: CaseScenario) => void;
   onScanQr: () => void;
   onCreateSessionInvite: () => Promise<void>;
+  portalManaged?: boolean;
 }) {
   if (!selectedCaseTemplate) {
     return (
@@ -214,8 +216,9 @@ export function CaseSetupScreen({
           />
         </View>
 
+        {!portalManaged ? (
         <View style={styles.card}>
-          <Text style={styles.cardTitle}>Facilitators & devices</Text>
+          <Text style={styles.cardTitle}>Facilitatorer og enheder</Text>
           <CounterRow
             label="Antal facilitators"
             value={facilitatorsCount}
@@ -233,6 +236,12 @@ export function CaseSetupScreen({
             </TouchableOpacity>
           )}
         </View>
+        ) : (
+          <Text style={[styles.textSmall, { marginTop: 12, marginBottom: 10 }]}>
+            Fælles undervisningssessioner og invitationer administreres i SynapsePortal.
+            Denne case kan køres som en lokal undervisningsøvelse.
+          </Text>
+        )}
 
         <TouchableOpacity
           style={styles.button}
@@ -244,15 +253,17 @@ export function CaseSetupScreen({
             onStartSoloCase(derivedScenario);
           }}
         >
-          <Text style={styles.buttonText}>Next → start case</Text>
+          <Text style={styles.buttonText}>Start case</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity
-          style={[styles.button, { marginTop: 10, backgroundColor: "#4b5563" }]}
-          onPress={onScanQr}
-        >
-          <Text style={styles.buttonText}>Scan QR (join session)</Text>
-        </TouchableOpacity>
+        {!portalManaged ? (
+          <TouchableOpacity
+            style={[styles.button, { marginTop: 10, backgroundColor: "#4b5563" }]}
+            onPress={onScanQr}
+          >
+            <Text style={styles.buttonText}>Scan QR (tilslut session)</Text>
+          </TouchableOpacity>
+        ) : null}
       </ScrollView>
     </SafeAreaView>
   );
